@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
+    <ProjectReference Include="..\EnterpriseAiPlatform.Identity.Application\EnterpriseAiPlatform.Identity.Application.csproj" />
+    <ProjectReference Include="..\EnterpriseAiPlatform.Identity.Infrastructure\EnterpriseAiPlatform.Identity.Infrastructure.csproj" />
+    <ProjectReference Include="..\EnterpriseAiPlatform.Identity.Contracts\EnterpriseAiPlatform.Identity.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\EnterpriseAiPlatform.ServiceDefaults\EnterpriseAiPlatform.ServiceDefaults.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+</Project>

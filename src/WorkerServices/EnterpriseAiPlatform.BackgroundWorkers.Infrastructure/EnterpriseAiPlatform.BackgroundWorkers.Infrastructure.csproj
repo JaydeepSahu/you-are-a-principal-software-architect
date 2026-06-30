@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\EnterpriseAiPlatform.BackgroundWorkers.Application\EnterpriseAiPlatform.BackgroundWorkers.Application.csproj" />
+    <ProjectReference Include="..\EnterpriseAiPlatform.BackgroundWorkers.Contracts\EnterpriseAiPlatform.BackgroundWorkers.Contracts.csproj" />
+    <ProjectReference Include="..\..\BuildingBlocks\EnterpriseAiPlatform.Infrastructure.Abstractions\EnterpriseAiPlatform.Infrastructure.Abstractions.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

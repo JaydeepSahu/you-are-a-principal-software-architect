@@ -55,3 +55,44 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+
+# .NET
+bin/
+obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider
+.idea/
+*.sln.iml
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# NuGet
+*.nupkg
+packages/
+
+# Others
+*.swp
+*.bak
+*.tmp
+*.orig
+
+# Test results
+TestResults/
+
+# Publish outputs
+publish/
+
+# User secrets
+secrets.json

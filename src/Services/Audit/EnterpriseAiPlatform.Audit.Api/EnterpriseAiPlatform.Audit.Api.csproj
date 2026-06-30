@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\EnterpriseAiPlatform.Audit.Application\EnterpriseAiPlatform.Audit.Application.csproj" />
+    <ProjectReference Include="..\EnterpriseAiPlatform.Audit.Infrastructure\EnterpriseAiPlatform.Audit.Infrastructure.csproj" />
+    <ProjectReference Include="..\EnterpriseAiPlatform.Audit.Contracts\EnterpriseAiPlatform.Audit.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\EnterpriseAiPlatform.ServiceDefaults\EnterpriseAiPlatform.ServiceDefaults.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+</Project>

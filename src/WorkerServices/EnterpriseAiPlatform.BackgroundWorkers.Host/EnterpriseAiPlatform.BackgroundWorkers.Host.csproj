@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EnterpriseAiPlatform.BackgroundWorkers.Application\EnterpriseAiPlatform.BackgroundWorkers.Application.csproj" />
+    <ProjectReference Include="..\EnterpriseAiPlatform.BackgroundWorkers.Infrastructure\EnterpriseAiPlatform.BackgroundWorkers.Infrastructure.csproj" />
+    <ProjectReference Include="..\EnterpriseAiPlatform.BackgroundWorkers.Contracts\EnterpriseAiPlatform.BackgroundWorkers.Contracts.csproj" />
+    <ProjectReference Include="..\..\BuildingBlocks\EnterpriseAiPlatform.ServiceDefaults\EnterpriseAiPlatform.ServiceDefaults.csproj" />
+  </ItemGroup>
+</Project>

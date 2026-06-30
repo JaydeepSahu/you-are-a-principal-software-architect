@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
+    <ProjectReference Include="..\EnterpriseAiPlatform.AiGateway.Application\EnterpriseAiPlatform.AiGateway.Application.csproj" />
+    <ProjectReference Include="..\EnterpriseAiPlatform.AiGateway.Contracts\EnterpriseAiPlatform.AiGateway.Contracts.csproj" />
+    <ProjectReference Include="..\..\BuildingBlocks\EnterpriseAiPlatform.Infrastructure.Abstractions\EnterpriseAiPlatform.Infrastructure.Abstractions.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>
