@@ -35,6 +35,9 @@ src/
     EnterpriseAiPlatform.BackgroundWorkers.Application/
     EnterpriseAiPlatform.BackgroundWorkers.Infrastructure/
     EnterpriseAiPlatform.BackgroundWorkers.Contracts/
+clients/
+  vscode/
+    enterprise-ai-platform/
 tests/
   EnterpriseAiPlatform.Architecture.Tests/
   EnterpriseAiPlatform.SharedKernel.UnitTests/
@@ -85,6 +88,10 @@ The solution includes projects for these service boundaries:
 - `Contracts`: integration-event envelope primitives.
 - `ServiceDefaults`: host-level health check registration and health endpoints.
 
+## Developer Clients
+
+- `clients/vscode/enterprise-ai-platform`: VS Code extension that authenticates through the Identity Service, stores tokens in VS Code SecretStorage, sends prompts to the AI Gateway, renders streaming chat responses, and supports editor inline code generation.
+
 ## Dependencies
 
 Package versions are managed centrally in `Directory.Packages.props`.
@@ -120,6 +127,14 @@ Build settings are centralized in `Directory.Build.props`:
 dotnet restore .\EnterpriseAiPlatform.sln
 dotnet build .\EnterpriseAiPlatform.sln --no-restore
 dotnet test .\EnterpriseAiPlatform.sln --no-build
+```
+
+VS Code extension checks:
+
+```powershell
+cd .\clients\vscode\enterprise-ai-platform
+npm.cmd run check
+npm.cmd test
 ```
 
 ## Host Endpoints
@@ -163,3 +178,25 @@ Required production configuration:
 - `Identity:RefreshTokens:Pepper`
 
 Secrets such as signing keys and peppers must come from the deployment secret manager, not source-controlled settings files.
+
+## VS Code Extension
+
+The Enterprise AI Platform VS Code extension implements the developer-facing client milestone:
+
+- Login using an Identity Service-issued IDE API key.
+- Authentication through a VS Code `AuthenticationProvider`.
+- Secure token persistence through VS Code SecretStorage.
+- Chat view in the Enterprise AI activity bar.
+- Streaming gateway responses from SSE, NDJSON, JSON, and text streams.
+- Inline code generation from selected editor context.
+- Configurable Identity Service URL, AI Gateway URL, gateway endpoints, prompt limits, and request timeout.
+- VS Code update-check command; marketplace-installed extensions continue to use VS Code automatic extension updates.
+
+Required extension configuration:
+
+- `enterpriseAiPlatform.identityBaseUrl`
+- `enterpriseAiPlatform.gatewayBaseUrl`
+- `enterpriseAiPlatform.chatEndpoint`
+- `enterpriseAiPlatform.inlineCodeEndpoint`
+
+The extension sends prompts only to the AI Gateway. It does not call AI providers directly.

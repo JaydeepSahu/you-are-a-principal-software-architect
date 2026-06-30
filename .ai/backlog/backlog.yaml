@@ -1,0 +1,941 @@
+epics:
+	- id: EPIC-001
+		title: AI API Gateway
+		description: Implement the AI API Gateway: ingress, protocol handling, streaming proxy, tenant resolution, authentication, rate limiting, request normalization and forwarding to provider adapters.
+		priority: 1
+		stories:
+		  - id: STORY-001-01
+		    title: Gateway ingress and routing
+		    description: As a platform user, I want incoming AI requests to enter through a single gateway endpoint so that all traffic is centralized and enforceable.
+		    acceptance_criteria:
+		      - Requests are accepted by the gateway at a documented API endpoint.
+		      - HTTP methods and supported AI API routes are validated.
+		      - Unsupported routes return a clear 404/405 response.
+
+		  - id: STORY-001-02
+		    title: Authentication and token validation
+		    description: As a secure platform, I want the gateway to validate platform tokens so that only authorized clients may invoke AI services.
+		    acceptance_criteria:
+		      - Gateway rejects unauthenticated requests with 401.
+		      - Valid platform tokens are validated against identity service claims.
+		      - Token validation failures result in clear error responses.
+
+		  - id: STORY-001-03
+		    title: Tenant and principal resolution
+		    description: As an enterprise admin, I want the gateway to resolve tenant, application, and subject context from each request so that downstream enforcement is tenant-aware.
+		    acceptance_criteria:
+		      - Tenant ID is extracted from the authenticated principal.
+		      - Application and subject identifiers are available in request context.
+		      - Tenant-scoped metadata is attached to telemetry and enforcement.
+
+		  - id: STORY-001-04
+		    title: Distributed rate limiting
+		    description: As a platform operator, I want the gateway to enforce tenant/application/user rate limits so that request volumes are protected and abuse is prevented.
+		    acceptance_criteria:
+		      - Excess requests are rejected with 429 and retry headers.
+		      - Rate-limit counters are stored in Redis.
+		      - Metrics indicate rate-limit events.
+
+		  - id: STORY-001-05
+		    title: Request normalization and validation
+		    description: As a developer, I want the gateway to normalize and validate incoming AI request payloads so that downstream services receive consistent canonical requests.
+		    acceptance_criteria:
+		      - Requests are normalized into a canonical internal format.
+		      - Invalid payloads return 400 with validation details.
+		      - Supported request fields are documented and enforced.
+
+		  - id: STORY-001-06
+		    title: Policy decision integration
+		    description: As a governance engine, I want the gateway to call the Policy Service before forwarding requests so that policy is enforced at the edge.
+		    acceptance_criteria:
+		      - Gateway sends request attributes to Policy Service.
+		      - Policy allow/deny decisions are respected.
+		      - Denied requests return appropriate problem responses.
+
+		  - id: STORY-001-07
+		    title: Provider routing and forwarding
+		    description: As an AI request flow, I want the gateway to select a provider route and forward requests to the provider adapter host so that execution is isolated from the gateway.
+		    acceptance_criteria:
+		      - Gateway receives route plan from Routing Service.
+		      - Selected provider adapter endpoint is invoked.
+		      - Response stream is proxied back to the caller.
+
+		  - id: STORY-001-08
+		    title: Streaming response support
+		    description: As an interactive client, I want the gateway to support streaming provider responses so that low-latency token delivery is preserved.
+		    acceptance_criteria:
+		      - Gateway can proxy streaming responses from adapters.
+		      - Client streaming endpoints remain open until completion.
+		      - Streaming errors are surfaced clearly.
+
+		  - id: STORY-001-09
+		    title: Gateway telemetry and correlation
+		    description: As an operations engineer, I want the gateway to emit traces, metrics, and correlation IDs so that requests are observable end-to-end.
+		    acceptance_criteria:
+		      - Correlation IDs are generated and propagated.
+		      - Metrics include request counts, latency, and status codes.
+		      - Traces include gateway, policy, routing, and provider steps.
+
+		  - id: STORY-001-10
+		    title: Health and diagnostics endpoints
+		    description: As a platform operator, I want the gateway to expose health and readiness endpoints so that Kubernetes and monitoring systems can verify service health.
+		    acceptance_criteria:
+		      - Liveness and readiness probes are available.
+		      - Health checks reflect dependencies like Redis and Policy Service.
+		      - Gateway returns expected status codes for healthy/unhealthy states.
+
+	- id: EPIC-002
+		title: Identity & Tenant Service
+		description: Build tenant and identity management: OIDC federation, tenant hierarchy, application/service principals, scoped platform tokens, RBAC/ABAC integration.
+		priority: 1
+		stories:
+		  - id: STORY-002-01
+		    title: Enterprise IdP federation
+		    description: As an admin, I want the platform to federate with the enterprise identity provider so that users authenticate with corporate credentials.
+		    acceptance_criteria:
+		      - OIDC/SAML login works with the configured IdP.
+		      - User claims are mapped to platform identities.
+		      - Failed federation attempts return clear errors.
+
+		  - id: STORY-002-02
+		    title: Tenant and organizational hierarchy
+		    description: As a tenant admin, I want to define tenant hierarchies and organizational units so that governance can be scoped by business unit and project.
+		    acceptance_criteria:
+		      - Tenants, organizations, and projects can be created.
+		      - Hierarchy relationships are queryable.
+		      - Membership and scoping rules are enforced.
+
+		  - id: STORY-002-03
+		    title: Application and service principal management
+		    description: As a platform operator, I want to register applications and service principals so that machine clients can authenticate securely.
+		    acceptance_criteria:
+		      - Applications can be registered with tenant scope.
+		      - Service principals can be created and revoked.
+		      - API credential metadata is stored without exposing secrets.
+
+		  - id: STORY-002-04
+		    title: Scoped platform tokens
+		    description: As a developer, I want platform tokens that carry tenant, application, and role claims so that API authorization is enforced.
+		    acceptance_criteria:
+		      - Tokens include tenant, application, subject, and scope claims.
+		      - Token issuance is auditable.
+		      - Invalid or expired tokens are rejected.
+
+		  - id: STORY-002-05
+		    title: RBAC and ABAC enforcement
+		    description: As a policy author, I want the identity service to expose RBAC and ABAC attributes so that runtime authorization decisions can use both role and attribute data.
+		    acceptance_criteria:
+		      - Role assignments are stored and returned.
+		      - Attribute-based claims are available for policy evaluation.
+		      - Access checks can be performed using platform attributes.
+
+	- id: EPIC-003
+		title: Policy & Governance Service
+		description: Author and evaluate policy sets for provider/model access, data handling, retention, budgets, and approval workflows. Expose a policy decision API.
+		priority: 1
+		stories:
+		  - id: STORY-003-01
+		    title: Policy authoring UI and API
+		    description: As a policy administrator, I want to create and manage policy sets so that governance can be applied to tenants and applications.
+		    acceptance_criteria:
+		      - Policy sets can be created, updated, and versioned.
+		      - Policy definitions support provider, model, and data handling rules.
+		      - Policy metadata is searchable by tenant and scope.
+
+		  - id: STORY-003-02
+		    title: Policy assignment and hierarchy
+		    description: As an admin, I want to assign policy sets to tenants, projects, and applications so that governance can be applied at the proper level.
+		    acceptance_criteria:
+		      - Policy assignments can target tenant, organization, or application scopes.
+		      - Policy precedence and inheritance are documented.
+		      - Overrides are possible with audit history.
+
+		  - id: STORY-003-03
+		    title: Policy decision API
+		    description: As a gateway, I want to call the Policy Service for decision evaluation so that runtime requests are allowed or denied based on current policy.
+		    acceptance_criteria:
+		      - Policy decision API accepts request attributes and returns allow/deny.
+		      - Decision responses include reason codes and enforcement metadata.
+		      - Policy caches can be invalidated on publish.
+
+		  - id: STORY-003-04
+		    title: Policy versioning and publishing
+		    description: As a governance lead, I want to publish policy versions so that changes are tracked and rollback is possible.
+		    acceptance_criteria:
+		      - Policies are versioned when published.
+		      - Past versions can be reviewed.
+		      - Published policies are immediately available for evaluation.
+
+		  - id: STORY-003-05
+		    title: Policy audit and explainability
+		    description: As an auditor, I want policy decisions to be recorded with matched rules so that enforcement events are explainable.
+		    acceptance_criteria:
+		      - Decision records include matched policy rules.
+		      - Audit events link requests to policy versions.
+		      - Denied actions include rationale.
+
+	- id: EPIC-004
+		title: Routing & Optimization Service
+		description: Implement provider/model routing, cost-aware and latency-aware selection, failover chains, weighted/canary routing, and route health scoring.
+		priority: 1
+		stories:
+		  - id: STORY-004-01
+		    title: Route decision engine
+		    description: As a gateway, I want the routing service to choose the optimal provider/model path so that requests meet policy, cost, and latency goals.
+		    acceptance_criteria:
+		      - Routing decisions return provider, model, and adapter targets.
+		      - Decisions include reason codes and health abstractions.
+		      - Route selection respects tenant policy constraints.
+
+		  - id: STORY-004-02
+		    title: Cost-aware routing
+		    description: As a finance stakeholder, I want the routing service to prefer lower-cost providers/models when quality and policy allow so that spend is optimized.
+		    acceptance_criteria:
+		      - Routing can rank routes by estimated cost.
+		      - Cost thresholds are configurable by policy.
+		      - Expensive routes are chosen only when required.
+
+		  - id: STORY-004-03
+		    title: Latency-aware routing
+		    description: As an operations engineer, I want route selection to consider latency and provider health so that user experience remains responsive.
+		    acceptance_criteria:
+		      - Routing includes route health and latency metrics.
+		      - Unhealthy or slow routes are deprioritized.
+		      - Failover to healthy routes is supported.
+
+		  - id: STORY-004-04
+		    title: Weighted and canary routing
+		    description: As a release manager, I want the routing service to support weighted and canary routes so that traffic can be shifted gradually.
+		    acceptance_criteria:
+		      - Route weights can be specified per tenant or deployment.
+		      - Canary routes can receive a controlled percentage of traffic.
+		      - Traffic distribution is observable.
+
+		  - id: STORY-004-05
+		    title: Route health scoring
+		    description: As an operations engineer, I want the routing service to track provider/adapter health and score routes so that routing degrades safely.
+		    acceptance_criteria:
+		      - Health metrics are ingested into route scoring.
+		      - Poor health reduces route selection priority.
+		      - Health score changes are auditable.
+
+	- id: EPIC-005
+		title: Provider & Model Registry
+		description: Catalog providers and models, capability metadata, pricing, region constraints, and deployment metadata used by routing and governance.
+		priority: 2
+		stories:
+		  - id: STORY-005-01
+		    title: Provider catalog API
+		    description: As an operator, I want a provider catalog that lists supported AI providers so that routing and policy can reference available options.
+		    acceptance_criteria:
+		      - Providers have metadata, category, and capability flags.
+		      - Catalog entries are queryable.
+		      - Providers can be enabled/disabled.
+
+		  - id: STORY-005-02
+		    title: Model capability metadata
+		    description: As a product manager, I want model entries to include capabilities, context window, pricing, and supported modalities so that selection is accurate.
+		    acceptance_criteria:
+		      - Models include capability, pricing, and region metadata.
+		      - Unsupported capabilities are excluded.
+		      - Metadata is available to routing and policy services.
+
+		  - id: STORY-005-03
+		    title: Deployment metadata and regions
+		    description: As a compliance lead, I want model deployments to include region and data residency constraints so that route selection can honor residency rules.
+		    acceptance_criteria:
+		      - Deployments include region and residency metadata.
+		      - Routing can filter deployments by region.
+		      - Policies can reference deployment residency.
+
+		  - id: STORY-005-04
+		    title: Provider capability declarations
+		    description: As a governance author, I want providers to declare supported features so that the platform can advertise capabilities accurately.
+		    acceptance_criteria:
+		      - Capabilities like streaming, embeddings, and tool support are declared.
+		      - Unsupported features are not presented.
+		      - Capability metadata is versioned.
+
+		  - id: STORY-005-05
+		    title: Registry search and discovery
+		    description: As a portal user, I want the model registry to be searchable so that I can discover available provider/model combinations.
+		    acceptance_criteria:
+		      - Search supports provider, model, capability, and region.
+		      - Results include key metadata.
+		      - Search performance is adequate for UI usage.
+
+	- id: EPIC-006
+		title: Provider Adapter Host & Adapters
+		description: Provide an adapter host and initial adapters (GitHub Copilot, Azure OpenAI, Anthropic). Handle streaming translation, auth to providers, and error normalization.
+		priority: 1
+		stories:
+		  - id: STORY-006-01
+		    title: Adapter host runtime
+		    description: As an architect, I want a provider adapter host that loads and executes adapters so that provider integration is isolated from the gateway.
+		    acceptance_criteria:
+		      - Adapter host can register provider adapters.
+		      - Adapter host receives canonical requests and routes them to adapters.
+		      - Adapter host exposes health and telemetry.
+
+		  - id: STORY-006-02
+		    title: GitHub Copilot adapter
+		    description: As a provider integration lead, I want a GitHub Copilot adapter so that the platform can route eligible requests to Copilot.
+		    acceptance_criteria:
+		      - Adapter can authenticate to Copilot.
+		      - Requests are transformed into Copilot-compatible calls.
+		      - Responses are normalized back to the platform contract.
+
+		  - id: STORY-006-03
+		    title: Azure OpenAI adapter
+		    description: As a provider integration lead, I want an Azure OpenAI adapter so that the platform supports Azure-hosted OpenAI models.
+		    acceptance_criteria:
+		      - Azure OpenAI auth and endpoint calls are supported.
+		      - Streaming responses are preserved.
+		      - Error codes are normalized.
+
+		  - id: STORY-006-04
+		    title: Streaming translation support
+		    description: As a gateway engineer, I want adapters to relay streaming provider responses without buffering so that token delivery remains low-latency.
+		    acceptance_criteria:
+		      - Adapters stream tokens as they arrive.
+		      - Backpressure is handled correctly.
+		      - Streaming cancellation is supported.
+
+		  - id: STORY-006-05
+		    title: Provider error normalization
+		    description: As an operations engineer, I want provider-specific errors normalized into platform errors so that downstream services can handle them consistently.
+		    acceptance_criteria:
+		      - Provider errors map to platform error categories.
+		      - Normalized responses include original provider details for debugging.
+		      - Error handling avoids leaking secrets.
+
+	- id: EPIC-007
+		title: Metering & Cost Service
+		description: Consume usage events, account tokens/costs by tenant/application/user, support budgets/alerts, and provide chargeback exports.
+		priority: 1
+		stories:
+		  - id: STORY-007-01
+		    title: Usage event ingestion
+		    description: As an analytics consumer, I want the metering service to ingest usage events from the event bus so that platform usage is recorded.
+		    acceptance_criteria:
+		      - Metering consumers read usage events reliably.
+		      - Events are processed idempotently.
+		      - Ingestion failures are retried.
+
+		  - id: STORY-007-02
+		    title: Token accounting
+		    description: As a finance owner, I want token usage to be accounted by tenant, application, and user so that cost can be attributed accurately.
+		    acceptance_criteria:
+		      - Input/output tokens are tracked per request.
+		      - Aggregates can be queried by tenant/application.
+		      - Cost estimates are calculated from pricing metadata.
+
+		  - id: STORY-007-03
+		    title: Budget monitoring and alerts
+		    description: As a tenant owner, I want budget thresholds and alerts so that spending can be monitored and exceeded budgets can be flagged.
+		    acceptance_criteria:
+		      - Budget thresholds can be configured.
+		      - Alerts are emitted when budgets approach or exceed limits.
+		      - Budget state is available in the portal.
+
+		  - id: STORY-007-04
+		    title: Chargeback and showback exports
+		    description: As a finance team, I want usage and cost export files so that chargeback and reporting can be integrated with billing systems.
+		    acceptance_criteria:
+		      - Export files can be generated by tenant and period.
+		      - Exports include usage, cost, and allocation details.
+		      - Export formats are documented.
+
+		  - id: STORY-007-05
+		    title: Usage reconciliation
+		    description: As an operations engineer, I want the metering service to reconcile provider usage records with event-derived usage so that billing data is accurate.
+		    acceptance_criteria:
+		      - Reconciliation jobs compare provider and platform usage.
+		      - Mismatches are reported.
+		      - Reconciliation supports retries.
+
+	- id: EPIC-008
+		title: Audit & Compliance Service
+		description: Persist immutable audit trail of auth events, policy decisions, routing outcomes, admin changes, and exportable compliance artifacts.
+		priority: 1
+		stories:
+		  - id: STORY-008-01
+		    title: Immutable audit event capture
+		    description: As a compliance officer, I want audit events to be captured immutably so that platform actions can be reviewed later.
+		    acceptance_criteria:
+		      - Audit events are written append-only.
+		      - Events include tenant, request, and action metadata.
+		      - Audit store is protected against modification.
+
+		  - id: STORY-008-02
+		    title: Policy decision audit
+		    description: As an auditor, I want policy decisions recorded with matched rules so that governance has a complete evidence trail.
+		    acceptance_criteria:
+		      - Policy decisions are recorded with rule metadata.
+		      - Decision records are linked to request IDs.
+		      - Denied decisions include rationale.
+
+		  - id: STORY-008-03
+		    title: Administrative action auditing
+		    description: As a security lead, I want administrative changes logged so that changes to configuration and policy are traceable.
+		    acceptance_criteria:
+		      - Admin actions include actor, timestamp, and change details.
+		      - Audit records are immutable.
+		      - Audit queries can filter by action type.
+
+		  - id: STORY-008-04
+		    title: Compliance export generation
+		    description: As a compliance team, I want audit exports for regulatory review so that evidence can be delivered in the required format.
+		    acceptance_criteria:
+		      - Export jobs generate CSV/JSON audit bundles.
+		      - Exports can be scoped by tenant and time range.
+		      - Export files are securely stored.
+
+		  - id: STORY-008-05
+		    title: Retention policy enforcement
+		    description: As a data protection officer, I want audit retention policies enforced so that records are kept only as long as required.
+		    acceptance_criteria:
+		      - Retention rules can be configured by event type.
+		      - Old audit data is archived or deleted per policy.
+		      - Retention actions are logged.
+
+	- id: EPIC-009
+		title: Observability Control Service
+		description: Define telemetry taxonomy, SLOs, dashboards, alerting metadata and provide platform-level observability governance.
+		priority: 2
+		stories:
+		  - id: STORY-009-01
+		    title: Telemetry taxonomy and standards
+		    description: As an observability lead, I want the platform to define telemetry standards so that logs, metrics, and traces are consistent.
+		    acceptance_criteria:
+		      - Standard telemetry dimensions are documented.
+		      - Services emit consistent trace and metric labels.
+		      - Logging conventions are defined.
+
+		  - id: STORY-009-02
+		    title: SLO definition and management
+		    description: As an SRE, I want SLOs for gateway and platform services so that reliability targets are monitored and acted upon.
+		    acceptance_criteria:
+		      - SLOs can be defined and stored.
+		      - SLO status is computable from metrics.
+		      - Alerting thresholds can be configured.
+
+		  - id: STORY-009-03
+		    title: Dashboard metadata and templates
+		    description: As an operator, I want dashboard metadata and templates so that key platform health views are available quickly.
+		    acceptance_criteria:
+		      - Dashboard templates are available for core services.
+		      - Templates include request, latency, and error views.
+		      - Templates are versioned.
+
+		  - id: STORY-009-04
+		    title: Alert metadata service
+		    description: As an on-call engineer, I want alert metadata managed centrally so that alerts are consistent and actionable.
+		    acceptance_criteria:
+		      - Alert definitions include severity and runbooks.
+		      - Alerts can be linked to SLO violations.
+		      - Alert metadata is queryable.
+
+		  - id: STORY-009-05
+		    title: Observability API
+		    description: As a portal, I want to query observability config so that dashboards and alerting metadata can be surfaced in the UI.
+		    acceptance_criteria:
+		      - Observability config is exposed via API.
+		      - Dashboard and SLO definitions can be retrieved.
+		      - API responses are secured.
+
+	- id: EPIC-010
+		title: Semantic & Exact Cache
+		description: Implement tenant-scoped exact and semantic caching with pgvector or approved vector store, subject to tenant policy controls.
+		priority: 3
+		stories:
+		  - id: STORY-010-01
+		    title: Exact response cache
+		    description: As a performance engineer, I want the gateway to use an exact response cache so that repeat requests can yield faster responses.
+		    acceptance_criteria:
+		      - Exact cache entries can be stored and retrieved.
+		      - Cache keys are tenant-scoped.
+		      - Cache hits reduce provider calls.
+
+		  - id: STORY-010-02
+		    title: Semantic cache support
+		    description: As an efficiency lead, I want semantic cache support so that semantically similar requests can reuse earlier responses when allowed.
+		    acceptance_criteria:
+		      - Semantic similarity search can be performed.
+		      - Cache hits are returned when policy allows.
+		      - Semantic cache metadata is tenant-scoped.
+
+		  - id: STORY-010-03
+		    title: Cache policy controls
+		    description: As a governance administrator, I want cache behavior controlled by tenant policy so that data retention and sharing rules are enforced.
+		    acceptance_criteria:
+		      - Cache enablement can be configured per tenant.
+		      - Policy controls cache retention and eligibility.
+		      - Cache policy decisions are auditable.
+
+		  - id: STORY-010-04
+		    title: Cache invalidation and expiry
+		    description: As an operator, I want cache invalidation and expiration support so that stale responses are not reused.
+		    acceptance_criteria:
+		      - Cache entries expire automatically.
+		      - Entries can be invalidated by policy change.
+		      - Invalidation is traceable.
+
+		  - id: STORY-010-05
+		    title: Cache observability
+		    description: As a performance analyst, I want cache hit/miss metrics so that cache effectiveness can be measured.
+		    acceptance_criteria:
+		      - Cache metrics are emitted.
+		      - Hit and miss rates are visible.
+		      - Tenant-level cache usage is reportable.
+
+	- id: EPIC-011
+		title: Rate Limiting & Distributed Counters
+		description: Implement high-performance distributed rate limiting and idempotency using Redis and support tenant/application/user scopes.
+		priority: 1
+		stories:
+		  - id: STORY-011-01
+		    title: Tenant scoped rate limits
+		    description: As a platform admin, I want tenant-level rate limits so that each tenant has isolation from noisy neighbors.
+		    acceptance_criteria:
+		      - Tenant-specific rate limit policies are supported.
+		      - Excess tenant requests return 429.
+		      - Rate limit state is stored in Redis.
+
+		  - id: STORY-011-02
+		    title: Application and user quotas
+		    description: As an operator, I want application and user quotas so that resources can be limited by finer-grained scope.
+		    acceptance_criteria:
+		      - Application and user counters are maintained.
+		      - Quotas can be configured per scope.
+		      - Quota rejections include retry headers.
+
+		  - id: STORY-011-03
+		    title: Distributed counter reliability
+		    description: As a platform engineer, I want rate limiting counters to be reliable in Redis so that counts remain accurate under concurrent load.
+		    acceptance_criteria:
+		      - Counter updates are atomic.
+		      - Race conditions are prevented.
+		      - Limits are enforced consistently.
+
+		  - id: STORY-011-04
+		    title: Idempotency key support
+		    description: As a caller, I want idempotency keys supported so that retrying requests does not cause duplicate execution.
+		    acceptance_criteria:
+		      - Idempotency keys can be submitted with requests.
+		      - Duplicate requests return the same result.
+		      - Idempotency data expires appropriately.
+
+		  - id: STORY-011-05
+		    title: Rate-limit telemetry
+		    description: As an SRE, I want rate-limit metrics so that throttling events can be monitored and analyzed.
+		    acceptance_criteria:
+		      - Rate-limit counts are exported.
+		      - Rejections are labeled by tenant/application.
+		      - Throttle rates are queryable.
+
+	- id: EPIC-012
+		title: Secrets & Credential Management Integration
+		description: Integrate with KMS/Key Vault/Vault: store provider credentials, short-lived credentials, tenant-scoped secrets, and rotation workflows.
+		priority: 1
+		stories:
+		  - id: STORY-012-01
+		    title: Secret store integration
+		    description: As a security architect, I want the platform to integrate with a secrets manager so that provider credentials are not stored in plaintext.
+		    acceptance_criteria:
+		      - Secrets are retrieved from KMS/Vault at runtime.
+		      - Secrets are never logged.
+		      - Access is scoped to authorized services.
+
+		  - id: STORY-012-02
+		    title: Tenant-scoped credential references
+		    description: As a tenant admin, I want credential references scoped to my tenant so that provider secrets are isolated.
+		    acceptance_criteria:
+		      - Credentials include tenant metadata.
+		      - Tenant isolation prevents cross-tenant access.
+		      - Credential references are auditable.
+
+		  - id: STORY-012-03
+		    title: Short-lived provider credentials
+		    description: As an operator, I want short-lived credentials where supported so that provider access keys rotate frequently.
+		    acceptance_criteria:
+		      - Short-lived credential issuance is supported.
+		      - Credentials expire automatically.
+		      - Rotation workflows are documented.
+
+		  - id: STORY-012-04
+		    title: Credential rotation support
+		    description: As a security team, I want credential rotation processes so that provider secrets can be rotated safely.
+		    acceptance_criteria:
+		      - Credentials can be rotated without service outage.
+		      - Rotation events are auditable.
+		      - Old credentials are invalidated.
+
+		  - id: STORY-012-05
+		    title: Secret access logging
+		    description: As an auditor, I want secret access to be logged so that retrieval events are traceable.
+		    acceptance_criteria:
+		      - Secret retrieval events are logged without secret material.
+		      - Access logs include service identity and timestamp.
+		      - Logs are stored in an audit-backed store.
+
+	- id: EPIC-013
+		title: Developer Portal & Portal BFF
+		description: Build an admin/developer portal and a BFF exposing aggregated APIs for tenant, policy, routing, model catalog, usage and audit views.
+		priority: 2
+		stories:
+		  - id: STORY-013-01
+		    title: Tenant admin portal views
+		    description: As a tenant admin, I want portal views for tenant settings so that I can manage my tenant configuration.
+		    acceptance_criteria:
+		      - Tenant settings can be viewed and edited.
+		      - Portal respects tenant role permissions.
+		      - Changes are audited.
+
+		  - id: STORY-013-02
+		    title: Policy and governance UI support
+		    description: As a policy author, I want portal access to policy sets and assignments so that governance can be managed through the UI.
+		    acceptance_criteria:
+		      - Policy sets are visible in the portal.
+		      - Assignments can be reviewed.
+		      - Policy publishing actions are available.
+
+		  - id: STORY-013-03
+		    title: Usage and cost dashboard
+		    description: As a tenant owner, I want a usage and cost dashboard so that spend can be monitored.
+		    acceptance_criteria:
+		      - Usage by tenant/application is displayed.
+		      - Cost summaries are available.
+		      - Filters by period and provider work.
+
+		  - id: STORY-013-04
+		    title: Model catalog browsing
+		    description: As a developer, I want to browse available providers and models so that I can choose the right capabilities.
+		    acceptance_criteria:
+		      - Model catalog entries are available.
+		      - Capabilities and pricing are shown.
+		      - Search and filter work.
+
+		  - id: STORY-013-05
+		    title: Portal BFF aggregation
+		    description: As a portal service, I want a BFF that aggregates backend APIs so that portal pages can render quickly and securely.
+		    acceptance_criteria:
+		      - BFF endpoints aggregate necessary data.
+		      - API responses are scoped to the current tenant.
+		      - BFF respects portal authentication.
+
+	- id: EPIC-014
+		title: IDE & CLI Integrations
+		description: Provide developer-facing integrations and reference clients for VS Code, IDEs, CLI and CI to demonstrate provider-compatible flows.
+		priority: 3
+		stories:
+		  - id: STORY-014-01
+		    title: CLI integration sample
+		    description: As a developer, I want a CLI example that calls the platform so that I can integrate AI usage into scripts and CI.
+		    acceptance_criteria:
+		      - CLI can authenticate with platform tokens.
+		      - CLI can submit AI requests.
+		      - Responses are displayed in the terminal.
+
+		  - id: STORY-014-02
+		    title: VS Code reference workflow
+		    description: As a VS Code user, I want a reference workflow for the platform so that IDE experiences can be validated.
+		    acceptance_criteria:
+		      - Reference integration shows how to configure the platform endpoint.
+		      - Authentication flow is documented.
+		      - Example request execution is shown.
+
+		  - id: STORY-014-03
+		    title: IDE token acquisition guidance
+		    description: As a tool builder, I want guidance on acquiring platform tokens in IDE extensions so that integrations can authenticate securely.
+		    acceptance_criteria:
+		      - Token acquisition steps are documented.
+		      - Example token exchange flows are provided.
+		      - Security considerations are noted.
+
+		  - id: STORY-014-04
+		    title: CI/CD integration guide
+		    description: As a DevOps engineer, I want a CI/CD integration guide so that pipelines can invoke the platform securely.
+		    acceptance_criteria:
+		      - CI auth patterns are described.
+		      - Example pipeline snippets are available.
+		      - Best practices for secret management are included.
+
+		  - id: STORY-014-05
+		    title: Provider-compatible request examples
+		    description: As a developer, I want provider-compatible request samples so that I can evaluate how the platform differs from direct provider calls.
+		    acceptance_criteria:
+		      - Sample requests show platform wrapper fields.
+		      - Streaming and non-streaming examples are included.
+		      - Compatibility notes are documented.
+
+	- id: EPIC-015
+		title: Background Workers & Event Processing
+		description: Implement outbox/inbox patterns, consumers for metering, audit, provider health, and retention/reconciliation jobs.
+		priority: 1
+		stories:
+		  - id: STORY-015-01
+		    title: Transactional outbox pattern
+		    description: As a developer, I want the platform to use a transactional outbox so that events are reliably published with state changes.
+		    acceptance_criteria:
+		      - Outbox records are written transactionally.
+		      - Publisher reads and publishes outbox events reliably.
+		      - Duplicate event handling is idempotent.
+
+		  - id: STORY-015-02
+		    title: Event consumer inbox design
+		    description: As an operations engineer, I want consumer inbox patterns so that event processing can survive retries and duplicates.
+		    acceptance_criteria:
+		      - Consumers track processed event IDs.
+		      - Duplicate events are ignored.
+		      - Consumer state is durable.
+
+		  - id: STORY-015-03
+		    title: Metering consumer jobs
+		    description: As a metering engineer, I want background jobs to process usage events so that billing data is built asynchronously.
+		    acceptance_criteria:
+		      - Metering consumers process usage events.
+		      - Failures are retried.
+		      - Processing lag metrics are emitted.
+
+		  - id: STORY-015-04
+		    title: Audit event consumer jobs
+		    description: As a compliance engineer, I want audit event consumers to persist audit records so that events are captured independently of the request path.
+		    acceptance_criteria:
+		      - Audit events are consumed and stored.
+		      - Consumer failures are monitored.
+		      - Events remain immutable.
+
+		  - id: STORY-015-05
+		    title: Retention and reconciliation jobs
+		    description: As an operator, I want periodic jobs to enforce retention and reconcile event state so that data remains accurate and compliant.
+		    acceptance_criteria:
+		      - Retention jobs run regularly.
+		      - Reconciliation reports mismatches.
+		      - Recoveries are supported.
+
+	- id: EPIC-016
+		title: Security & Threat Protection
+		description: Secret detection, prompt redaction, tenant isolation enforcement (RLS, cache scoping), mTLS, network policies and supply-chain controls.
+		priority: 1
+		stories:
+		  - id: STORY-016-01
+		    title: Secret detection and redaction
+		    description: As a security engineer, I want prompt and payload secret detection so that sensitive data is not sent to providers unintentionally.
+		    acceptance_criteria:
+		      - Secret scanners identify sensitive content.
+		      - Redaction can be applied according to policy.
+		      - Findings are logged securely.
+
+		  - id: STORY-016-02
+		    title: Tenant isolation enforcement
+		    description: As an architect, I want tenant isolation enforced across data stores and caches so that no tenant can access another tenant’s data.
+		    acceptance_criteria:
+		      - Tenant IDs are propagated through every service.
+		      - Cache keys are tenant-scoped.
+		      - RLS or equivalent is implemented for shared tables.
+
+		  - id: STORY-016-03
+		    title: mTLS and service mutual authentication
+		    description: As an infrastructure engineer, I want mTLS between services so that service-to-service traffic is authenticated and encrypted.
+		    acceptance_criteria:
+		      - Services authenticate via mutual TLS.
+		      - Certificates are rotated securely.
+		      - Unauthorized services are denied.
+
+		  - id: STORY-016-04
+		    title: Network policy enforcement
+		    description: As a platform operator, I want network policies in Kubernetes so that service-to-service communication is restricted to approved paths.
+		    acceptance_criteria:
+		      - Network policies restrict traffic by namespace and pod labels.
+		      - Unauthorized flows are blocked.
+		      - Policies are tested.
+
+		  - id: STORY-016-05
+		    title: Supply-chain governance
+		    description: As a security lead, I want container image scanning and SBOM generation so that the platform supply chain is verifiable.
+		    acceptance_criteria:
+		      - Images are scanned for vulnerabilities.
+		      - SBOMs are generated and stored.
+		      - Pipeline fails on critical issues.
+
+	- id: EPIC-017
+		title: Deployment, CI/CD & Runbooks
+		description: Containerize services, Kubernetes manifests/Helm charts, CI pipelines, runbooks for provider outages, failover, and operational playbooks.
+		priority: 1
+		stories:
+		  - id: STORY-017-01
+		    title: Containerization and manifests
+		    description: As a devops engineer, I want services containerized with Kubernetes manifests or Helm so that they can be deployed consistently.
+		    acceptance_criteria:
+		      - Services are packaged as containers.
+		      - Kubernetes manifests/Helm charts are available.
+		      - Deployments can be applied to a cluster.
+
+		  - id: STORY-017-02
+		    title: CI/CD pipeline automation
+		    description: As a release engineer, I want CI/CD pipelines for build, test, and deployment so that changes are delivered reliably.
+		    acceptance_criteria:
+		      - Pipelines build and test services.
+		      - Successful builds produce deployable artifacts.
+		      - Deployments are automated to target environments.
+
+		  - id: STORY-017-03
+		    title: Runbooks for outages
+		    description: As an ops lead, I want runbooks for provider outage and failover scenarios so that incidents are managed consistently.
+		    acceptance_criteria:
+		      - Runbooks cover common outage scenarios.
+		      - Playbooks include recovery steps.
+		      - Runbooks are stored in an accessible location.
+
+		  - id: STORY-017-04
+		    title: Deployment validation checks
+		    description: As an operator, I want deployment validation checks so that configuration and manifest issues are detected before rollout.
+		    acceptance_criteria:
+		      - Validation checks run in the pipeline.
+		      - Failed checks block deployment.
+		      - Issues are reported clearly.
+
+		  - id: STORY-017-05
+		    title: Environment staging and promotion
+		    description: As a release manager, I want staged environments and promotion workflows so that deployments progress safely from dev to prod.
+		    acceptance_criteria:
+		      - Staging environment deployment is supported.
+		      - Promotions are reproducible.
+		      - Rollback procedures exist.
+
+	- id: EPIC-018
+		title: Testing, Observability & SLOs
+		description: End-to-end testing harness, contract tests for adapters, observability instrumentation (OpenTelemetry), and SLO definition and alerting.
+		priority: 1
+		stories:
+		  - id: STORY-018-01
+		    title: End-to-end request flow tests
+		    description: As a QA engineer, I want end-to-end tests covering AI request flows so that the platform behavior is validated under realistic conditions.
+		    acceptance_criteria:
+		      - E2E tests cover gateway, routing, adapter, and response behavior.
+		      - Tests can run in CI.
+		      - Failures are actionable.
+
+		  - id: STORY-018-02
+		    title: Adapter contract tests
+		    description: As a developer, I want contract tests for provider adapters so that adapter behavior remains stable across changes.
+		    acceptance_criteria:
+		      - Adapters expose contract test suites.
+		      - Contract tests verify request/response schemas.
+		      - Adapter changes are validated against contracts.
+
+		  - id: STORY-018-03
+		    title: OpenTelemetry instrumentation
+		    description: As an SRE, I want all services instrumented with OpenTelemetry so that traces, metrics, and logs can be correlated.
+		    acceptance_criteria:
+		      - Services emit traces with correlation IDs.
+		      - Metrics include request, latency, and error counts.
+		      - Logs include structured context.
+
+		  - id: STORY-018-04
+		    title: SLO definition and monitoring
+		    description: As an operations lead, I want SLOs defined and monitored so that service reliability targets are tracked.
+		    acceptance_criteria:
+		      - SLOs are defined for key services.
+		      - Monitoring can evaluate SLO compliance.
+		      - Alerts can be tied to SLO breaches.
+
+		  - id: STORY-018-05
+		    title: Regression and integration test automation
+		    description: As a QA lead, I want regression and integration tests automated so that platform changes don't break core functionality.
+		    acceptance_criteria:
+		      - Regression tests run in CI.
+		      - Integration tests validate cross-service interactions.
+		      - Test failures prevent unsafe merges.
+
+	- id: EPIC-019
+		title: Cost Optimization & Budgets
+		description: Implement budget-aware routing, model selection by cost, cost anomaly detection, and reporting/chargeback.
+		priority: 2
+		stories:
+		  - id: STORY-019-01
+		    title: Budget-aware route selection
+		    description: As a finance stakeholder, I want routing to consider budgets so that requests can choose lower-cost models when appropriate.
+		    acceptance_criteria:
+		      - Routing can prioritize budget-appropriate routes.
+		      - Budget constraints are enforced at decision time.
+		      - Budget-related decisions are recorded.
+
+		  - id: STORY-019-02
+		    title: Cost-aware model ranking
+		    description: As a cost analyst, I want model selection to factor pricing and quality so that cost/quality tradeoffs are visible.
+		    acceptance_criteria:
+		      - Models are ranked by estimated cost and capability.
+		      - Routing metadata includes cost estimates.
+		      - Cost-based decisions can be audited.
+
+		  - id: STORY-019-03
+		    title: Anomaly detection for spend
+		    description: As a finance operator, I want spend anomaly detection so that unusual usage patterns trigger investigation.
+		    acceptance_criteria:
+		      - Anomaly detection evaluates usage and cost spikes.
+		      - Alerts are emitted for anomalous spend.
+		      - Investigation metadata is available.
+
+		  - id: STORY-019-04
+		    title: Cost reporting and chargeback
+		    description: As a manager, I want cost reports and chargeback exports so that spend can be allocated to teams and projects.
+		    acceptance_criteria:
+		      - Cost reports summarize usage by tenant and project.
+		      - Chargeback exports are generated.
+		      - Reports support time-range filters.
+
+		  - id: STORY-019-05
+		    title: Budget alerts and notifications
+		    description: As a budget owner, I want alerts when spending nears or exceeds budget thresholds so that I can react quickly.
+		    acceptance_criteria:
+		      - Alerts are generated for budget thresholds.
+		      - Notifications can be sent to defined channels.
+		      - Alert conditions are configurable.
+
+	- id: EPIC-020
+		title: Documentation, ADRs, and Governance
+		description: Create developer docs, architecture docs, ADRs, policy templates, and onboarding guides for tenants and operators.
+		priority: 2
+		stories:
+		  - id: STORY-020-01
+		    title: Architecture documentation
+		    description: As a developer, I want architecture documentation so that I understand service boundaries and design rationale.
+		    acceptance_criteria:
+		      - Architecture docs cover system context, containers, and deployment.
+		      - Key design decisions are documented.
+		      - Docs are stored in an accessible repo location.
+
+		  - id: STORY-020-02
+		    title: ADR creation and maintenance
+		    description: As an engineering lead, I want ADRs for major decisions so that architectural tradeoffs are recorded.
+		    acceptance_criteria:
+		      - Major decisions have ADRs.
+		      - ADRs include context, decision, and consequences.
+		      - ADRs are indexed and discoverable.
+
+		  - id: STORY-020-03
+		    title: Policy template documentation
+		    description: As a policy author, I want policy templates and examples so that governance can be configured consistently.
+		    acceptance_criteria:
+		      - Policy templates are available.
+		      - Examples show common policy patterns.
+		      - Templates are versioned.
+
+		  - id: STORY-020-04
+		    title: Onboarding guides for operators
+		    description: As a new operator, I want onboarding guides so that I can understand deployment, runbooks, and operational practices.
+		    acceptance_criteria:
+		      - Onboarding guides cover setup and runbooks.
+		      - Guides include key operational contacts.
+		      - Guides are easy to navigate.
+
+		  - id: STORY-020-05
+		    title: Developer getting started guides
+		    description: As a developer, I want getting started guides so that I can use the platform and integrate with AI services quickly.
+		    acceptance_criteria:
+		      - Guides cover auth, request examples, and tooling.
+		      - Guides are tested with sample workflows.
+		      - Guides are accessible from the repo.
+

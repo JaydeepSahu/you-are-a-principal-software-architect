@@ -44,7 +44,7 @@ public sealed class RedisGatewayRateLimiter : IGatewayRateLimiter
         RedisResult result = await database.ScriptEvaluateAsync(
             IncrementScript,
             new RedisKey[] { BuildRedisKey(request, windowStart) },
-            new RedisValue[] { _options.WindowSeconds * 1000 });
+            new RedisValue[] { (_options.WindowSeconds * 1000).ToString(CultureInfo.InvariantCulture) });
 
         long count = (long)result;
         int remaining = (int)Math.Max(0, _options.PermitLimit - count);
@@ -83,6 +83,7 @@ public sealed class RedisGatewayRateLimiter : IGatewayRateLimiter
             .ToArray();
 
         string value = new(normalized);
-        return value.Trim('-').Length == 0 ? "default" : value.Trim('-');
+        string trimmed = value.Trim('-');
+        return trimmed.Length == 0 ? "default" : trimmed;
     }
 }

@@ -1,0 +1,184 @@
+{
+  "name": "enterprise-ai-platform",
+  "displayName": "Enterprise AI Platform",
+  "description": "Enterprise AI Platform control-plane client for secure IDE chat and inline code generation.",
+  "version": "0.1.0",
+  "publisher": "enterprise-ai-platform",
+  "license": "UNLICENSED",
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "Machine Learning",
+    "Programming Languages",
+    "Other"
+  ],
+  "keywords": [
+    "enterprise-ai",
+    "ai-gateway",
+    "governance",
+    "chat",
+    "inline-code"
+  ],
+  "main": "./extension.js",
+  "extensionKind": [
+    "workspace"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": false
+    },
+    "virtualWorkspaces": false
+  },
+  "activationEvents": [
+    "onView:enterpriseAiPlatform.chat",
+    "onCommand:enterpriseAiPlatform.login",
+    "onCommand:enterpriseAiPlatform.logout",
+    "onCommand:enterpriseAiPlatform.openChat",
+    "onCommand:enterpriseAiPlatform.generateInlineCode",
+    "onCommand:enterpriseAiPlatform.insertPromptResponse",
+    "onCommand:enterpriseAiPlatform.checkForUpdates"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "enterpriseAiPlatform.login",
+        "title": "Enterprise AI Platform: Login",
+        "category": "Enterprise AI Platform"
+      },
+      {
+        "command": "enterpriseAiPlatform.logout",
+        "title": "Enterprise AI Platform: Logout",
+        "category": "Enterprise AI Platform"
+      },
+      {
+        "command": "enterpriseAiPlatform.openChat",
+        "title": "Enterprise AI Platform: Open Chat",
+        "category": "Enterprise AI Platform"
+      },
+      {
+        "command": "enterpriseAiPlatform.generateInlineCode",
+        "title": "Enterprise AI Platform: Generate Inline Code",
+        "category": "Enterprise AI Platform",
+        "icon": "$(sparkle)"
+      },
+      {
+        "command": "enterpriseAiPlatform.insertPromptResponse",
+        "title": "Enterprise AI Platform: Insert Prompt Response",
+        "category": "Enterprise AI Platform",
+        "icon": "$(wand)"
+      },
+      {
+        "command": "enterpriseAiPlatform.checkForUpdates",
+        "title": "Enterprise AI Platform: Check for Extension Updates",
+        "category": "Enterprise AI Platform"
+      }
+    ],
+    "configuration": {
+      "title": "Enterprise AI Platform",
+      "properties": {
+        "enterpriseAiPlatform.identityBaseUrl": {
+          "type": "string",
+          "default": "https://localhost:7043",
+          "description": "Base URL for the Enterprise AI Platform Identity Service."
+        },
+        "enterpriseAiPlatform.gatewayBaseUrl": {
+          "type": "string",
+          "default": "https://localhost:7023",
+          "description": "Base URL for the Enterprise AI Platform AI Gateway."
+        },
+        "enterpriseAiPlatform.chatEndpoint": {
+          "type": "string",
+          "default": "/api/v1/ai/chat/completions",
+          "description": "Gateway path used by the chat window."
+        },
+        "enterpriseAiPlatform.inlineCodeEndpoint": {
+          "type": "string",
+          "default": "/api/v1/ai/code/generations",
+          "description": "Gateway path used by inline code generation."
+        },
+        "enterpriseAiPlatform.requestTimeoutMs": {
+          "type": "number",
+          "default": 120000,
+          "minimum": 5000,
+          "maximum": 600000,
+          "description": "Maximum gateway request duration in milliseconds."
+        },
+        "enterpriseAiPlatform.maxPromptCharacters": {
+          "type": "number",
+          "default": 24000,
+          "minimum": 1000,
+          "maximum": 200000,
+          "description": "Maximum prompt size sent from VS Code to the gateway."
+        },
+        "enterpriseAiPlatform.enableStreaming": {
+          "type": "boolean",
+          "default": true,
+          "description": "Request streaming responses from the AI Gateway."
+        },
+        "enterpriseAiPlatform.updateCheckOnStartup": {
+          "type": "boolean",
+          "default": false,
+          "description": "Ask VS Code to check for extension updates when this extension activates."
+        }
+      }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "enterpriseAiPlatform",
+          "title": "Enterprise AI",
+          "icon": "media/activity-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "enterpriseAiPlatform": [
+        {
+          "id": "enterpriseAiPlatform.chat",
+          "name": "Chat",
+          "type": "webview"
+        }
+      ]
+    },
+    "menus": {
+      "editor/context": [
+        {
+          "command": "enterpriseAiPlatform.generateInlineCode",
+          "group": "navigation@10",
+          "when": "editorTextFocus"
+        },
+        {
+          "command": "enterpriseAiPlatform.insertPromptResponse",
+          "group": "navigation@11",
+          "when": "editorTextFocus"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "enterpriseAiPlatform.login",
+          "when": "view == enterpriseAiPlatform.chat",
+          "group": "navigation@1"
+        },
+        {
+          "command": "enterpriseAiPlatform.logout",
+          "when": "view == enterpriseAiPlatform.chat",
+          "group": "navigation@2"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "enterpriseAiPlatform.generateInlineCode",
+        "key": "ctrl+alt+g",
+        "mac": "cmd+alt+g",
+        "when": "editorTextFocus"
+      }
+    ]
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "check": "node scripts/check-syntax.js"
+  },
+  "devDependencies": {}
+}
