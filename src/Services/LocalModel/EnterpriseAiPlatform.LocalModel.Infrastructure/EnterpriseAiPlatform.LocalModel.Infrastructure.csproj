@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\EnterpriseAiPlatform.LocalModel.Application\EnterpriseAiPlatform.LocalModel.Application.csproj" />
+    <ProjectReference Include="..\EnterpriseAiPlatform.LocalModel.Domain\EnterpriseAiPlatform.LocalModel.Domain.csproj" />
+    <ProjectReference Include="..\EnterpriseAiPlatform.LocalModel.Contracts\EnterpriseAiPlatform.LocalModel.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\EnterpriseAiPlatform.Infrastructure.Abstractions\EnterpriseAiPlatform.Infrastructure.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>EnterpriseAiPlatform.LocalModel.Infrastructure</RootNamespace>
+    <AssemblyName>EnterpriseAiPlatform.LocalModel.Infrastructure</AssemblyName>
+  </PropertyGroup>
+
+</Project>

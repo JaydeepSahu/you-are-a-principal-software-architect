@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\EnterpriseAiPlatform.LocalModel.Domain\EnterpriseAiPlatform.LocalModel.Domain.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>EnterpriseAiPlatform.LocalModel.Contracts</RootNamespace>
+    <AssemblyName>EnterpriseAiPlatform.LocalModel.Contracts</AssemblyName>
+  </PropertyGroup>
+
+</Project>

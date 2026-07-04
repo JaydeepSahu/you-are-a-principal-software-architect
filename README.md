@@ -26,6 +26,7 @@ src/
     ModelRegistry/
     Routing/
     ProviderAdapters/
+    LocalModel/
     Metering/
     Audit/
     Observability/
@@ -83,6 +84,7 @@ The solution includes projects for these service boundaries:
 - Provider and Model Registry Service
 - Routing and Optimization Service
 - Provider Adapter Host
+- Local Model Service
 - Metering and Cost Service
 - Audit and Compliance Service
 - Observability Control Service
@@ -301,6 +303,67 @@ Invoke-RestMethod -Method Post http://localhost:5188/api/v1/vector-search/docume
 Invoke-RestMethod -Method Post http://localhost:5188/api/v1/vector-search/search `
   -ContentType 'application/json' `
   -Body '{"query":"hybrid vector metadata filters","mode":"Hybrid","topK":5,"metadataFilters":{"team":"platform"},"rerank":true,"useCache":true}'
+```
+
+## Local Model Service
+
+The Local Model Service routes chat and streaming requests to local or OpenAI-compatible model backends.
+
+Supported backends:
+
+- vLLM
+- Ollama
+- OpenAI-compatible APIs
+
+Implemented capabilities:
+
+- Streaming
+- Model health
+- Load balancing
+- GPU selection
+- Model discovery
+- Configuration
+
+Current endpoints:
+
+- `GET /api/v1/local-model/providers`
+- `GET /api/v1/local-model/providers/{providerKey}`
+- `POST /api/v1/local-model/providers`
+- `PUT /api/v1/local-model/providers/{providerKey}`
+- `DELETE /api/v1/local-model/providers/{providerKey}`
+- `POST /api/v1/local-model/chat`
+- `POST /api/v1/local-model/stream`
+- `GET /api/v1/local-model/health`
+- `GET /api/v1/local-model/models`
+
+Configuration example:
+
+```json
+{
+  "LocalModel": {
+    "Providers": [
+      {
+        "ProviderKey": "ollama-main",
+        "Name": "Ollama Main",
+        "BackendKind": "Ollama",
+        "ModelName": "llama3.1",
+        "BaseUri": "http://localhost:11434",
+        "ChatPath": "/v1/chat/completions",
+        "StreamPath": "/v1/chat/completions",
+        "HealthPath": "/health",
+        "DiscoveryPath": "/v1/models",
+        "DefaultStrategy": "GpuAware",
+        "MaxConcurrency": 4
+      }
+    ]
+  }
+}
+```
+
+Local run:
+
+```powershell
+dotnet run --project .\src\Services\LocalModel\EnterpriseAiPlatform.LocalModel.Api\EnterpriseAiPlatform.LocalModel.Api.csproj
 ```
 
 ## Dependencies

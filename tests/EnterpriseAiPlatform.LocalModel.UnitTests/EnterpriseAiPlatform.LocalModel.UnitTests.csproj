@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>EnterpriseAiPlatform.LocalModel.UnitTests</RootNamespace>
+    <AssemblyName>EnterpriseAiPlatform.LocalModel.UnitTests</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Services\LocalModel\EnterpriseAiPlatform.LocalModel.Application\EnterpriseAiPlatform.LocalModel.Application.csproj" />
+    <ProjectReference Include="..\..\src\Services\LocalModel\EnterpriseAiPlatform.LocalModel.Domain\EnterpriseAiPlatform.LocalModel.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Services\LocalModel\EnterpriseAiPlatform.LocalModel.Infrastructure\EnterpriseAiPlatform.LocalModel.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Services\LocalModel\EnterpriseAiPlatform.LocalModel.Contracts\EnterpriseAiPlatform.LocalModel.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\EnterpriseAiPlatform.LocalModel.Domain\EnterpriseAiPlatform.LocalModel.Domain.csproj" />
+    <ProjectReference Include="..\EnterpriseAiPlatform.LocalModel.Contracts\EnterpriseAiPlatform.LocalModel.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\EnterpriseAiPlatform.SharedKernel\EnterpriseAiPlatform.SharedKernel.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>EnterpriseAiPlatform.LocalModel.Application</RootNamespace>
+    <AssemblyName>EnterpriseAiPlatform.LocalModel.Application</AssemblyName>
+  </PropertyGroup>
+
+</Project>
