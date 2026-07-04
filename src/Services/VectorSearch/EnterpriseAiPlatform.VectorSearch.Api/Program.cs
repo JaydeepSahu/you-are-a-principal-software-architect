@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddEnterpriseServiceDefaults();
+builder.Services.AddEnterpriseApiDocumentation();
 builder.Services.AddVectorSearchApplication();
 builder.Services.AddVectorSearchInfrastructure(builder.Configuration);
 
@@ -28,6 +29,7 @@ app.UseHttpsRedirection();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 app.MapVectorSearchEndpoints();
+app.UseEnterpriseApiDocumentation();
 app.MapEnterpriseHealthChecks();
 
 await app.RunAsync();

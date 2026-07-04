@@ -27,6 +27,10 @@
 
   <ItemGroup Condition="$([System.String]::Copy('$(MSBuildProjectName)').EndsWith('.Api')) Or '$(MSBuildProjectName)' == 'EnterpriseAiPlatform.ProviderAdapters.Host'">
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Asp.Versioning.Http" />
+    <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" />
+    <PackageReference Include="Scalar.AspNetCore" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(MSBuildProjectName)' == 'EnterpriseAiPlatform.AiGateway.Api'">

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddEnterpriseServiceDefaults();
+builder.Services.AddEnterpriseApiDocumentation();
 builder.Services.AddPromptIntelligenceApplication();
 builder.Services.AddPromptIntelligenceInfrastructure();
 
@@ -26,6 +27,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.MapPromptIntelligenceEndpoints();
+app.UseEnterpriseApiDocumentation();
 app.MapEnterpriseHealthChecks();
 
 await app.RunAsync();

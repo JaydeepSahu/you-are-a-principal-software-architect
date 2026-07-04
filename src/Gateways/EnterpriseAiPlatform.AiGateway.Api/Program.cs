@@ -13,6 +13,7 @@ using OpenTelemetry.Metrics;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddEnterpriseServiceDefaults();
+builder.Services.AddEnterpriseApiDocumentation();
 builder.Services.AddAiGatewayApplication();
 builder.Services.AddAiGatewayInfrastructure(builder.Configuration);
 builder.Services.AddAiGatewaySecurity(builder.Configuration);
@@ -58,6 +59,7 @@ app.UseAuthorization();
 app.UseMiddleware<GatewayRateLimitingMiddleware>();
 
 app.MapAiGatewayEndpoints();
+app.UseEnterpriseApiDocumentation();
 app.MapEnterpriseHealthChecks();
 
 await app.RunAsync();

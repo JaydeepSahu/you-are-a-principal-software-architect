@@ -1,0 +1,22 @@
+{
+  "client": "bruno",
+  "version": "1",
+  "name": "Enterprise AI Platform - Health",
+  "collection": [
+    {
+      "name": "Health",
+      "requests": [
+        {
+          "name": "Live",
+          "method": "GET",
+          "url": "{{baseUrl}}/health/live"
+        },
+        {
+          "name": "Ready",
+          "method": "GET",
+          "url": "{{baseUrl}}/health/ready"
+        }
+      ]
+    }
+  ]
+}

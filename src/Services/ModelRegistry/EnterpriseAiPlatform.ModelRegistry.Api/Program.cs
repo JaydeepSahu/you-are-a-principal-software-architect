@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddEnterpriseServiceDefaults();
+builder.Services.AddEnterpriseApiDocumentation();
 builder.Services.AddModelRegistryApplication();
 builder.Services.AddModelRegistryInfrastructure();
 
@@ -26,6 +27,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.MapModelRegistryEndpoints();
+app.UseEnterpriseApiDocumentation();
 app.MapEnterpriseHealthChecks();
 
 await app.RunAsync();

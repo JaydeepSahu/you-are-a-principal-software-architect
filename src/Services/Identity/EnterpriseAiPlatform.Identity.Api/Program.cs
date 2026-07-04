@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddEnterpriseServiceDefaults();
+builder.Services.AddEnterpriseApiDocumentation();
 builder.Services.AddIdentityApplication();
 builder.Services.AddIdentityInfrastructure(builder.Configuration);
 builder.Services.AddIdentityApiSecurity(builder.Configuration);
@@ -39,6 +40,7 @@ app.UseAuthorization();
 app.UseMiddleware<AuditRequestMiddleware>();
 
 app.MapIdentityEndpoints();
+app.UseEnterpriseApiDocumentation();
 app.MapEnterpriseHealthChecks();
 
 await app.RunAsync();
