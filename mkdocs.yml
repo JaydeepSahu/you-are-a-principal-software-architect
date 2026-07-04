@@ -1,0 +1,138 @@
+site_name: Enterprise AI Platform Docs
+site_description: Documentation portal for the Enterprise AI Platform repository.
+site_url: https://example.com
+repo_name: your-org/EnterpriseAiPlatform
+repo_url: https://github.com/your-org/EnterpriseAiPlatform
+edit_uri: edit/main/
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/white-balance-sunny
+        name: Switch to light mode
+  font:
+    text: Roboto
+    code: Roboto Mono
+  features:
+    - navigation.instant
+    - navigation.sections
+    - navigation.top
+    - toc.integrate
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/your-org/EnterpriseAiPlatform
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Overview: getting-started/index.md
+      - Developer Onboarding: dev/onboarding.md
+  - Documentation Portal: documentation-portal.md
+  - Architecture:
+      - Overview: architecture/index.md
+      - Architecture Overview: architecture/architecture-overview.md
+      - Folder Structure: architecture/folder-structure.md
+      - Documentation Style Guide: architecture/documentation-style-guide.md
+      - Markdown Standards: architecture/markdown-standards.md
+      - Mermaid Standards: architecture/mermaid-standards.md
+      - ADR Standards: architecture/adr-standards.md
+      - Naming Conventions: architecture/naming-conventions.md
+      - Folder Structure Standards: architecture/folder-structure-standards.md
+      - Coding Standards: architecture/coding-standards.md
+  - API:
+      - Overview: api/index.md
+      - API Overview: api/api-overview.md
+      - Authentication: api/authentication.md
+      - Versioning: api/versioning.md
+      - Error Handling: api/error-handling.md
+      - Response Standards: api/response-standards.md
+      - API Guidelines: api/api-guidelines.md
+  - AI:
+      - Overview: ai/index.md
+  - Deployment:
+      - Overview: deployment/index.md
+      - Deployment Guide: deployment/deployment-guide.md
+      - Local Development: deployment/local-development.md
+      - Docker: deployment/docker.md
+      - Docker Compose: deployment/docker-compose.md
+      - Environment Variables: deployment/environment-variables.md
+      - Production Deployment: deployment/production-deployment.md
+      - CI/CD Overview: deployment/ci-cd-overview.md
+      - Logging & Monitoring: deployment/logging-monitoring.md
+  - Security:
+      - Overview: security/index.md
+      - Security Guide: security/security-guide.md
+      - Authentication: security/authentication.md
+      - Authorization: security/authorization.md
+      - Secrets Management: security/secrets-management.md
+      - Secure Configuration: security/secure-configuration.md
+      - OWASP Guidelines: security/owasp-guidelines.md
+      - Audit Logging: security/audit-logging.md
+  - Observability:
+      - Overview: observability/index.md
+      - Observability Guide: observability/observability-guide.md
+      - Logging: observability/logging.md
+      - Tracing: observability/tracing.md
+      - Metrics: observability/metrics.md
+      - Correlation IDs: observability/correlation-ids.md
+      - Dashboards: observability/dashboards.md
+      - Health Checks: observability/health-checks.md
+  - Performance:
+      - Performance Guide: performance/performance-guide.md
+  - Testing:
+      - Overview: testing/index.md
+      - Testing Strategy: testing/testing-strategy.md
+      - Unit Testing: testing/unit-testing.md
+      - Integration Testing: testing/integration-testing.md
+      - API Testing: testing/api-testing.md
+      - Performance Testing: testing/performance-testing.md
+      - Security Testing: testing/security-testing.md
+  - Automation:
+      - Automated Docs Generation: automation/automated-docs-generation.md
+  - CI/CD:
+      - Quality Gates: cicd/quality-gates.md
+  - Operations:
+      - Overview: operations/index.md
+      - Operational Runbooks: operations/operational-runbooks.md
+  - Troubleshooting:
+      - Overview: troubleshooting/index.md
+  - ADRs:
+      - Overview: adr/index.md
+      - ADR Template: adr/adr-template.md
+      - ADR-0001 Clean Architecture: adr/adr-0001-clean-architecture.md
+      - ADR-0002 .NET 9: adr/adr-0002-net-9.md
+      - ADR-0003 PostgreSQL: adr/adr-0003-postgresql.md
+      - ADR-0004 Redis: adr/adr-0004-redis.md
+      - ADR-0005 Docker: adr/adr-0005-docker.md
+      - ADR-0005 Scalar API Documentation: adr/adr-0005-scalar-api-documentation.md
+  - Diagrams:
+      - Overview: diagrams/index.md
+      - High-Level Architecture: diagrams/high-level-architecture.md
+      - Request Flow: diagrams/request-flow.md
+      - Authentication Flow: diagrams/authentication-flow.md
+      - Clean Architecture Layers: diagrams/clean-architecture-layers.md
+  - Assets:
+      - Overview: assets/README.md
+
+markdown_extensions:
+  - admonition
+  - codehilite
+  - pymdownx.superfences
+  - toc:
+      permalink: true
+
+plugins:
+  - search
+  - mermaid2

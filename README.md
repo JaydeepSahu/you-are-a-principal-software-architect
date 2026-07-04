@@ -4,6 +4,7 @@ Enterprise AI Platform is a .NET 9 Clean Architecture workspace for building gov
 
 ## Documentation
 
+- [Documentation Portal](docs/README.md)
 - [Architecture Overview](docs/architecture/architecture-overview.md)
 - [Folder Structure](docs/architecture/folder-structure.md)
 - [API Guidelines](docs/api/api-guidelines.md)
@@ -12,6 +13,13 @@ Enterprise AI Platform is a .NET 9 Clean Architecture workspace for building gov
 - [Environment Variables Guide](docs/deployment/environment-variables.md)
 - [Logging & Monitoring Guide](docs/deployment/logging-monitoring.md)
 - [Security Guide](docs/security/security-guide.md)
+- [Operational Runbooks](docs/operations/operational-runbooks.md)
+- [Observability Guide](docs/observability/observability-guide.md)
+- [Performance Guide](docs/performance/performance-guide.md)
+- [Testing Strategy](docs/testing/testing-strategy.md)
+- [CI/CD Quality Gates](docs/cicd/quality-gates.md)
+- [Developer Onboarding](docs/dev/onboarding.md)
+- [Automated Documentation Generation](docs/automation/automated-docs-generation.md)
 
 ## ADRs
 
@@ -19,7 +27,7 @@ Enterprise AI Platform is a .NET 9 Clean Architecture workspace for building gov
 - [ADR-0002 .NET 9](docs/adr/adr-0002-net-9.md)
 - [ADR-0003 PostgreSQL](docs/adr/adr-0003-postgresql.md)
 - [ADR-0004 Redis](docs/adr/adr-0004-redis.md)
-- [ADR-0005 Scalar for API Documentation](docs/adr/adr-0005-scalar-api-documentation.md)
+- [ADR-0005 Docker](docs/adr/adr-0005-docker.md)
 
 ## API Documentation
 
