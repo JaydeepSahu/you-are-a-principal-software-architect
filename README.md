@@ -195,6 +195,39 @@ Local run:
 dotnet run --project .\src\Services\ModelRegistry\EnterpriseAiPlatform.ModelRegistry.Api\EnterpriseAiPlatform.ModelRegistry.Api.csproj
 ```
 
+## Routing Engine
+
+The Routing Engine classifies requests, estimates complexity, token usage, and cost, and selects the best model across rule-based, ML, policy, budget, department, and repository routing modes.
+
+Supported routing modes:
+
+- Rule-based routing
+- ML routing
+- Policy routing
+- Budget routing
+- Department routing
+- Repository routing
+
+Current endpoints:
+
+- `GET /api/v1/routing/modes`
+- `GET /api/v1/routing/configuration`
+- `PUT /api/v1/routing/configuration`
+- `DELETE /api/v1/routing/configuration`
+- `POST /api/v1/routing/evaluate`
+
+Local run:
+
+```powershell
+dotnet run --project .\src\Services\Routing\EnterpriseAiPlatform.Routing.Api\EnterpriseAiPlatform.Routing.Api.csproj
+```
+
+Routing benchmarks:
+
+```powershell
+dotnet run --project .\tests\EnterpriseAiPlatform.Routing.Benchmarks\EnterpriseAiPlatform.Routing.Benchmarks.csproj -- --filter *
+```
+
 ## Vector Search Service
 
 The Vector Search Service provides tenant-scoped vector retrieval for RAG and knowledge workflows.

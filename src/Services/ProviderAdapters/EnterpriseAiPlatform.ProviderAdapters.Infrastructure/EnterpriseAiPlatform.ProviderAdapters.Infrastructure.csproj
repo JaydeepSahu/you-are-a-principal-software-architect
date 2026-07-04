@@ -1,4 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\EnterpriseAiPlatform.ProviderAdapters.Application\EnterpriseAiPlatform.ProviderAdapters.Application.csproj" />
@@ -11,6 +15,8 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <RootNamespace>EnterpriseAiPlatform.ProviderAdapters.Infrastructure</RootNamespace>
+    <AssemblyName>EnterpriseAiPlatform.ProviderAdapters.Infrastructure</AssemblyName>
   </PropertyGroup>
 
 </Project>

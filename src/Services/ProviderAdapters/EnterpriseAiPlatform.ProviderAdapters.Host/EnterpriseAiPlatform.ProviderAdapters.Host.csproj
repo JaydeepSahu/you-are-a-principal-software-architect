@@ -2,8 +2,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\EnterpriseAiPlatform.ProviderAdapters.Application\EnterpriseAiPlatform.ProviderAdapters.Application.csproj" />
-    <ProjectReference Include="..\EnterpriseAiPlatform.ProviderAdapters.Infrastructure\EnterpriseAiPlatform.ProviderAdapters.Infrastructure.csproj" />
     <ProjectReference Include="..\EnterpriseAiPlatform.ProviderAdapters.Contracts\EnterpriseAiPlatform.ProviderAdapters.Contracts.csproj" />
+    <ProjectReference Include="..\EnterpriseAiPlatform.ProviderAdapters.Infrastructure\EnterpriseAiPlatform.ProviderAdapters.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\EnterpriseAiPlatform.ServiceDefaults\EnterpriseAiPlatform.ServiceDefaults.csproj" />
   </ItemGroup>
 
