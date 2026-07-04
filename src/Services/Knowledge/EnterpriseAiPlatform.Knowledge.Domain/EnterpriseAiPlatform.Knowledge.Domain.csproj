@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>EnterpriseAiPlatform.Knowledge.Domain</RootNamespace>
+    <AssemblyName>EnterpriseAiPlatform.Knowledge.Domain</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\BuildingBlocks\EnterpriseAiPlatform.SharedKernel\EnterpriseAiPlatform.SharedKernel.csproj" />
+  </ItemGroup>
+
+</Project>

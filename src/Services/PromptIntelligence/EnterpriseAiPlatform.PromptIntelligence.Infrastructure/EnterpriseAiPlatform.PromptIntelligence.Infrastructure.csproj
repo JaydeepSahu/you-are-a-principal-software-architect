@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>EnterpriseAiPlatform.PromptIntelligence.Infrastructure</RootNamespace>
+    <AssemblyName>EnterpriseAiPlatform.PromptIntelligence.Infrastructure</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EnterpriseAiPlatform.PromptIntelligence.Application\EnterpriseAiPlatform.PromptIntelligence.Application.csproj" />
+    <ProjectReference Include="..\EnterpriseAiPlatform.PromptIntelligence.Domain\EnterpriseAiPlatform.PromptIntelligence.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

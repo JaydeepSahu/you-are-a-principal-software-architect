@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <OutputType>Exe</OutputType>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>EnterpriseAiPlatform.Routing.Benchmarks</RootNamespace>
+    <AssemblyName>EnterpriseAiPlatform.Routing.Benchmarks</AssemblyName>
+    <ServerGarbageCollection>true</ServerGarbageCollection>
+    <ConcurrentGarbageCollection>true</ConcurrentGarbageCollection>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Services\Routing\EnterpriseAiPlatform.Routing.Application\EnterpriseAiPlatform.Routing.Application.csproj" />
+    <ProjectReference Include="..\..\src\Services\Routing\EnterpriseAiPlatform.Routing.Contracts\EnterpriseAiPlatform.Routing.Contracts.csproj" />
+    <ProjectReference Include="..\..\src\Services\Routing\EnterpriseAiPlatform.Routing.Domain\EnterpriseAiPlatform.Routing.Domain.csproj" />
+    <ProjectReference Include="..\..\src\BuildingBlocks\EnterpriseAiPlatform.Application.Abstractions\EnterpriseAiPlatform.Application.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\BuildingBlocks\EnterpriseAiPlatform.SharedKernel\EnterpriseAiPlatform.SharedKernel.csproj" />
@@ -8,6 +8,8 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <RootNamespace>EnterpriseAiPlatform.Routing.Domain</RootNamespace>
+    <AssemblyName>EnterpriseAiPlatform.Routing.Domain</AssemblyName>
   </PropertyGroup>
 
 </Project>

@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vector Search Console</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main class="shell">
+    <section class="masthead">
+      <div>
+        <p class="eyebrow">Enterprise AI Platform</p>
+        <h1>Vector Search Console</h1>
+      </div>
+      <div class="status-grid">
+        <div>
+          <span>Provider</span>
+          <strong id="provider">loading</strong>
+        </div>
+        <div>
+          <span>Indexed</span>
+          <strong id="indexed">0</strong>
+        </div>
+        <div>
+          <span>Cached</span>
+          <strong id="cached">0</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="workspace">
+      <form id="indexForm" class="panel">
+        <h2>Index Content</h2>
+        <label>
+          External ID
+          <input id="externalId" value="runbook-001">
+        </label>
+        <label>
+          Metadata
+          <input id="metadata" value="source=runbook;team=platform">
+        </label>
+        <label>
+          Content
+          <textarea id="content">Policy routing runbook for tenant-scoped vector search, pgvector, Qdrant, hybrid ranking, metadata filters, and cache-aware top-k retrieval.</textarea>
+        </label>
+        <button type="submit">Index Document</button>
+      </form>
+
+      <form id="searchForm" class="panel">
+        <h2>Search</h2>
+        <label>
+          Query
+          <input id="query" value="hybrid vector search metadata filters">
+        </label>
+        <div class="row">
+          <label>
+            Mode
+            <select id="mode">
+              <option>Hybrid</option>
+              <option>Semantic</option>
+            </select>
+          </label>
+          <label>
+            Top K
+            <input id="topK" type="number" min="1" max="100" value="5">
+          </label>
+        </div>
+        <label>
+          Filters
+          <input id="filters" value="team=platform">
+        </label>
+        <div class="toggles">
+          <label><input id="rerank" type="checkbox" checked> Re-rank</label>
+          <label><input id="useCache" type="checkbox" checked> Cache</label>
+        </div>
+        <button type="submit">Run Search</button>
+      </form>
+    </section>
+
+    <section class="results panel">
+      <h2>Results</h2>
+      <div id="summary" class="summary">No search yet.</div>
+      <div id="hits" class="hits"></div>
+    </section>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>

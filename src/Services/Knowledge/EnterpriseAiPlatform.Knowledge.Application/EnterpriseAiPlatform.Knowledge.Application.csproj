@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>EnterpriseAiPlatform.Knowledge.Application</RootNamespace>
+    <AssemblyName>EnterpriseAiPlatform.Knowledge.Application</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EnterpriseAiPlatform.Knowledge.Domain\EnterpriseAiPlatform.Knowledge.Domain.csproj" />
+    <ProjectReference Include="..\EnterpriseAiPlatform.Knowledge.Contracts\EnterpriseAiPlatform.Knowledge.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\EnterpriseAiPlatform.Application.Abstractions\EnterpriseAiPlatform.Application.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>

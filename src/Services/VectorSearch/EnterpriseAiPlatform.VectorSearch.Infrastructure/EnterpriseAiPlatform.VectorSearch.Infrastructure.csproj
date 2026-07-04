@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>EnterpriseAiPlatform.VectorSearch.Infrastructure</RootNamespace>
+    <AssemblyName>EnterpriseAiPlatform.VectorSearch.Infrastructure</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EnterpriseAiPlatform.VectorSearch.Application\EnterpriseAiPlatform.VectorSearch.Application.csproj" />
+    <ProjectReference Include="..\EnterpriseAiPlatform.VectorSearch.Domain\EnterpriseAiPlatform.VectorSearch.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

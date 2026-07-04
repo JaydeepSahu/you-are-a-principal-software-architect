@@ -1,0 +1,52 @@
+using EnterpriseAiPlatform.SharedKernel;
+using EnterpriseAiPlatform.VectorSearch.Application.Search;
+using EnterpriseAiPlatform.VectorSearch.Contracts.Requests;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
+
+namespace EnterpriseAiPlatform.VectorSearch.Api.Endpoints;
+
+public static class VectorSearchEndpoints
+{
+    public static IEndpointRouteBuilder MapVectorSearchEndpoints(this IEndpointRouteBuilder endpoints)
+    {
+        var group = endpoints.MapGroup("/api/v1/vector-search");
+
+        group.MapPost("/documents", UpsertAsync);
+        group.MapPost("/search", SearchAsync);
+        group.MapGet("/progress", ProgressAsync);
+
+        return endpoints;
+    }
+
+    private static async Task<IResult> UpsertAsync(
+        [FromBody] UpsertVectorDocumentsRequest request,
+        ISender sender,
+        CancellationToken cancellationToken)
+    {
+        var result = await sender.Send(new UpsertVectorDocumentsCommand(request), cancellationToken);
+        return result.IsSuccess ? Results.Accepted("/api/v1/vector-search/documents", result.Value) : ToProblem(result.Error);
+    }
+
+    private static async Task<IResult> SearchAsync(
+        [FromBody] SearchVectorsRequest request,
+        ISender sender,
+        CancellationToken cancellationToken)
+    {
+        var result = await sender.Send(new SearchVectorsQuery(request), cancellationToken);
+        return result.IsSuccess ? Results.Ok(result.Value) : ToProblem(result.Error);
+    }
+
+    private static async Task<IResult> ProgressAsync(
+        ISender sender,
+        CancellationToken cancellationToken)
+    {
+        var result = await sender.Send(new GetVectorSearchProgressQuery(), cancellationToken);
+        return result.IsSuccess ? Results.Ok(result.Value) : ToProblem(result.Error);
+    }
+
+    private static IResult ToProblem(ErrorDetail error)
+    {
+        return Results.Problem(error.Message, statusCode: StatusCodes.Status400BadRequest, title: error.Code);
+    }
+}

@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>EnterpriseAiPlatform.VectorSearch.UnitTests</RootNamespace>
+    <AssemblyName>EnterpriseAiPlatform.VectorSearch.UnitTests</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Services\VectorSearch\EnterpriseAiPlatform.VectorSearch.Application\EnterpriseAiPlatform.VectorSearch.Application.csproj" />
+    <ProjectReference Include="..\..\src\Services\VectorSearch\EnterpriseAiPlatform.VectorSearch.Contracts\EnterpriseAiPlatform.VectorSearch.Contracts.csproj" />
+    <ProjectReference Include="..\..\src\Services\VectorSearch\EnterpriseAiPlatform.VectorSearch.Domain\EnterpriseAiPlatform.VectorSearch.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Services\VectorSearch\EnterpriseAiPlatform.VectorSearch.Infrastructure\EnterpriseAiPlatform.VectorSearch.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\BuildingBlocks\EnterpriseAiPlatform.Application.Abstractions\EnterpriseAiPlatform.Application.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>

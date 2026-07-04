@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\BuildingBlocks\EnterpriseAiPlatform.Contracts\EnterpriseAiPlatform.Contracts.csproj" />
+    <ProjectReference Include="..\EnterpriseAiPlatform.Routing.Domain\EnterpriseAiPlatform.Routing.Domain.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

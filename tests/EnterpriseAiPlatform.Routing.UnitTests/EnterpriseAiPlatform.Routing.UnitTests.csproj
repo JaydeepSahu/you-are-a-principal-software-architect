@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>EnterpriseAiPlatform.Routing.UnitTests</RootNamespace>
+    <AssemblyName>EnterpriseAiPlatform.Routing.UnitTests</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Services\Routing\EnterpriseAiPlatform.Routing.Application\EnterpriseAiPlatform.Routing.Application.csproj" />
+    <ProjectReference Include="..\..\src\Services\Routing\EnterpriseAiPlatform.Routing.Contracts\EnterpriseAiPlatform.Routing.Contracts.csproj" />
+    <ProjectReference Include="..\..\src\Services\Routing\EnterpriseAiPlatform.Routing.Domain\EnterpriseAiPlatform.Routing.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Services\Routing\EnterpriseAiPlatform.Routing.Infrastructure\EnterpriseAiPlatform.Routing.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\BuildingBlocks\EnterpriseAiPlatform.Application.Abstractions\EnterpriseAiPlatform.Application.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>

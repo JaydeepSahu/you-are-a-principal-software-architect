@@ -1,8 +1,8 @@
 # Enterprise AI Platform
 
-This repository contains the .NET solution skeleton for the Enterprise AI Platform: an AI control plane for software development organizations. The platform is designed to sit between developer tools and AI providers to centralize governance, routing, cost controls, security, observability, and provider integration.
+This repository contains the .NET solution for the Enterprise AI Platform: an AI control plane for software development organizations. The platform sits between developer tools and AI providers to centralize governance, routing, cost controls, security, observability, knowledge retrieval, and prompt optimization.
 
-This milestone intentionally implements structure only. It does not implement business workflows, provider calls, policy evaluation, routing algorithms, persistence, or API feature endpoints.
+The current codebase includes production-shaped service slices for identity, prompt intelligence, knowledge ingestion/search, and the platform gateway and supporting services.
 
 ## Solution
 
@@ -29,6 +29,9 @@ src/
     Metering/
     Audit/
     Observability/
+    Knowledge/
+    PromptIntelligence/
+    VectorSearch/
     PortalBff/
   WorkerServices/
     EnterpriseAiPlatform.BackgroundWorkers.Host/
@@ -41,6 +44,12 @@ clients/
 tests/
   EnterpriseAiPlatform.Architecture.Tests/
   EnterpriseAiPlatform.SharedKernel.UnitTests/
+  EnterpriseAiPlatform.ModelRegistry.UnitTests/
+  EnterpriseAiPlatform.Knowledge.UnitTests/
+  EnterpriseAiPlatform.PromptIntelligence.UnitTests/
+  EnterpriseAiPlatform.PromptIntelligence.Benchmarks/
+  EnterpriseAiPlatform.VectorSearch.UnitTests/
+  EnterpriseAiPlatform.VectorSearch.Benchmarks/
 outputs/
   enterprise-ai-platform-architecture.md
 ```
@@ -77,6 +86,9 @@ The solution includes projects for these service boundaries:
 - Metering and Cost Service
 - Audit and Compliance Service
 - Observability Control Service
+- Knowledge Service
+- Prompt Intelligence Service
+- Vector Search Service
 - Portal BFF
 - Background Worker Host
 
@@ -91,6 +103,172 @@ The solution includes projects for these service boundaries:
 ## Developer Clients
 
 - `clients/vscode/enterprise-ai-platform`: VS Code extension that authenticates through the Identity Service, stores tokens in VS Code SecretStorage, sends prompts to the AI Gateway, renders streaming chat responses, and supports editor inline code generation.
+
+## Knowledge Service
+
+The Knowledge Service ingests tenant-scoped content and exposes search and retrieval APIs for RAG-style workflows.
+
+Implemented capabilities:
+
+- Document ingestion
+- GitHub ingestion
+- Confluence ingestion
+- SharePoint ingestion
+- Jira ingestion
+- Chunking
+- Embedding generation
+- Metadata extraction
+- Incremental indexing
+- Versioning
+- Search APIs
+
+Current endpoints:
+
+- `POST /api/v1/knowledge/ingestions`
+- `POST /api/v1/knowledge/search`
+- `GET /api/v1/knowledge/documents/{id}`
+- `GET /api/v1/knowledge/documents/{id}/versions`
+
+## Prompt Intelligence Service
+
+The Prompt Intelligence Service optimizes prompts before they reach downstream model providers.
+
+Implemented capabilities:
+
+- Prompt rewriting
+- Prompt compression
+- Conversation summarization
+- Context trimming
+- Duplicate removal
+- Token estimation
+- Prompt templates
+- Language detection
+
+Current endpoints:
+
+- `POST /api/v1/prompt-intelligence/optimize`
+- `POST /api/v1/prompt-intelligence/profiles`
+- `GET /api/v1/prompt-intelligence/profiles`
+- `GET /api/v1/prompt-intelligence/sessions`
+
+The service also includes benchmark coverage under `tests/EnterpriseAiPlatform.PromptIntelligence.Benchmarks`.
+
+## Model Registry Service
+
+The Model Registry Service tracks provider models and their operational metadata for routing, policy, and cost-aware selection.
+
+Supported providers:
+
+- OpenAI
+- GitHub Copilot
+- Azure OpenAI
+- Anthropic
+- Gemini
+- DeepSeek
+- Qwen
+- Llama
+
+Stored data:
+
+- Capabilities
+- Pricing
+- Latency
+- Context size
+- Availability
+- Health
+- Configuration
+
+Current endpoints:
+
+- `POST /api/v1/model-registry/models`
+- `GET /api/v1/model-registry/models`
+- `GET /api/v1/model-registry/models/{id}`
+- `PUT /api/v1/model-registry/models/{id}`
+- `DELETE /api/v1/model-registry/models/{id}`
+- `GET /api/v1/model-registry/providers`
+
+The service includes tenant-scoped CRUD behavior and unit coverage under `tests/EnterpriseAiPlatform.ModelRegistry.UnitTests`.
+
+Local run:
+
+```powershell
+dotnet run --project .\src\Services\ModelRegistry\EnterpriseAiPlatform.ModelRegistry.Api\EnterpriseAiPlatform.ModelRegistry.Api.csproj
+```
+
+## Vector Search Service
+
+The Vector Search Service provides tenant-scoped vector retrieval for RAG and knowledge workflows.
+
+Implemented capabilities:
+
+- pgvector provider support
+- Qdrant provider support
+- In-memory local provider
+- Hybrid search
+- Semantic search
+- Metadata filters
+- Top-K search
+- Re-ranking
+- Query-result caching
+- Benchmark coverage
+- Browser UI for indexing, searching, and viewing progress
+
+Current endpoints:
+
+- `POST /api/v1/vector-search/documents`
+- `POST /api/v1/vector-search/search`
+- `GET /api/v1/vector-search/progress`
+
+Local dashboard:
+
+```powershell
+dotnet run --project .\src\Services\VectorSearch\EnterpriseAiPlatform.VectorSearch.Api\EnterpriseAiPlatform.VectorSearch.Api.csproj
+```
+
+Open `http://localhost:5188` and use the dashboard to index content, run semantic or hybrid search, apply metadata filters, toggle re-ranking, and observe indexed/cached counts.
+
+Provider setup:
+
+```json
+{
+  "VectorSearch": {
+    "Provider": "InMemory"
+  }
+}
+```
+
+```json
+{
+  "VectorSearch": {
+    "Provider": "PgVector",
+    "PgVectorConnectionString": "Host=localhost;Port=5432;Database=enterprise_ai;Username=postgres;Password=postgres",
+    "PgVectorTable": "vector_search_documents"
+  }
+}
+```
+
+```json
+{
+  "VectorSearch": {
+    "Provider": "Qdrant",
+    "QdrantEndpoint": "http://localhost:6333",
+    "QdrantCollection": "enterprise_ai_platform",
+    "QdrantApiKey": ""
+  }
+}
+```
+
+API example:
+
+```powershell
+Invoke-RestMethod -Method Post http://localhost:5188/api/v1/vector-search/documents `
+  -ContentType 'application/json' `
+  -Body '{"documents":[{"externalId":"runbook-1","content":"Hybrid vector search with pgvector, Qdrant, metadata filters, reranking, cache, and top-k retrieval.","metadata":{"team":"platform","source":"runbook"}}]}'
+
+Invoke-RestMethod -Method Post http://localhost:5188/api/v1/vector-search/search `
+  -ContentType 'application/json' `
+  -Body '{"query":"hybrid vector metadata filters","mode":"Hybrid","topK":5,"metadataFilters":{"team":"platform"},"rerank":true,"useCache":true}'
+```
 
 ## Dependencies
 
@@ -129,6 +307,18 @@ dotnet build .\EnterpriseAiPlatform.sln --no-restore
 dotnet test .\EnterpriseAiPlatform.sln --no-build
 ```
 
+Prompt Intelligence benchmarks:
+
+```powershell
+dotnet run --project .\tests\EnterpriseAiPlatform.PromptIntelligence.Benchmarks\EnterpriseAiPlatform.PromptIntelligence.Benchmarks.csproj -- --filter *
+```
+
+Vector Search benchmarks:
+
+```powershell
+dotnet run --project .\tests\EnterpriseAiPlatform.VectorSearch.Benchmarks\EnterpriseAiPlatform.VectorSearch.Benchmarks.csproj -- --filter *
+```
+
 VS Code extension checks:
 
 ```powershell
@@ -145,6 +335,14 @@ Every runnable API/host project exposes infrastructure health endpoints only:
 - `/health/ready`
 
 Feature endpoints will be added only in future requested milestones.
+
+## Current Milestones
+
+- Identity Service: implemented
+- Prompt Intelligence Service: implemented
+- Knowledge Service: implemented
+- Vector Search Service: implemented
+- Remaining service slices continue to evolve in future milestones
 
 ## Identity Service
 
@@ -179,6 +377,27 @@ Required production configuration:
 
 Secrets such as signing keys and peppers must come from the deployment secret manager, not source-controlled settings files.
 
+## Prompt Intelligence Service
+
+- **Purpose:** Optimize, validate, and prepare prompts for downstream AI providers to improve quality, reduce cost, and enforce limits.
+- **Responsibilities:**
+  - Token counting, prompt trimming, template expansion, and prompt augmentation.
+  - Optimization rules engine and prompt-level heuristics (see `src/Services/PromptIntelligence`).
+  - Safety and policy pre-checks (policy enforcement remains the Policy service responsibility).
+  - Exposes focused endpoints such as `POST /api/v1/prompt-intelligence/optimize`, `POST /api/v1/prompt-intelligence/token-count`, and template management endpoints.
+  - Provides metrics, cost estimation, and optional caching for repeated prompt shapes.
+  - Does not persist prompt content by default; retention requires explicit tenant policy and encryption.
+
+## Knowledge Service
+
+- **Purpose:** Ingest, index, and serve tenant knowledge for retrieval-augmented generation (RAG) and semantic search.
+- **Responsibilities:**
+  - Connectors and ingestion pipelines for documents, databases, and external content sources.
+  - Document chunking, metadata tagging, embedding generation, vector index management, and re-ranking.
+  - Exposes ingestion and query endpoints such as `POST /api/v1/knowledge/ingest` and `POST /api/v1/knowledge/query`.
+  - Tenant isolation, encryption at rest, and retention rules are required for all stored knowledge artifacts.
+  - Integrates with vector stores and embedding providers via `ProviderAdapters`.
+
 ## VS Code Extension
 
 The Enterprise AI Platform VS Code extension implements the developer-facing client milestone:
@@ -200,3 +419,37 @@ Required extension configuration:
 - `enterpriseAiPlatform.inlineCodeEndpoint`
 
 The extension sends prompts only to the AI Gateway. It does not call AI providers directly.
+
+## Quick Start
+
+- **Clone:** git clone https://github.com/your-org/EnterpriseAiPlatform.git
+- **Restore & build:**
+
+```powershell
+dotnet restore .\EnterpriseAiPlatform.sln
+dotnet build .\EnterpriseAiPlatform.sln --no-restore
+```
+
+- **Run unit tests:**
+
+```powershell
+dotnet test .\EnterpriseAiPlatform.sln --no-build
+```
+
+- **VS Code extension checks:**
+
+```powershell
+cd .\clients\vscode\enterprise-ai-platform
+npm.cmd run check
+npm.cmd test
+```
+
+## Contributing
+
+- Follow the architecture and coding rules in `copilot-instructions.md` and `CLAUDE.md`.
+- Run the focused verification commands before opening a pull request.
+- Keep changes small and preserve dependency direction and bounded-context boundaries.
+
+## License
+
+This repository is licensed under the terms in [LICENSE.txt](LICENSE.txt).

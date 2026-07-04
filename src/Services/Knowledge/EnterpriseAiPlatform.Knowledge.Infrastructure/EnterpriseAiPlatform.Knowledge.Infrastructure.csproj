@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>EnterpriseAiPlatform.Knowledge.Infrastructure</RootNamespace>
+    <AssemblyName>EnterpriseAiPlatform.Knowledge.Infrastructure</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EnterpriseAiPlatform.Knowledge.Application\EnterpriseAiPlatform.Knowledge.Application.csproj" />
+    <ProjectReference Include="..\EnterpriseAiPlatform.Knowledge.Domain\EnterpriseAiPlatform.Knowledge.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

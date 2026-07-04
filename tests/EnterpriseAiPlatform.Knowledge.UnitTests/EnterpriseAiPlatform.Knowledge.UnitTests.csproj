@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>EnterpriseAiPlatform.Knowledge.UnitTests</RootNamespace>
+    <AssemblyName>EnterpriseAiPlatform.Knowledge.UnitTests</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Services\Knowledge\EnterpriseAiPlatform.Knowledge.Application\EnterpriseAiPlatform.Knowledge.Application.csproj" />
+    <ProjectReference Include="..\..\src\Services\Knowledge\EnterpriseAiPlatform.Knowledge.Contracts\EnterpriseAiPlatform.Knowledge.Contracts.csproj" />
+    <ProjectReference Include="..\..\src\Services\Knowledge\EnterpriseAiPlatform.Knowledge.Domain\EnterpriseAiPlatform.Knowledge.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Services\Knowledge\EnterpriseAiPlatform.Knowledge.Infrastructure\EnterpriseAiPlatform.Knowledge.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\BuildingBlocks\EnterpriseAiPlatform.Application.Abstractions\EnterpriseAiPlatform.Application.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>
