@@ -60,7 +60,7 @@ Then open `http://127.0.0.1:8000`.
 
 ## Useful Links
 
-- [Repository README](https://github.com/your-org/EnterpriseAiPlatform/blob/main/README.md)
+- [Repository README](https://github.com/JaydeepSahu/EnterpriseAiPlatform/blob/main/README.md)
 - [Documentation Portal](documentation-portal.md)
 - [Architecture overview](architecture/architecture-overview.md)
 - [API guidelines](api/api-guidelines.md)

@@ -1,8 +1,8 @@
 site_name: Enterprise AI Platform Docs
 site_description: Documentation portal for the Enterprise AI Platform repository.
 site_url: https://example.com
-repo_name: your-org/EnterpriseAiPlatform
-repo_url: https://github.com/your-org/EnterpriseAiPlatform
+repo_name: JaydeepSahu/EnterpriseAiPlatform
+repo_url: https://github.com/JaydeepSahu/EnterpriseAiPlatform
 edit_uri: edit/main/
 
 theme:
@@ -32,7 +32,7 @@ theme:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/your-org/EnterpriseAiPlatform
+      link: https://github.com/JaydeepSahu/EnterpriseAiPlatform
 
 nav:
   - Home: index.md
