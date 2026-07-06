@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>EnterpriseAiPlatform.Evaluation.Infrastructure</RootNamespace>
+    <AssemblyName>EnterpriseAiPlatform.Evaluation.Infrastructure</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EnterpriseAiPlatform.Evaluation.Application\EnterpriseAiPlatform.Evaluation.Application.csproj" />
+    <ProjectReference Include="..\EnterpriseAiPlatform.Evaluation.Domain\EnterpriseAiPlatform.Evaluation.Domain.csproj" />
+  </ItemGroup>
+
+</Project>
