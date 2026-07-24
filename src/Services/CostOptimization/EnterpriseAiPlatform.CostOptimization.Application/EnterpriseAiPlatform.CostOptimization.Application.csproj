@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>EnterpriseAiPlatform.CostOptimization.Application</RootNamespace>
+    <Description>Application layer for the Cost Optimization service</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\BuildingBlocks\EnterpriseAiPlatform.Application.Abstractions\EnterpriseAiPlatform.Application.Abstractions.csproj" />
+    <ProjectReference Include="..\EnterpriseAiPlatform.CostOptimization.Contracts\EnterpriseAiPlatform.CostOptimization.Contracts.csproj" />
+    <ProjectReference Include="..\EnterpriseAiPlatform.CostOptimization.Domain\EnterpriseAiPlatform.CostOptimization.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

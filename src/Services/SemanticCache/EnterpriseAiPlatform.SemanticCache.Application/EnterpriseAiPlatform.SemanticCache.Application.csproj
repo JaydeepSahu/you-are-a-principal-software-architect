@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>EnterpriseAiPlatform.SemanticCache.Application</RootNamespace>
+    <AssemblyName>EnterpriseAiPlatform.SemanticCache.Application</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\EnterpriseAiPlatform.SemanticCache.Contracts\EnterpriseAiPlatform.SemanticCache.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\EnterpriseAiPlatform.Application.Abstractions\EnterpriseAiPlatform.Application.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\EnterpriseAiPlatform.SharedKernel\EnterpriseAiPlatform.SharedKernel.csproj" />
+  </ItemGroup>
+</Project>

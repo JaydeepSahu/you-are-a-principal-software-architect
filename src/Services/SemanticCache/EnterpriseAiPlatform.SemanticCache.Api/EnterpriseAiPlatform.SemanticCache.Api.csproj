@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>EnterpriseAiPlatform.SemanticCache.Api</RootNamespace>
+    <AssemblyName>EnterpriseAiPlatform.SemanticCache.Api</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\EnterpriseAiPlatform.SemanticCache.Infrastructure\EnterpriseAiPlatform.SemanticCache.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

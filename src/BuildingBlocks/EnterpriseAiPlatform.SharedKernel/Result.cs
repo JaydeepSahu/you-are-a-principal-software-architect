@@ -72,4 +72,6 @@ public sealed class Result<TValue> : Result
             return _value!;
         }
     }
+
+    public static implicit operator Result<TValue>(TValue value) => new(value);
 }

@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>EnterpriseAiPlatform.CostOptimization.UnitTests</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Moq" />
+    <PackageReference Include="FluentAssertions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Services\CostOptimization\EnterpriseAiPlatform.CostOptimization.Domain\EnterpriseAiPlatform.CostOptimization.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Services\CostOptimization\EnterpriseAiPlatform.CostOptimization.Application\EnterpriseAiPlatform.CostOptimization.Application.csproj" />
+    <ProjectReference Include="..\..\src\Services\CostOptimization\EnterpriseAiPlatform.CostOptimization.Infrastructure\EnterpriseAiPlatform.CostOptimization.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

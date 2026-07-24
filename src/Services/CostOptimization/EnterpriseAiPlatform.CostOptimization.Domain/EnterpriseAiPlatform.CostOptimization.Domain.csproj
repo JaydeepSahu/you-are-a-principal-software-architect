@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>EnterpriseAiPlatform.CostOptimization.Domain</RootNamespace>
+    <Description>Domain layer for the Cost Optimization service</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\BuildingBlocks\EnterpriseAiPlatform.SharedKernel\EnterpriseAiPlatform.SharedKernel.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <RootNamespace>EnterpriseAiPlatform.CostOptimization.Api</RootNamespace>
+    <Description>API for the Cost Optimization service</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\BuildingBlocks\EnterpriseAiPlatform.ServiceDefaults\EnterpriseAiPlatform.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\EnterpriseAiPlatform.CostOptimization.Application\EnterpriseAiPlatform.CostOptimization.Application.csproj" />
+    <ProjectReference Include="..\EnterpriseAiPlatform.CostOptimization.Infrastructure\EnterpriseAiPlatform.CostOptimization.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

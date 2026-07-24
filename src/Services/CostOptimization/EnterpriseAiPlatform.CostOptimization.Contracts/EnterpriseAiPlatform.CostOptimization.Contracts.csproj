@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>EnterpriseAiPlatform.CostOptimization.Contracts</RootNamespace>
+    <Description>Contracts for the Cost Optimization service</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\BuildingBlocks\EnterpriseAiPlatform.Contracts\EnterpriseAiPlatform.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>
