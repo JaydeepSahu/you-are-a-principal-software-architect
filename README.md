@@ -19,8 +19,10 @@ Enterprise AI Platform is a .NET 9 Clean Architecture workspace for building gov
 - [Testing Strategy](docs/testing/testing-strategy.md)
 - [CI/CD Quality Gates](docs/cicd/quality-gates.md)
 - [Developer Onboarding](docs/dev/onboarding.md)
+- [Local PC Setup & User Guide](docs/dev/local-setup-and-user-guide.md)
 - [Comprehensive How-To Guide](docs/dev/how-to-guide.md)
 - [Automated Documentation Generation](docs/automation/automated-docs-generation.md)
+
 
 
 ## ADRs

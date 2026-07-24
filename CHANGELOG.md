@@ -19,7 +19,15 @@
 - Added Resilience & Circuit Breaker Engine (`ProviderCircuitBreakerManager`) in `EnterpriseAiPlatform.AiGateway` featuring thread-safe circuit state machine tracking (`Closed`, `Open`, `HalfOpen`), automatic fallback provider failover routing (e.g. Azure OpenAI $\rightarrow$ Anthropic $\rightarrow$ Gemini $\rightarrow$ Self-Hosted vLLM), sliding window failure rates, and live status inspection endpoints (`/api/v1/gateway/circuitbreakers`).
 - Added Developer CLI Tooling (`ai-cli`) in `src/Tools/EnterpriseAiPlatform.Cli/` supporting terminal-first prompt execution (`ai prompt`), autonomous agent workflow launching (`ai agent run`), hybrid RAG search (`ai rag search`), gateway status & quota checks (`ai status`), and model catalog inspection (`ai models`).
 - Added Financial Predictability & Cost Allocation Engine (`CostAllocationEngine`) in `EnterpriseAiPlatform.CostOptimization` providing departmental cost chargeback reports (`/api/v1/cost/chargeback`), run-rate spend projections (`/api/v1/cost/forecast`), and token budget quota alerts (`/api/v1/cost/budgets`).
-- Added comprehensive unit test suites covering Agent Framework, Observability, Advanced Infrastructure, Portal BFF, Policy DLP, AI Gateway Resilience, Developer CLI, and FinOps.
+- Implemented Centralized Dynamic Configuration & Options Validation (`ResilienceOptions`, `DlpOptions`, `RagOptions`, `FinOpsOptions`, `AgentFrameworkOptions`) with DataAnnotations validation, eliminating hardcoded code constants and enabling zero-deployment configuration updates via `appsettings.json` and environment variables.
+- Added Semantic Vector Response Cache (`SemanticCacheEngine`) in `src/BuildingBlocks/EnterpriseAiPlatform.Caching` featuring Cosine Similarity matching ($\ge 0.95$ threshold) on prompt embeddings to serve semantically equivalent developer requests in $< 5\text{ms}$ with $0 provider token cost.
+- Added LLM Red Teaming & Jailbreak Security Tester (`RedTeamEvaluator`) in `src/BuildingBlocks/EnterpriseAiPlatform.Security` for automated security probing across direct prompt injections, system prompt leaks, roleplay jailbreaks (DAN), and base64 exfiltration vectors, with REST endpoints (`/api/v1/security/redteam/evaluate`).
+- Added Disaster Recovery & Multi-Region Failover Runbook (`docs/operations/disaster-recovery-runbook.md`) and automated PowerShell scripts (`failover-primary-to-secondary.ps1`, `health-check-regions.ps1`) targeting RTO $< 5$ minutes and RPO $< 1$ minute.
+- Added comprehensive unit test suites covering Agent Framework, Observability, Advanced Infrastructure, Portal BFF, Policy DLP, AI Gateway Resilience, Developer CLI, FinOps, Options Configuration, Semantic Caching, and Security Red Teaming.
+
+
+
+
 
 
 

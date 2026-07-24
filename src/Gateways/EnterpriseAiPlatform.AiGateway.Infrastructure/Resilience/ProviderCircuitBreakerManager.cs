@@ -1,7 +1,9 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using EnterpriseAiPlatform.AiGateway.Application.Abstractions;
+using EnterpriseAiPlatform.Application.Abstractions.Configuration;
 using EnterpriseAiPlatform.SharedKernel;
+using Microsoft.Extensions.Options;
 
 namespace EnterpriseAiPlatform.AiGateway.Infrastructure.Resilience;
 
@@ -25,18 +27,16 @@ public sealed class ProviderCircuitBreakerManager : ICircuitBreakerManager
     }
 
     private readonly ConcurrentDictionary<string, CircuitTracker> _trackers = new(StringComparer.OrdinalIgnoreCase);
-    private readonly TimeSpan _openRecoveryTimeout = TimeSpan.FromSeconds(15);
-    private const int MinimumThresholdCount = 4;
-    private const double FailureRateTripThreshold = 50.0; // 50% failure rate
+    private readonly ResilienceOptions _options;
 
-    public ProviderCircuitBreakerManager()
+    public ProviderCircuitBreakerManager(IOptions<ResilienceOptions> options)
     {
-        // Initialize default provider mappings with automatic fallback routing targets
-        _trackers["AzureOpenAi"] = new CircuitTracker("AzureOpenAi", "Anthropic");
-        _trackers["Anthropic"] = new CircuitTracker("Anthropic", "GoogleGemini");
-        _trackers["GoogleGemini"] = new CircuitTracker("GoogleGemini", "SelfHostedVllm");
-        _trackers["SelfHostedVllm"] = new CircuitTracker("SelfHostedVllm", "CopilotProxy");
-        _trackers["CopilotProxy"] = new CircuitTracker("CopilotProxy", "AzureOpenAi");
+        _options = options?.Value ?? new ResilienceOptions();
+
+        foreach (var (primary, fallback) in _options.ProviderFallbackChain)
+        {
+            _trackers[primary] = new CircuitTracker(primary, fallback);
+        }
     }
 
     public ProviderCircuitStatus GetProviderStatus(string providerName)
@@ -75,7 +75,6 @@ public sealed class ProviderCircuitBreakerManager : ICircuitBreakerManager
                 Interlocked.Increment(ref tracker.SuccessCount);
                 if (tracker.State == CircuitState.HalfOpen)
                 {
-                    // Reset to Closed on successful probe
                     tracker.State = CircuitState.Closed;
                     tracker.LastStateChangeUtc = DateTimeOffset.UtcNow;
                     Interlocked.Exchange(ref tracker.FailureCount, 0);
@@ -88,10 +87,10 @@ public sealed class ProviderCircuitBreakerManager : ICircuitBreakerManager
                 if (tracker.State == CircuitState.Closed)
                 {
                     long total = tracker.SuccessCount + tracker.FailureCount;
-                    if (total >= MinimumThresholdCount)
+                    if (total >= _options.MinimumThresholdCount)
                     {
                         double rate = (double)tracker.FailureCount / total * 100.0;
-                        if (rate >= FailureRateTripThreshold || isRateLimit)
+                        if (rate >= _options.FailureRateTripThresholdPercentage || isRateLimit)
                         {
                             tracker.State = CircuitState.Open;
                             tracker.LastStateChangeUtc = DateTimeOffset.UtcNow;
@@ -139,7 +138,6 @@ public sealed class ProviderCircuitBreakerManager : ICircuitBreakerManager
 
         RecordOutcome(targetProvider, isSuccess: false, isRateLimit: result.Error.Code.Contains("RateLimit"));
 
-        // If primary failed and fallback wasn't tried yet, attempt automatic immediate fallback
         if (!wasFallback)
         {
             string fallbackTarget = request.ExplicitFallbackProvider ?? preferredTracker.FallbackProvider;
@@ -173,7 +171,7 @@ public sealed class ProviderCircuitBreakerManager : ICircuitBreakerManager
     {
         lock (tracker.LockObj)
         {
-            if (tracker.State == CircuitState.Open && (DateTimeOffset.UtcNow - tracker.LastStateChangeUtc) > _openRecoveryTimeout)
+            if (tracker.State == CircuitState.Open && (DateTimeOffset.UtcNow - tracker.LastStateChangeUtc) > TimeSpan.FromSeconds(_options.OpenRecoveryTimeoutSeconds))
             {
                 tracker.State = CircuitState.HalfOpen;
                 tracker.LastStateChangeUtc = DateTimeOffset.UtcNow;

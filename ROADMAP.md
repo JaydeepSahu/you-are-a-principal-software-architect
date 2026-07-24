@@ -15,6 +15,14 @@
 - Resilience & Circuit Breaker Engine in `EnterpriseAiPlatform.AiGateway`
 - Developer CLI Tooling (`ai-cli` in `src/Tools/EnterpriseAiPlatform.Cli/`)
 - Financial Predictability & Cost Allocation Engine (`EnterpriseAiPlatform.CostOptimization`)
+- Centralized Dynamic Configuration & Options Validation (`src/BuildingBlocks/EnterpriseAiPlatform.Application.Abstractions/Configuration/`)
+- Semantic Vector Response Cache (`src/BuildingBlocks/EnterpriseAiPlatform.Caching/`)
+- LLM Red Teaming & Jailbreak Security Tester (`src/BuildingBlocks/EnterpriseAiPlatform.Security/`)
+- Disaster Recovery & Multi-Region Failover Runbook (`docs/operations/disaster-recovery-runbook.md`)
+
+
+
+
 
 
 
