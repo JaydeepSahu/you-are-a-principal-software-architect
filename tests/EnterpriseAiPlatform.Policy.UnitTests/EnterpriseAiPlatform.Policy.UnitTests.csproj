@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Services\CostOptimization\EnterpriseAiPlatform.CostOptimization.Infrastructure\EnterpriseAiPlatform.CostOptimization.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Services\Policy\EnterpriseAiPlatform.Policy.Infrastructure\EnterpriseAiPlatform.Policy.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

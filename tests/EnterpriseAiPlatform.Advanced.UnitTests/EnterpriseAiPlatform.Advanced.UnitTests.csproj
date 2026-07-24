@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Services\Knowledge\EnterpriseAiPlatform.Knowledge.Infrastructure\EnterpriseAiPlatform.Knowledge.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Services\Agents\EnterpriseAiPlatform.Agents.Infrastructure\EnterpriseAiPlatform.Agents.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Services\ModelRegistry\EnterpriseAiPlatform.ModelRegistry.Infrastructure\EnterpriseAiPlatform.ModelRegistry.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Services\Evaluation\EnterpriseAiPlatform.Evaluation.Infrastructure\EnterpriseAiPlatform.Evaluation.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Services\LocalModel\EnterpriseAiPlatform.LocalModel.Infrastructure\EnterpriseAiPlatform.LocalModel.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="coverlet.collector" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+</Project>

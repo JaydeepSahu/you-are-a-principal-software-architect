@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Enterprise AI Platform Admin Control Plane & Interactive Multi-Model Playground">
+    <title>Enterprise AI Platform - Governance & Playground Portal</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="app-header" id="main-header">
+        <div class="logo-container" id="logo-container">
+            <span class="logo-icon">⚡</span>
+            <div class="logo-text">
+                <span class="logo-title">Enterprise AI Platform</span>
+                <span class="logo-subtitle">AI Control Plane & Developer Governance Portal</span>
+            </div>
+        </div>
+        <nav class="nav-tabs" id="nav-tabs">
+            <button class="tab-btn active" id="tab-btn-playground" data-tab="playground">Prompt Playground</button>
+            <button class="tab-btn" id="tab-btn-analytics" data-tab="analytics">Analytics & Metrics</button>
+            <button class="tab-btn" id="tab-btn-marketplace" data-tab="marketplace">Model & Agent Catalog</button>
+            <button class="tab-btn" id="tab-btn-gpu" data-tab="gpu">GPU Cluster Status</button>
+            <button class="tab-btn" id="tab-btn-quotas" data-tab="quotas">Token Budgets</button>
+        </nav>
+    </header>
+
+    <main class="app-main" id="app-main">
+        <!-- TAB 1: PROMPT PLAYGROUND -->
+        <section class="tab-content active" id="tab-playground">
+            <div class="playground-layout">
+                <div class="playground-sidebar card">
+                    <h2 class="section-title">Model Selector</h2>
+                    <p class="section-desc">Select models to run prompt execution in parallel:</p>
+                    <div class="model-checkboxes" id="model-checkboxes">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="model-azure-gpt-4o" value="azure-gpt-4o" checked>
+                            <span class="badge badge-azure">Azure OpenAI GPT-4o</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="model-anthropic-claude" value="anthropic-claude-3-5" checked>
+                            <span class="badge badge-anthropic">Claude 3.5 Sonnet</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="model-gemini" value="gemini-1-5-pro" checked>
+                            <span class="badge badge-gemini">Gemini 1.5 Pro</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="model-vllm-deepseek" value="vllm-deepseek-coder" checked>
+                            <span class="badge badge-vllm">Self-Hosted DeepSeek (GPU)</span>
+                        </label>
+                    </div>
+
+                    <div class="param-controls">
+                        <label for="temp-slider">Temperature: <span id="temp-value">0.7</span></label>
+                        <input type="range" id="temp-slider" min="0" max="1" step="0.1" value="0.7">
+                    </div>
+
+                    <button class="btn btn-primary" id="run-compare-btn">Run Comparison</button>
+                </div>
+
+                <div class="playground-editor card">
+                    <h2 class="section-title">Prompt Canvas</h2>
+                    <textarea id="prompt-input" class="prompt-textarea" placeholder="Enter developer prompt to evaluate across models side-by-side..."></textarea>
+
+                    <h2 class="section-title margin-top">Side-by-Side Execution Results</h2>
+                    <div class="results-grid" id="compare-results-grid">
+                        <div class="empty-state" id="empty-state-message">Select target models and click <strong>Run Comparison</strong> to inspect side-by-side quality, latency, and token cost metrics.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: ANALYTICS & METRICS -->
+        <section class="tab-content" id="tab-analytics">
+            <h1 class="page-header-title">Real-Time Control Plane Analytics</h1>
+            <div class="metrics-summary-grid" id="metrics-summary-grid">
+                <div class="metric-card card">
+                    <span class="metric-label">Total Requests (24h)</span>
+                    <span class="metric-value" id="metric-total-requests">1,450,230</span>
+                </div>
+                <div class="metric-card card">
+                    <span class="metric-label">Tokens Consumed</span>
+                    <span class="metric-value" id="metric-total-tokens">892,104,500</span>
+                </div>
+                <div class="metric-card card">
+                    <span class="metric-label">Cost Saved (Local Model Routing)</span>
+                    <span class="metric-value text-success" id="metric-cost-saved">$42,500.00</span>
+                </div>
+                <div class="metric-card card">
+                    <span class="metric-label">p95 Latency</span>
+                    <span class="metric-value" id="metric-p95-latency">185 ms</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: MODEL & AGENT MARKETPLACE -->
+        <section class="tab-content" id="tab-marketplace">
+            <h1 class="page-header-title">Internal Model & Agent Marketplace</h1>
+            <div class="marketplace-grid" id="marketplace-grid">
+                <div class="empty-state">Loading marketplace catalog...</div>
+            </div>
+        </section>
+
+        <!-- TAB 4: GPU CLUSTER STATUS -->
+        <section class="tab-content" id="tab-gpu">
+            <h1 class="page-header-title">GPU Cluster Node Health & VRAM Monitor</h1>
+            <div class="gpu-grid" id="gpu-grid">
+                <div class="empty-state">Loading GPU cluster metrics...</div>
+            </div>
+        </section>
+
+        <!-- TAB 5: TOKEN BUDGETS -->
+        <section class="tab-content" id="tab-quotas">
+            <h1 class="page-header-title">Departmental Token Budgets & Quotas</h1>
+            <div class="card quota-container" id="quota-container">
+                <div class="empty-state">Loading quota summary...</div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="app-footer" id="main-footer">
+        <span>Enterprise AI Platform Control Plane v1.0.0</span>
+        <span>Status: <strong class="text-success">Healthy</strong></span>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>

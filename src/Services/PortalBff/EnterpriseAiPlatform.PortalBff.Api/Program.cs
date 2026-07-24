@@ -1,7 +1,10 @@
+using EnterpriseAiPlatform.LocalModel.Application.Abstractions;
+using EnterpriseAiPlatform.LocalModel.Infrastructure.Cluster;
+using EnterpriseAiPlatform.ModelRegistry.Application.Abstractions;
+using EnterpriseAiPlatform.ModelRegistry.Infrastructure.Marketplace;
+using EnterpriseAiPlatform.PortalBff.Api.Endpoints;
 using EnterpriseAiPlatform.ServiceDefaults;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.Extensions.DependencyInjection;
-using Yarp.ReverseProxy.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,8 +12,8 @@ builder.AddEnterpriseServiceDefaults();
 builder.Services.AddEnterpriseApiDocumentation();
 
 builder.Services.AddHttpClient();
-
-builder.Services.AddReverseProxy();
+builder.Services.AddSingleton<IModelMarketplace, ModelMarketplace>();
+builder.Services.AddSingleton<IGpuClusterManager, GpuClusterManager>();
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
@@ -20,10 +23,11 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 var app = builder.Build();
 
 app.UseForwardedHeaders();
-if (!app.Environment.IsDevelopment()) app.UseHsts();
-app.UseHttpsRedirection();
+app.UseStaticFiles();
 
-app.MapReverseProxy();
+app.MapGovernancePortalEndpoints();
+app.MapPlaygroundEndpoints();
+
 app.UseEnterpriseApiDocumentation();
 app.MapEnterpriseHealthChecks();
 

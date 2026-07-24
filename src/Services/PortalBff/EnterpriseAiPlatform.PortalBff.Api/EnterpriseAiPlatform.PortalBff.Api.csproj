@@ -3,6 +3,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\BuildingBlocks\EnterpriseAiPlatform.Application.Abstractions\EnterpriseAiPlatform.Application.Abstractions.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\EnterpriseAiPlatform.ServiceDefaults\EnterpriseAiPlatform.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\..\ModelRegistry\EnterpriseAiPlatform.ModelRegistry.Infrastructure\EnterpriseAiPlatform.ModelRegistry.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\LocalModel\EnterpriseAiPlatform.LocalModel.Infrastructure\EnterpriseAiPlatform.LocalModel.Infrastructure.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
