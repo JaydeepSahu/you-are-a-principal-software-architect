@@ -22,13 +22,13 @@ public sealed class SubmitApprovalDecisionCommandHandler : IRequestHandler<Submi
 
         if (approval == null)
         {
-            return Task.FromResult(Result<ApprovalRequestDto>.Failure(new Error("Approval.NotFound", $"Approval request with ID {approvalId.Value} was not found.")));
+            return Task.FromResult(Result.Failure<ApprovalRequestDto>(new Error("Approval.NotFound", $"Approval request with ID {approvalId.Value} was not found.")));
         }
 
         var success = _approvalManager.SubmitDecision(approvalId, command.Request.Approve, command.Request.DecidedBy, command.Request.Reason);
         if (!success)
         {
-            return Task.FromResult(Result<ApprovalRequestDto>.Failure(new Error("Approval.InvalidState", $"Approval request with ID {approvalId.Value} is already decided or invalid.")));
+            return Task.FromResult(Result.Failure<ApprovalRequestDto>(new Error("Approval.InvalidState", $"Approval request with ID {approvalId.Value} is already decided or invalid.")));
         }
 
         var dto = new ApprovalRequestDto(
@@ -44,6 +44,6 @@ public sealed class SubmitApprovalDecisionCommandHandler : IRequestHandler<Submi
             approval.DecidedAt
         );
 
-        return Task.FromResult(Result<ApprovalRequestDto>.Success(dto));
+        return Task.FromResult(Result.Success(dto));
     }
 }

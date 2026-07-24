@@ -12,20 +12,66 @@ public static class PromptIntelligenceEndpoints
 {
     public static IEndpointRouteBuilder MapPromptIntelligenceEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapGroup("/api/v1/prompt-intelligence");
+        var group = endpoints.MapGroup("/api/v1/prompt-intelligence")
+            .WithTags("Prompt Intelligence")
+            .WithOpenApi()
+            .RequireAuthorization();
 
         // Profiles
-        group.MapPost("/profiles", CreateProfileAsync).RequireAuthorization();
-        group.MapGet("/profiles", GetProfilesAsync).RequireAuthorization();
-        group.MapGet("/profiles/{id:guid}", GetProfileAsync).RequireAuthorization();
-        group.MapPut("/profiles/{id:guid}", UpdateProfileAsync).RequireAuthorization();
-        group.MapPut("/profiles/{id:guid}/rule", UpdateProfileRuleAsync).RequireAuthorization();
-        group.MapDelete("/profiles/{id:guid}", DeactivateProfileAsync).RequireAuthorization();
+        group.MapPost("/profiles", CreateProfileAsync)
+            .WithName("CreatePromptProfile")
+            .WithSummary("Create a named prompt optimisation profile.")
+            .WithDescription("A profile contains rules for tone adjustment, compression, instruction injection, and output format constraints.")
+            .Produces(StatusCodes.Status201Created)
+            .ProducesProblem(StatusCodes.Status400BadRequest);
+
+        group.MapGet("/profiles", GetProfilesAsync)
+            .WithName("ListPromptProfiles")
+            .WithSummary("List all active prompt optimisation profiles for the tenant.")
+            .Produces(StatusCodes.Status200OK);
+
+        group.MapGet("/profiles/{id:guid}", GetProfileAsync)
+            .WithName("GetPromptProfile")
+            .WithSummary("Get a prompt optimisation profile by ID.")
+            .Produces(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
+        group.MapPut("/profiles/{id:guid}", UpdateProfileAsync)
+            .WithName("UpdatePromptProfile")
+            .WithSummary("Update a prompt optimisation profile.")
+            .Produces(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
+        group.MapPut("/profiles/{id:guid}/rule", UpdateProfileRuleAsync)
+            .WithName("UpdateProfileRule")
+            .WithSummary("Add or replace a single rule within a prompt profile.")
+            .Produces(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
+        group.MapDelete("/profiles/{id:guid}", DeactivateProfileAsync)
+            .WithName("DeactivatePromptProfile")
+            .WithSummary("Deactivate a prompt optimisation profile.")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound);
 
         // Optimization
-        group.MapPost("/optimize", OptimizePromptAsync).RequireAuthorization();
-        group.MapGet("/sessions", GetSessionsAsync).RequireAuthorization();
-        group.MapGet("/sessions/{id:guid}", GetSessionAsync).RequireAuthorization();
+        group.MapPost("/optimize", OptimizePromptAsync)
+            .WithName("OptimizePrompt")
+            .WithSummary("Apply the selected profile's rules to rewrite and optimise a prompt.")
+            .WithDescription("Returns the transformed prompt alongside a token count comparison between the original and optimised version.")
+            .Produces(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest);
+
+        group.MapGet("/sessions", GetSessionsAsync)
+            .WithName("ListOptimizationSessions")
+            .WithSummary("List prompt optimisation session history for the tenant.")
+            .Produces(StatusCodes.Status200OK);
+
+        group.MapGet("/sessions/{id:guid}", GetSessionAsync)
+            .WithName("GetOptimizationSession")
+            .WithSummary("Get a specific prompt optimisation session by ID.")
+            .Produces(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound);
 
         return endpoints;
     }

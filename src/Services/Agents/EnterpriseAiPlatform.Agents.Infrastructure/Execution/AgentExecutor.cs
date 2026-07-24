@@ -57,19 +57,19 @@ public sealed class AgentExecutor : IAgentExecutor
                         "Plan completed successfully",
                         JsonSerializer.Serialize(new { Status = plan.Status.ToString() }),
                         DateTimeOffset.UtcNow));
-                    return Result<AgentPlan>.Success(plan);
+                    return Result.Success(plan);
                 }
 
                 if (plan.Steps.Any(s => s.Status == StepStatus.WaitingForApproval))
                 {
                     plan.MarkWaitingForApproval();
-                    return Result<AgentPlan>.Success(plan); // Paused for human approval
+                    return Result.Success(plan); // Paused for human approval
                 }
 
                 if (plan.Steps.Any(s => s.Status == StepStatus.Failed))
                 {
                     plan.MarkFailed();
-                    return Result<AgentPlan>.Failure(new Error("Plan.StepFailed", "One or more plan steps failed during execution."));
+                    return Result.Failure<AgentPlan>(new Error("Plan.StepFailed", "One or more plan steps failed during execution."));
                 }
 
                 break;

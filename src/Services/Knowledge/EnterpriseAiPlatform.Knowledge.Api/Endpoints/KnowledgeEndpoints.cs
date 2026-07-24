@@ -12,12 +12,36 @@ public static class KnowledgeEndpoints
 {
     public static IEndpointRouteBuilder MapKnowledgeEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapGroup("/api/v1/knowledge");
+        var group = endpoints.MapGroup("/api/v1/knowledge")
+            .WithTags("Knowledge Base")
+            .WithOpenApi()
+            .RequireAuthorization();
 
-        group.MapPost("/ingestions", IngestAsync).RequireAuthorization();
-        group.MapPost("/search", SearchAsync).RequireAuthorization();
-        group.MapGet("/documents/{id:guid}", GetDocumentAsync).RequireAuthorization();
-        group.MapGet("/documents/{id:guid}/versions", GetDocumentVersionsAsync).RequireAuthorization();
+        group.MapPost("/ingestions", IngestAsync)
+            .WithName("IngestDocument")
+            .WithSummary("Ingest a document into the enterprise knowledge base.")
+            .WithDescription("Accepts text or chunked content. Chunks are embedded and stored for retrieval-augmented generation (RAG).")
+            .Produces(StatusCodes.Status202Accepted)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status401Unauthorized);
+
+        group.MapPost("/search", SearchAsync)
+            .WithName("SearchKnowledgeBase")
+            .WithSummary("Search the knowledge base using semantic similarity.")
+            .Produces(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest);
+
+        group.MapGet("/documents/{id:guid}", GetDocumentAsync)
+            .WithName("GetKnowledgeDocument")
+            .WithSummary("Retrieve a knowledge document by ID.")
+            .Produces(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
+        group.MapGet("/documents/{id:guid}/versions", GetDocumentVersionsAsync)
+            .WithName("GetDocumentVersions")
+            .WithSummary("List all versions of a knowledge document.")
+            .Produces(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound);
 
         return endpoints;
     }

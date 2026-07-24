@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddEnterpriseServiceDefaults();
-builder.Services.AddEnterpriseApiDocumentation();
+builder.Services.AddEnterpriseApiDocumentation("Semantic Cache Service", "Serves cached AI responses for semantically similar prompts to reduce cost and latency.");
 builder.Services.AddSemanticCacheApplication();
 builder.Services.AddSemanticCacheInfrastructure(builder.Configuration);
 

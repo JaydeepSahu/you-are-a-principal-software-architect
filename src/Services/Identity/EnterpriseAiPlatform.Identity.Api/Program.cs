@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddEnterpriseServiceDefaults();
-builder.Services.AddEnterpriseApiDocumentation();
+builder.Services.AddEnterpriseApiDocumentation("Identity Service", "Manages API keys, JWT token issuance, refresh tokens, and tenant principal context.");
 builder.Services.AddIdentityApplication();
 builder.Services.AddIdentityInfrastructure(builder.Configuration);
 builder.Services.AddIdentityApiSecurity(builder.Configuration);

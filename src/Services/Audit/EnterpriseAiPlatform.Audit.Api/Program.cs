@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddEnterpriseServiceDefaults();
-builder.Services.AddEnterpriseApiDocumentation();
+builder.Services.AddEnterpriseApiDocumentation("Audit Service", "Records and queries immutable audit events for all AI platform operations.");
 builder.Services.AddAuditApplication();
 builder.Services.AddAuditInfrastructure();
 

@@ -13,7 +13,7 @@ using OpenTelemetry.Metrics;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddEnterpriseServiceDefaults();
-builder.Services.AddEnterpriseApiDocumentation();
+builder.Services.AddEnterpriseApiDocumentation("AI Gateway", "Governed reverse-proxy to AI providers with circuit breakers, rate limiting, resilience, and observability.");
 builder.Services.AddAiGatewayApplication();
 builder.Services.AddAiGatewayInfrastructure(builder.Configuration);
 builder.Services.AddAiGatewaySecurity(builder.Configuration);

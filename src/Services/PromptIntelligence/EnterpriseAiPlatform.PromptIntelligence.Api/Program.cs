@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddEnterpriseServiceDefaults();
-builder.Services.AddEnterpriseApiDocumentation();
+builder.Services.AddEnterpriseApiDocumentation("Prompt Intelligence Service", "Analyses prompt quality, intent classification, and semantic similarity.");
 builder.Services.AddPromptIntelligenceApplication();
 builder.Services.AddPromptIntelligenceInfrastructure();
 

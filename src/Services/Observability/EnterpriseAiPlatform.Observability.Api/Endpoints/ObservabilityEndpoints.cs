@@ -11,10 +11,27 @@ public static class ObservabilityEndpoints
 {
     public static IEndpointRouteBuilder MapObservabilityEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapGroup("/api/v1/observability");
-        group.MapPost("/traces", RecordAsync);
-        group.MapGet("/traces", QueryAsync);
-        group.MapGet("/health-summary", HealthSummaryAsync);
+        var group = endpoints.MapGroup("/api/v1/observability")
+            .WithTags("Observability")
+            .WithOpenApi();
+
+        group.MapPost("/traces", RecordAsync)
+            .WithName("RecordTrace")
+            .WithSummary("Record an AI request trace entry.")
+            .Produces(StatusCodes.Status201Created)
+            .ProducesProblem(StatusCodes.Status400BadRequest);
+
+        group.MapGet("/traces", QueryAsync)
+            .WithName("QueryTraces")
+            .WithSummary("Query trace records with optional filters by date, provider, model, or user.")
+            .Produces(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest);
+
+        group.MapGet("/health-summary", HealthSummaryAsync)
+            .WithName("GetProviderHealthSummary")
+            .WithSummary("Return aggregated health status across all registered AI providers.")
+            .Produces(StatusCodes.Status200OK);
+
         return endpoints;
     }
 

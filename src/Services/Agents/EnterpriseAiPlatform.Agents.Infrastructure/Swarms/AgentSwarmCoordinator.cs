@@ -55,7 +55,7 @@ public sealed class AgentSwarmCoordinator : IAgentSwarmCoordinator
 
         if (execResult.IsFailure)
         {
-            return Result<SwarmExecutionResult>.Failure(execResult.Error);
+            return Result.Failure<SwarmExecutionResult>(execResult.Error);
         }
 
         var stepDtos = plan.Steps.Select(s => new PlanStepDto(
@@ -84,6 +84,6 @@ public sealed class AgentSwarmCoordinator : IAgentSwarmCoordinator
             memory.WorkingMemory.ToDictionary(kvp => kvp.Key, kvp => kvp.Value)
         );
 
-        return Result<SwarmExecutionResult>.Success(result);
+        return Result.Success(result);
     }
 }

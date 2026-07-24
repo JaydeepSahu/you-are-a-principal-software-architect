@@ -11,13 +11,39 @@ public static class RoutingEndpoints
 {
     public static IEndpointRouteBuilder MapRoutingEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapGroup("/api/v1/routing");
+        var group = endpoints.MapGroup("/api/v1/routing")
+            .WithTags("Provider Routing")
+            .WithOpenApi();
 
-        group.MapGet("/modes", GetModesAsync);
-        group.MapGet("/configuration", GetConfigurationAsync);
-        group.MapPut("/configuration", UpsertConfigurationAsync);
-        group.MapDelete("/configuration", DeleteConfigurationAsync);
-        group.MapPost("/evaluate", EvaluateAsync);
+        group.MapGet("/modes", GetModesAsync)
+            .WithName("GetRoutingModes")
+            .WithSummary("List all available routing modes (e.g. RoundRobin, CostOptimized, Latency, Failover).")
+            .Produces(StatusCodes.Status200OK);
+
+        group.MapGet("/configuration", GetConfigurationAsync)
+            .WithName("GetRoutingConfiguration")
+            .WithSummary("Get the current tenant routing configuration.")
+            .Produces(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
+        group.MapPut("/configuration", UpsertConfigurationAsync)
+            .WithName("UpsertRoutingConfiguration")
+            .WithSummary("Create or update the tenant routing configuration.")
+            .Produces(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest);
+
+        group.MapDelete("/configuration", DeleteConfigurationAsync)
+            .WithName("DeleteRoutingConfiguration")
+            .WithSummary("Remove the tenant routing configuration, reverting to platform defaults.")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
+        group.MapPost("/evaluate", EvaluateAsync)
+            .WithName("EvaluateRoute")
+            .WithSummary("Evaluate a request against routing rules and return the selected provider.")
+            .WithDescription("Dry-run route evaluation. Applies the active routing rules to the request context and returns the target provider without actually dispatching the request.")
+            .Produces(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest);
 
         return endpoints;
     }

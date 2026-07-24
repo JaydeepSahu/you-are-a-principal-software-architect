@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddEnterpriseServiceDefaults();
-builder.Services.AddEnterpriseApiDocumentation();
+builder.Services.AddEnterpriseApiDocumentation("Admin Portal BFF", "Backend-for-frontend gateway for the web admin portal and developer playground.");
 
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<IModelMarketplace, ModelMarketplace>();

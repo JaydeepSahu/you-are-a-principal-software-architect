@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddEnterpriseServiceDefaults();
-builder.Services.AddEnterpriseApiDocumentation();
+builder.Services.AddEnterpriseApiDocumentation("Vector Search Service", "Provides embedding-based vector similarity search over enterprise document stores.");
 builder.Services.AddVectorSearchApplication();
 builder.Services.AddVectorSearchInfrastructure(builder.Configuration);
 

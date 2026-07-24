@@ -35,6 +35,7 @@ public enum ExecutionMode
     ParallelGroup = 1
 }
 
+#pragma warning disable CA1720
 public enum ToolParameterType
 {
     String = 0,
@@ -43,3 +44,4 @@ public enum ToolParameterType
     Object = 3,
     Array = 4
 }
+#pragma warning restore CA1720

@@ -6,7 +6,7 @@ using EnterpriseAiPlatform.ServiceDefaults;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddEnterpriseServiceDefaults();
-builder.Services.AddEnterpriseApiDocumentation();
+builder.Services.AddEnterpriseApiDocumentation("Evaluation Service", "Runs AI response quality evaluation tasks and scoring pipelines.");
 builder.Services.AddEvaluationApplication();
 builder.Services.AddEvaluationInfrastructure();
 

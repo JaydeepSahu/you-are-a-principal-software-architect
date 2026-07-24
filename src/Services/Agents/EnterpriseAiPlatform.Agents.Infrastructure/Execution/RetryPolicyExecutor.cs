@@ -32,7 +32,7 @@ public static class RetryPolicyExecutor
 
             if (attempt >= maxRetries)
             {
-                return Result<T>.Failure(new Error("Retry.Exhausted", $"Failed after {maxRetries} attempt(s)."));
+                return Result.Failure<T>(new Error("Retry.Exhausted", $"Failed after {maxRetries} attempt(s)."));
             }
 
             await Task.Delay(delayMs, cancellationToken);

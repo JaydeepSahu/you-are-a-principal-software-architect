@@ -13,6 +13,7 @@ COPY ["src/BuildingBlocks/", "src/BuildingBlocks/"]
 COPY ["src/Gateways/EnterpriseAiPlatform.AiGateway.Api/", "src/Gateways/EnterpriseAiPlatform.AiGateway.Api/"]
 COPY ["src/Gateways/EnterpriseAiPlatform.AiGateway.Application/", "src/Gateways/EnterpriseAiPlatform.AiGateway.Application/"]
 COPY ["src/Gateways/EnterpriseAiPlatform.AiGateway.Contracts/", "src/Gateways/EnterpriseAiPlatform.AiGateway.Contracts/"]
+COPY ["src/Services/Identity/EnterpriseAiPlatform.Identity.Contracts/", "src/Services/Identity/EnterpriseAiPlatform.Identity.Contracts/"]
 COPY ["src/Gateways/EnterpriseAiPlatform.AiGateway.Infrastructure/", "src/Gateways/EnterpriseAiPlatform.AiGateway.Infrastructure/"]
 
 # Restore & Publish

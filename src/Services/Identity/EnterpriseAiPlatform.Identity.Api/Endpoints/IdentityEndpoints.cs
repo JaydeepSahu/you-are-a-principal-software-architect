@@ -15,19 +15,42 @@ public static class IdentityEndpoints
     {
         ArgumentNullException.ThrowIfNull(endpoints);
 
-        RouteGroupBuilder group = endpoints.MapGroup("/api/v1/identity");
+        RouteGroupBuilder group = endpoints.MapGroup("/api/v1/identity")
+            .WithTags("Identity & Authentication")
+            .WithOpenApi();
 
         group.MapPost("/api-keys", CreateApiKeyAsync)
-            .RequireAuthorization("TenantAdmin");
+            .RequireAuthorization("TenantAdmin")
+            .WithName("CreateApiKey")
+            .WithSummary("Create a new scoped API key for a tenant.")
+            .WithDescription("Issues a new API key with optional role scopes and expiry. The raw key is returned once only; store it securely. Exchange for a JWT using POST /api/v1/identity/tokens/api-key.")
+            .Produces<CreateApiKeyResponse>(StatusCodes.Status201Created)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
 
         group.MapPost("/tokens/api-key", ExchangeApiKeyAsync)
-            .AllowAnonymous();
+            .AllowAnonymous()
+            .WithName("ExchangeApiKeyForToken")
+            .WithSummary("Exchange an API key for a short-lived JWT access token.")
+            .WithDescription("Provide the API key in the `X-API-Key` header. Returns a JWT access token and a refresh token. The access token is valid for 60 minutes.")
+            .Produces<ApiKeyTokenResponse>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized);
 
         group.MapPost("/tokens/refresh", RefreshTokenAsync)
-            .AllowAnonymous();
+            .AllowAnonymous()
+            .WithName("RefreshAccessToken")
+            .WithSummary("Refresh an expired JWT access token using a refresh token.")
+            .Produces<ApiKeyTokenResponse>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized);
 
         group.MapGet("/me", GetCurrentPrincipal)
-            .RequireAuthorization("Developer");
+            .RequireAuthorization("Developer")
+            .WithName("GetCurrentPrincipal")
+            .WithSummary("Return the authenticated principal's tenant, roles, and claims.")
+            .Produces<CurrentPrincipalResponse>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
 
         return endpoints;
     }

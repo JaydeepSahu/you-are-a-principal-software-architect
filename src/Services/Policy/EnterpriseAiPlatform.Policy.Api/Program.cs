@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddEnterpriseServiceDefaults();
-builder.Services.AddEnterpriseApiDocumentation();
+builder.Services.AddEnterpriseApiDocumentation("Policy and Governance Service", "Manages AI governance policies, inline DLP scanning, and LLM red-team adversarial evaluations.");
 builder.Services.AddPolicyApplication();
 builder.Services.AddPolicyInfrastructure();
 

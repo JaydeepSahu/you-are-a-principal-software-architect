@@ -10,17 +10,62 @@ public static class LocalModelEndpoints
 {
     public static IEndpointRouteBuilder MapLocalModelEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapGroup("/api/v1/local-model");
+        var group = endpoints.MapGroup("/api/v1/local-model")
+            .WithTags("Local Model Inference")
+            .WithOpenApi();
 
-        group.MapGet("/providers", ListProvidersAsync);
-        group.MapGet("/providers/{providerKey}", GetProviderAsync);
-        group.MapPost("/providers", CreateProviderAsync);
-        group.MapPut("/providers/{providerKey}", UpdateProviderAsync);
-        group.MapDelete("/providers/{providerKey}", DeleteProviderAsync);
-        group.MapPost("/chat", ChatAsync);
-        group.MapPost("/stream", StreamAsync);
-        group.MapGet("/health", HealthAsync);
-        group.MapGet("/models", DiscoverAsync);
+        group.MapGet("/providers", ListProvidersAsync)
+            .WithName("ListLocalProviders")
+            .WithSummary("List all registered local AI provider plugins.")
+            .Produces(StatusCodes.Status200OK);
+
+        group.MapGet("/providers/{providerKey}", GetProviderAsync)
+            .WithName("GetLocalProvider")
+            .WithSummary("Get a local provider by its key.")
+            .Produces(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
+        group.MapPost("/providers", CreateProviderAsync)
+            .WithName("CreateLocalProvider")
+            .WithSummary("Register a new local AI provider plugin.")
+            .Produces(StatusCodes.Status201Created)
+            .ProducesProblem(StatusCodes.Status400BadRequest);
+
+        group.MapPut("/providers/{providerKey}", UpdateProviderAsync)
+            .WithName("UpdateLocalProvider")
+            .WithSummary("Update an existing local provider configuration.")
+            .Produces(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
+        group.MapDelete("/providers/{providerKey}", DeleteProviderAsync)
+            .WithName("DeleteLocalProvider")
+            .WithSummary("Remove a local provider plugin.")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
+        group.MapPost("/chat", ChatAsync)
+            .WithName("ChatWithLocalModel")
+            .WithSummary("Send a chat completion request to a locally-hosted model.")
+            .WithDescription("Dispatches to the configured local provider (Ollama, LM Studio, etc.) and returns the response synchronously.")
+            .Produces(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status503ServiceUnavailable);
+
+        group.MapPost("/stream", StreamAsync)
+            .WithName("StreamFromLocalModel")
+            .WithSummary("Send a streaming chat request to a locally-hosted model.")
+            .Produces(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest);
+
+        group.MapGet("/health", HealthAsync)
+            .WithName("GetLocalModelHealth")
+            .WithSummary("Check the health of all registered local model providers.")
+            .Produces(StatusCodes.Status200OK);
+
+        group.MapGet("/models", DiscoverAsync)
+            .WithName("DiscoverLocalModels")
+            .WithSummary("Discover available models from all registered local providers.")
+            .Produces(StatusCodes.Status200OK);
 
         return endpoints;
     }

@@ -22,6 +22,28 @@ using Serilog.Context;
 
 namespace EnterpriseAiPlatform.ServiceDefaults;
 
+/// <summary>
+/// CSP directives to apply when serving the Scalar/OpenAPI documentation UI.
+/// Scalar loads its bundle from CDN and uses inline styles, so we must loosen
+/// <c>script-src</c>, <c>style-src</c>, <c>font-src</c>, and <c>connect-src</c>
+/// for those paths only.
+/// </summary>
+file static class ScalarCspPolicy
+{
+    // Scalar API reference CDN host
+    internal const string CdnHost = "https://cdn.jsdelivr.net";
+
+    internal const string Value =
+        "default-src 'self'; " +
+        $"script-src 'self' {CdnHost} 'unsafe-inline'; " +
+        $"style-src 'self' {CdnHost} 'unsafe-inline'; " +
+        $"font-src 'self' {CdnHost} data:; " +
+        $"img-src 'self' data: blob:; " +
+        "connect-src 'self'; " +
+        "frame-ancestors 'none'; " +
+        "base-uri 'self'";
+}
+
 public static class ServiceDefaultsExtensions
 {
     public static IHostApplicationBuilder AddEnterpriseServiceDefaults(this IHostApplicationBuilder builder)
@@ -88,14 +110,48 @@ public static class ServiceDefaultsExtensions
         return app;
     }
 
-    public static IServiceCollection AddEnterpriseApiDocumentation(this IServiceCollection services)
+    public static IServiceCollection AddEnterpriseApiDocumentation(
+        this IServiceCollection services,
+        string serviceName = "Enterprise AI Platform",
+        string serviceDescription = "Enterprise AI control plane providing governed access to AI providers with tenant isolation, policy enforcement, metering, audit, and observability.")
     {
         ArgumentNullException.ThrowIfNull(services);
 
         services.AddOpenApi(options =>
         {
             options.AddDocumentTransformer<BearerSecurityTransformer>();
+            options.AddDocumentTransformer((document, context, cancellationToken) =>
+            {
+                document.Info = new OpenApiInfo
+                {
+                    Title = serviceName,
+                    Version = "v1",
+                    Description = serviceDescription,
+                    Contact = new OpenApiContact
+                    {
+                        Name = "Enterprise AI Platform Team",
+                        Email = "platform-support@example.com",
+                        Url = new Uri("https://github.com/your-org/enterprise-ai-platform")
+                    },
+                    License = new OpenApiLicense
+                    {
+                        Name = "Proprietary",
+                        Url = new Uri("https://example.com/license")
+                    },
+                    TermsOfService = new Uri("https://example.com/terms")
+                };
+
+                // Standard external docs link
+                document.ExternalDocs = new OpenApiExternalDocs
+                {
+                    Description = "Full platform documentation",
+                    Url = new Uri("https://docs.example.com/enterprise-ai-platform")
+                };
+
+                return Task.CompletedTask;
+            });
         });
+
         services.AddApiVersioning(options =>
         {
             options.DefaultApiVersion = new ApiVersion(1, 0);
@@ -114,11 +170,40 @@ public static class ServiceDefaultsExtensions
     {
         ArgumentNullException.ThrowIfNull(app);
 
+        // Serve the raw OpenAPI JSON at /openapi/v1.json
         app.MapOpenApi();
+
+        // Scalar interactive reference UI at /scalar/v1
         app.MapScalarApiReference(options =>
         {
-            options.Title = "Enterprise AI Platform API";
+            options.Title = "Enterprise AI Platform";
             options.Theme = ScalarTheme.Kepler;
+            options.DarkMode = true;
+            options.DefaultOpenAllTags = false;
+            options.HideModels = false;
+            options.DocumentDownloadType = DocumentDownloadType.None;
+            options.ShowSidebar = true;
+            options.DefaultHttpClient = new(ScalarTarget.CSharp, ScalarClient.HttpClient);
+            options.Servers =
+            [
+                new ScalarServer("https://localhost:7023", "Local AI Gateway"),
+                new ScalarServer("https://localhost:7191", "Local Identity"),
+                new ScalarServer("https://localhost:7276", "Local Policy"),
+                new ScalarServer("https://localhost:7116", "Local Audit"),
+                new ScalarServer("https://localhost:7065", "Local Metering"),
+                new ScalarServer("https://localhost:7067", "Local Routing"),
+                new ScalarServer("https://localhost:7031", "Local Observability"),
+                new ScalarServer("https://localhost:7018", "Local Model Registry"),
+                new ScalarServer("https://localhost:7188", "Local Vector Search"),
+                new ScalarServer("https://localhost:7177", "Local Knowledge"),
+                new ScalarServer("https://localhost:52468", "Local Prompt Intelligence"),
+                new ScalarServer("https://localhost:59922", "Local Local Model"),
+                new ScalarServer("https://localhost:50854", "Local Semantic Cache"),
+                new ScalarServer("https://localhost:50855", "Local Evaluation"),
+                new ScalarServer("https://localhost:7148", "Local Portal BFF"),
+                new ScalarServer("https://localhost:7115", "Local Provider Adapters"),
+                new ScalarServer("https://localhost:7040", "Local Cost Optimization"),
+            ];
         });
 
         return app;
@@ -158,7 +243,15 @@ public static class ServiceDefaultsExtensions
                 BearerFormat = "JWT",
                 In = ParameterLocation.Header,
                 Name = "Authorization",
-                Description = "JWT Bearer authentication",
+                Description = "Enter a JWT bearer token obtained from `POST /api/v1/identity/tokens/api-key`.",
+            };
+
+            document.Components.SecuritySchemes["ApiKey"] = new OpenApiSecurityScheme
+            {
+                Type = SecuritySchemeType.ApiKey,
+                In = ParameterLocation.Header,
+                Name = "X-API-Key",
+                Description = "API key for service-to-service authentication. Exchange for a JWT via `POST /api/v1/identity/tokens/api-key`.",
             };
 
             document.SecurityRequirements ??= [];
@@ -176,5 +269,49 @@ public static class ServiceDefaultsExtensions
 
             return Task.CompletedTask;
         }
+    }
+
+    /// <summary>
+    /// Returns the appropriate Content-Security-Policy value for the given request path.
+    /// Scalar and OpenAPI UI paths get a permissive policy that allows their CDN scripts.
+    /// All other paths get the strict enterprise default.
+    /// </summary>
+    public static string GetContentSecurityPolicy(PathString path)
+    {
+        // Scalar UI and raw OpenAPI document paths need a relaxed policy
+        if (path.StartsWithSegments("/scalar", StringComparison.OrdinalIgnoreCase)
+            || path.StartsWithSegments("/openapi", StringComparison.OrdinalIgnoreCase))
+        {
+            return ScalarCspPolicy.Value;
+        }
+
+        // Strict default for all API endpoints
+        return "default-src 'none'; frame-ancestors 'none'; base-uri 'none'";
+    }
+
+    /// <summary>
+    /// Adds the enterprise security headers middleware. Services that have a
+    /// dedicated <c>SecurityHeadersMiddleware</c> class can delegate to
+    /// <see cref="GetContentSecurityPolicy"/> instead. This extension covers
+    /// services that do not have one.
+    /// </summary>
+    public static WebApplication UseEnterpriseSecurityHeaders(this WebApplication app)
+    {
+        ArgumentNullException.ThrowIfNull(app);
+
+        app.Use(async (context, next) =>
+        {
+            IHeaderDictionary headers = context.Response.Headers;
+            headers["X-Content-Type-Options"] = "nosniff";
+            headers["X-Frame-Options"] = "DENY";
+            headers["Referrer-Policy"] = "no-referrer";
+            headers["Cache-Control"] = "no-store";
+            headers["Pragma"] = "no-cache";
+            headers["Content-Security-Policy"] = GetContentSecurityPolicy(context.Request.Path);
+            headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()";
+            await next(context);
+        });
+
+        return app;
     }
 }

@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddEnterpriseServiceDefaults();
-builder.Services.AddEnterpriseApiDocumentation();
+builder.Services.AddEnterpriseApiDocumentation("Knowledge Base Service", "Manages enterprise knowledge documents and retrieval-augmented generation (RAG) sources.");
 builder.Services.AddKnowledgeApplication();
 builder.Services.AddKnowledgeInfrastructure();
 

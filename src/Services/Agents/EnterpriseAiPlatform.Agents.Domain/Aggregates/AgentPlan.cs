@@ -29,7 +29,7 @@ public sealed class AgentPlan : AggregateRoot<PlanId>
         Status = PlanStatus.Created;
         CreatedAt = DateTimeOffset.UtcNow;
 
-        AddDomainEvent(new PlanCreatedEvent(Id, AgentId, TenantId));
+        RaiseDomainEvent(new PlanCreatedEvent(Id, AgentId, TenantId));
     }
 
     public void AddStep(PlanStep step)
@@ -52,14 +52,14 @@ public sealed class AgentPlan : AggregateRoot<PlanId>
     {
         Status = PlanStatus.Completed;
         CompletedAt = DateTimeOffset.UtcNow;
-        AddDomainEvent(new PlanCompletedEvent(Id, AgentId, true));
+        RaiseDomainEvent(new PlanCompletedEvent(Id, AgentId, true));
     }
 
     public void MarkFailed()
     {
         Status = PlanStatus.Failed;
         CompletedAt = DateTimeOffset.UtcNow;
-        AddDomainEvent(new PlanCompletedEvent(Id, AgentId, false));
+        RaiseDomainEvent(new PlanCompletedEvent(Id, AgentId, false));
     }
 
     public void MarkCancelled()

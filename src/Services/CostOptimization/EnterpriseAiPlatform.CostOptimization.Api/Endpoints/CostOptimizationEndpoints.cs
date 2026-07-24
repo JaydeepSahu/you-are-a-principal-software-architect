@@ -27,7 +27,10 @@ public static class CostOptimizationEndpoints
                 : Results.BadRequest(result.Error);
         })
         .WithName("GetDepartmentalChargeback")
-        .WithSummary("Generate departmental cost allocation and token chargeback reports.");
+        .WithSummary("Generate departmental cost allocation and token chargeback reports.")
+        .WithDescription("Returns a breakdown of AI spend by department, cost centre, and token volume for the current billing period. Requires the `X-Tenant-Id` header.")
+        .Produces(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status400BadRequest);
 
         group.MapGet("/forecast", async (
             ICostAllocationEngine finOpsEngine,
@@ -42,7 +45,10 @@ public static class CostOptimizationEndpoints
                 : Results.BadRequest(result.Error);
         })
         .WithName("GetMonthlySpendForecast")
-        .WithSummary("Forecast end-of-month financial spend based on daily run-rate trends.");
+        .WithSummary("Forecast end-of-month financial spend based on daily run-rate trends.")
+        .WithDescription("Calculates the projected spend for the current month using the observed daily run-rate and the number of days remaining. Returns the forecast status: OnTrack, Warning, or Exceeded.")
+        .Produces(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status400BadRequest);
 
         group.MapGet("/budgets", async (
             ICostAllocationEngine finOpsEngine,
@@ -57,7 +63,10 @@ public static class CostOptimizationEndpoints
                 : Results.BadRequest(result.Error);
         })
         .WithName("GetTenantBudgetStatus")
-        .WithSummary("Inspect tenant token budget quota status, soft warnings, and departmental breakdowns.");
+        .WithSummary("Inspect tenant token budget quota status, soft warnings, and departmental breakdowns.")
+        .WithDescription("Returns current spend vs budget, utilisation percentage, whether soft-warning (75%) or hard-quota-block (100%) thresholds are triggered, and a per-department breakdown.")
+        .Produces(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status400BadRequest);
 
         return endpoints;
     }
@@ -65,6 +74,8 @@ public static class CostOptimizationEndpoints
     private static TenantId GetTenantId(HttpContext httpContext)
     {
         var tenantHeader = httpContext.Request.Headers["X-Tenant-Id"].FirstOrDefault();
-        return TenantId.From(tenantHeader ?? "default-tenant");
+        return tenantHeader is not null && Guid.TryParse(tenantHeader, out var tid)
+            ? TenantId.From(tid)
+            : TenantId.From(Guid.Parse("00000000-0000-0000-0000-000000000001"));
     }
 }

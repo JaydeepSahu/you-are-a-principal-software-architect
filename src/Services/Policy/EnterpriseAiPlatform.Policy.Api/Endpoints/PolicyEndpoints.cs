@@ -1,5 +1,6 @@
 using EnterpriseAiPlatform.Policy.Application.PolicyEvents;
 using EnterpriseAiPlatform.Policy.Contracts.Requests;
+using EnterpriseAiPlatform.Policy.Contracts.Responses;
 using EnterpriseAiPlatform.Policy.Domain;
 using EnterpriseAiPlatform.SharedKernel;
 using MediatR;
@@ -11,10 +12,30 @@ public static class PolicyEndpoints
 {
     public static IEndpointRouteBuilder MapPolicyEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapGroup("/api/v1/policies");
-        group.MapPost("", CreateAsync);
-        group.MapGet("", ListAsync);
-        group.MapPost("/evaluate", EvaluateAsync);
+        var group = endpoints.MapGroup("/api/v1/policies")
+            .WithTags("Governance Policies")
+            .WithOpenApi();
+
+        group.MapPost("", CreateAsync)
+            .WithName("CreatePolicy")
+            .WithSummary("Create a new AI governance policy.")
+            .WithDescription("Defines a named policy containing rules that govern AI usage for a tenant. Supports allow/deny, rate-limiting, cost-cap, and model-restriction rule types.")
+            .Produces(StatusCodes.Status201Created)
+            .ProducesProblem(StatusCodes.Status400BadRequest);
+
+        group.MapGet("", ListAsync)
+            .WithName("ListPolicies")
+            .WithSummary("List all governance policies for the authenticated tenant.")
+            .Produces(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest);
+
+        group.MapPost("/evaluate", EvaluateAsync)
+            .WithName("EvaluatePolicy")
+            .WithSummary("Evaluate a request payload against all active tenant policies.")
+            .WithDescription("Returns Allow/Deny verdict and the list of policy rules that matched. Used by the AI Gateway before dispatching to upstream providers.")
+            .Produces(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest);
+
         return endpoints;
     }
 

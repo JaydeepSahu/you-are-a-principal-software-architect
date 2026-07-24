@@ -28,7 +28,7 @@ public sealed class AgentPlanner : IAgentPlanner
 
         if (string.IsNullOrWhiteSpace(goal))
         {
-            return Task.FromResult(Result<AgentPlan>.Failure(new Error("Plan.InvalidGoal", "Goal cannot be null or empty.")));
+            return Task.FromResult(Result.Failure<AgentPlan>(new Error("Plan.InvalidGoal", "Goal cannot be null or empty.")));
         }
 
         var planId = memory.Id;
@@ -104,6 +104,6 @@ public sealed class AgentPlanner : IAgentPlanner
         );
         plan.AddStep(finalSynthesisStep);
 
-        return Task.FromResult(Result<AgentPlan>.Success(plan));
+        return Task.FromResult(Result.Success(plan));
     }
 }

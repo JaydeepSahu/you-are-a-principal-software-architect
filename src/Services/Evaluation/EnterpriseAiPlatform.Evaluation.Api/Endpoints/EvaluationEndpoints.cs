@@ -11,12 +11,32 @@ public static class EvaluationEndpoints
 {
     public static IEndpointRouteBuilder MapEvaluationEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapGroup("/api/v1/evaluations");
+        var group = endpoints.MapGroup("/api/v1/evaluations")
+            .WithTags("AI Response Evaluation")
+            .WithOpenApi();
 
-        group.MapPost("", CreateAsync);
-        group.MapGet("/{id:guid}", GetByIdAsync);
-        group.MapGet("", ListAsync);
-        group.MapGet("stats", GetStatsAsync);
+        group.MapPost("", CreateAsync)
+            .WithName("CreateEvaluation")
+            .WithSummary("Submit an AI response for quality evaluation.")
+            .WithDescription("Runs the response through configured evaluators (faithfulness, relevance, hallucination, toxicity) and returns a scored report.")
+            .Produces<CreateEvaluationResponse>(StatusCodes.Status202Accepted)
+            .ProducesProblem(StatusCodes.Status400BadRequest);
+
+        group.MapGet("/{id:guid}", GetByIdAsync)
+            .WithName("GetEvaluationById")
+            .WithSummary("Get an evaluation result by ID.")
+            .Produces<EvaluationResponse>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
+        group.MapGet("", ListAsync)
+            .WithName("ListEvaluations")
+            .WithSummary("List evaluation results for the authenticated tenant.")
+            .Produces(StatusCodes.Status200OK);
+
+        group.MapGet("stats", GetStatsAsync)
+            .WithName("GetEvaluationStats")
+            .WithSummary("Get aggregated evaluation statistics (average scores, pass rates, trends).")
+            .Produces(StatusCodes.Status200OK);
 
         return endpoints;
     }

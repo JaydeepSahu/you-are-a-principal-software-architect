@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddEnterpriseServiceDefaults();
-builder.Services.AddEnterpriseApiDocumentation();
+builder.Services.AddEnterpriseApiDocumentation("Metering Service", "Records granular token usage, latency, and cost metrics per request.");
 builder.Services.AddMeteringApplication();
 builder.Services.AddMeteringInfrastructure();
 

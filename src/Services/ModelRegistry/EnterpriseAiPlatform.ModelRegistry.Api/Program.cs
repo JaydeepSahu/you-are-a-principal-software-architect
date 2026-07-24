@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddEnterpriseServiceDefaults();
-builder.Services.AddEnterpriseApiDocumentation();
+builder.Services.AddEnterpriseApiDocumentation("Model Registry", "Maintains the catalog of registered AI models, versions, and capability metadata.");
 builder.Services.AddModelRegistryApplication();
 builder.Services.AddModelRegistryInfrastructure();
 

@@ -10,9 +10,24 @@ public static class MeteringEndpoints
 {
     public static IEndpointRouteBuilder MapMeteringEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapGroup("/api/v1/metering");
-        group.MapPost("/records", RecordAsync);
-        group.MapGet("/usage", QueryAsync);
+        var group = endpoints.MapGroup("/api/v1/metering")
+            .WithTags("Token Usage Metering")
+            .WithOpenApi();
+
+        group.MapPost("/records", RecordAsync)
+            .WithName("RecordMeteringEvent")
+            .WithSummary("Record a metering event for an AI invocation.")
+            .WithDescription("Stores token counts, latency, cost, provider, and model details for billing and analytics.")
+            .Produces(StatusCodes.Status201Created)
+            .ProducesProblem(StatusCodes.Status400BadRequest);
+
+        group.MapGet("/usage", QueryAsync)
+            .WithName("QueryTokenUsage")
+            .WithSummary("Query aggregated token usage for a tenant.")
+            .WithDescription("Returns paged usage records filtered by date range, user, department, provider, or model.")
+            .Produces(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest);
+
         return endpoints;
     }
 

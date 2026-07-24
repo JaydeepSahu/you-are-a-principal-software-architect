@@ -10,11 +10,29 @@ public static class VectorSearchEndpoints
 {
     public static IEndpointRouteBuilder MapVectorSearchEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapGroup("/api/v1/vector-search");
+        var group = endpoints.MapGroup("/api/v1/vector-search")
+            .WithTags("Vector Search")
+            .WithOpenApi();
 
-        group.MapPost("/documents", UpsertAsync);
-        group.MapPost("/search", SearchAsync);
-        group.MapGet("/progress", ProgressAsync);
+        group.MapPost("/documents", UpsertAsync)
+            .WithName("UpsertVectorDocuments")
+            .WithSummary("Upsert documents into the vector store.")
+            .WithDescription("Embeds document chunks and stores them with their metadata. Existing documents with the same ID are replaced.")
+            .Produces(StatusCodes.Status202Accepted)
+            .ProducesProblem(StatusCodes.Status400BadRequest);
+
+        group.MapPost("/search", SearchAsync)
+            .WithName("SemanticSearch")
+            .WithSummary("Execute a semantic similarity search over ingested documents.")
+            .WithDescription("Embeds the query text and returns the most similar document chunks above the configured similarity threshold.")
+            .Produces(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest);
+
+        group.MapGet("/progress", ProgressAsync)
+            .WithName("GetIngestionProgress")
+            .WithSummary("Check the progress of a document ingestion job.")
+            .Produces(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound);
 
         return endpoints;
     }

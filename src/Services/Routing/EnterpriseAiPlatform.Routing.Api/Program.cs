@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddEnterpriseServiceDefaults();
-builder.Services.AddEnterpriseApiDocumentation();
+builder.Services.AddEnterpriseApiDocumentation("Routing Service", "Applies intelligent routing rules to select the optimal AI provider per request.");
 builder.Services.AddRoutingApplication();
 builder.Services.AddRoutingInfrastructure();
 

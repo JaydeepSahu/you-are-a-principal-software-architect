@@ -45,7 +45,7 @@ public sealed class ExecuteAgentPlanCommandHandler : IRequestHandler<ExecuteAgen
         var planResult = await _planner.CreatePlanAsync(agentId, command.TenantId, command.Request.Goal, memory, cancellationToken);
         if (planResult.IsFailure)
         {
-            return Result<AgentExecutionResponse>.Failure(planResult.Error);
+            return Result.Failure<AgentExecutionResponse>(planResult.Error);
         }
 
         var plan = planResult.Value;
@@ -57,7 +57,7 @@ public sealed class ExecuteAgentPlanCommandHandler : IRequestHandler<ExecuteAgen
         var execResult = await _executor.ExecutePlanAsync(plan, memory, onStreamEvent, cancellationToken);
         if (execResult.IsFailure)
         {
-            return Result<AgentExecutionResponse>.Failure(execResult.Error);
+            return Result.Failure<AgentExecutionResponse>(execResult.Error);
         }
 
         await _memoryStore.SaveAsync(memory, cancellationToken);
@@ -94,6 +94,6 @@ public sealed class ExecuteAgentPlanCommandHandler : IRequestHandler<ExecuteAgen
             plan.CompletedAt
         );
 
-        return Result<AgentExecutionResponse>.Success(response);
+        return Result.Success(response);
     }
 }

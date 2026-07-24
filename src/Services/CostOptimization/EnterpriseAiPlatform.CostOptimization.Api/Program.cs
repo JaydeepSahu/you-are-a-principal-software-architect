@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddEnterpriseServiceDefaults();
-builder.Services.AddEnterpriseApiDocumentation();
+builder.Services.AddEnterpriseApiDocumentation("Cost Optimization and FinOps", "Tracks AI spend, allocates costs to departments, enforces budgets and quotas, and forecasts monthly spend.");
 builder.Services.AddCostOptimizationApplication();
 builder.Services.AddCostOptimizationInfrastructure();
 

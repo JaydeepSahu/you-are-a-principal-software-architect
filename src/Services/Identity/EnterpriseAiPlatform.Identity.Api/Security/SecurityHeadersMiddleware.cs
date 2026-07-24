@@ -1,3 +1,5 @@
+using EnterpriseAiPlatform.ServiceDefaults;
+
 namespace EnterpriseAiPlatform.Identity.Api.Security;
 
 public sealed class SecurityHeadersMiddleware
@@ -14,13 +16,14 @@ public sealed class SecurityHeadersMiddleware
         ArgumentNullException.ThrowIfNull(httpContext);
 
         IHeaderDictionary headers = httpContext.Response.Headers;
-        headers.TryAdd("X-Content-Type-Options", "nosniff");
-        headers.TryAdd("X-Frame-Options", "DENY");
-        headers.TryAdd("Referrer-Policy", "no-referrer");
-        headers.TryAdd("Cache-Control", "no-store");
-        headers.TryAdd("Pragma", "no-cache");
-        headers.TryAdd("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'; base-uri 'none'");
-        headers.TryAdd("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+        headers["X-Content-Type-Options"] = "nosniff";
+        headers["X-Frame-Options"] = "DENY";
+        headers["Referrer-Policy"] = "no-referrer";
+        headers["Cache-Control"] = "no-store";
+        headers["Pragma"] = "no-cache";
+        // Path-aware CSP: relaxed for /scalar/* and /openapi/*, strict for all API paths
+        headers["Content-Security-Policy"] = ServiceDefaultsExtensions.GetContentSecurityPolicy(httpContext.Request.Path);
+        headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()";
 
         await _next(httpContext);
     }

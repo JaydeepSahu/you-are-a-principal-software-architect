@@ -11,14 +11,46 @@ public static class ModelRegistryEndpoints
 {
     public static IEndpointRouteBuilder MapModelRegistryEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapGroup("/api/v1/model-registry");
+        var group = endpoints.MapGroup("/api/v1/model-registry")
+            .WithTags("Model Registry")
+            .WithOpenApi();
 
-        group.MapGet("/providers", GetProvidersAsync);
-        group.MapPost("/models", CreateAsync);
-        group.MapGet("/models", ListAsync);
-        group.MapGet("/models/{id:guid}", GetAsync);
-        group.MapPut("/models/{id:guid}", UpdateAsync);
-        group.MapDelete("/models/{id:guid}", DeleteAsync);
+        group.MapGet("/providers", GetProvidersAsync)
+            .WithName("GetProviders")
+            .WithSummary("List all supported AI providers.")
+            .Produces(StatusCodes.Status200OK);
+
+        group.MapPost("/models", CreateAsync)
+            .WithName("RegisterModel")
+            .WithSummary("Register a new AI model in the platform catalog.")
+            .WithDescription("Adds a model entry with pricing, capability metadata, and health configuration.")
+            .Produces(StatusCodes.Status201Created)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status409Conflict);
+
+        group.MapGet("/models", ListAsync)
+            .WithName("ListModels")
+            .WithSummary("List registered models with optional provider, health and availability filters.")
+            .Produces(StatusCodes.Status200OK);
+
+        group.MapGet("/models/{id:guid}", GetAsync)
+            .WithName("GetModel")
+            .WithSummary("Get a registered model by ID.")
+            .Produces(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
+        group.MapPut("/models/{id:guid}", UpdateAsync)
+            .WithName("UpdateModel")
+            .WithSummary("Update model metadata, pricing, or availability.")
+            .Produces(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
+        group.MapDelete("/models/{id:guid}", DeleteAsync)
+            .WithName("DeleteModel")
+            .WithSummary("Remove a model from the registry.")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound);
 
         return endpoints;
     }

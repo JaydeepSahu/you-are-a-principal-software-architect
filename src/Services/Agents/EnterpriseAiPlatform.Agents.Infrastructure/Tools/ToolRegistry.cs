@@ -37,7 +37,7 @@ public sealed class ToolRegistry : IToolRegistry
 
         if (!_tools.TryGetValue(key, out var entry))
         {
-            return Result<string>.Failure(new Error("Tool.NotFound", $"Tool '{name}' is not registered in the ToolRegistry."));
+            return Result.Failure<string>(new Error("Tool.NotFound", $"Tool '{name}' is not registered in the ToolRegistry."));
         }
 
         try
@@ -51,13 +51,13 @@ public sealed class ToolRegistry : IToolRegistry
                 {
                     if (!root.TryGetProperty(reqParam.Name, out _))
                     {
-                        return Result<string>.Failure(new Error("Tool.InvalidArguments", $"Missing required parameter '{reqParam.Name}' for tool '{name}'."));
+                        return Result.Failure<string>(new Error("Tool.InvalidArguments", $"Missing required parameter '{reqParam.Name}' for tool '{name}'."));
                     }
                 }
             }
 
             var output = await entry.Handler(argumentsJson ?? "{}", cancellationToken);
-            return Result<string>.Success(output);
+            return Result.Success(output);
         }
         catch (OperationCanceledException)
         {
@@ -65,7 +65,7 @@ public sealed class ToolRegistry : IToolRegistry
         }
         catch (Exception ex)
         {
-            return Result<string>.Failure(new Error("Tool.ExecutionError", $"Error executing tool '{name}': {ex.Message}"));
+            return Result.Failure<string>(new Error("Tool.ExecutionError", $"Error executing tool '{name}': {ex.Message}"));
         }
     }
 }

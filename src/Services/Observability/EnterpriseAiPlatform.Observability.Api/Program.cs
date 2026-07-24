@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddEnterpriseServiceDefaults();
-builder.Services.AddEnterpriseApiDocumentation();
+builder.Services.AddEnterpriseApiDocumentation("Observability Service", "Provides dashboards and query endpoints for traces, metrics, and structured logs.");
 builder.Services.AddObservabilityApplication();
 builder.Services.AddObservabilityInfrastructure();
 
