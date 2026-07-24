@@ -1,0 +1,71 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "Control Plane Request Rate (RPS)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum(rate(enterprise_ai_requests_total[1m])) by (tenant_id)",
+          "legendFormat": "Tenant {{tenant_id}}"
+        }
+      ]
+    },
+    {
+      "title": "API Request Latency Percentiles (p50, p95, p99)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(enterprise_ai_request_duration_seconds_bucket[1m])) by (le))",
+          "legendFormat": "p95 Latency"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(enterprise_ai_request_duration_seconds_bucket[1m])) by (le))",
+          "legendFormat": "p99 Latency"
+        }
+      ]
+    },
+    {
+      "title": "Token Consumption by Provider",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "targets": [
+        {
+          "expr": "sum(rate(enterprise_ai_token_usage_total[5m])) by (provider_name)",
+          "legendFormat": "Provider {{provider_name}}"
+        }
+      ]
+    },
+    {
+      "title": "Policy Violations & Interceptions",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "targets": [
+        {
+          "expr": "sum(enterprise_ai_policy_violations_total)",
+          "legendFormat": "Total Violations"
+        }
+      ]
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["enterprise-ai", "observability", "opentelemetry"],
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "title": "Enterprise AI Platform - Production Control Plane",
+  "uid": "enterprise-ai-control-plane"
+}

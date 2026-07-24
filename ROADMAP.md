@@ -7,6 +7,8 @@
 - ADR baseline
 - Bruno health collection
 - Agent Framework (Planner, Executor, Memory, Tools, Parallel/Sequential, Retries, Approvals, Streaming, SDK)
+- Observability Stack (OpenTelemetry Tracing, Metrics, Serilog Logging, Prometheus, Grafana, Health Probes)
+
 
 
 ## Next Milestones

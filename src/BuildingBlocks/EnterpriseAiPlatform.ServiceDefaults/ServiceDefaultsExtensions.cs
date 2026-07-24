@@ -8,8 +8,15 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using OpenTelemetry;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Scalar.AspNetCore;
+using Serilog;
 
 namespace EnterpriseAiPlatform.ServiceDefaults;
 
@@ -19,8 +26,64 @@ public static class ServiceDefaultsExtensions
     {
         ArgumentNullException.ThrowIfNull(builder);
 
+        // Configure OpenTelemetry Tracing, Metrics, and Logging
+        builder.Services.AddOpenTelemetry()
+            .ConfigureResource(resource => resource.AddService(TelemetryConstants.ServiceName))
+            .WithTracing(tracing =>
+            {
+                tracing
+                    .AddSource(TelemetryConstants.ActivitySourceName)
+                    .AddAspNetCoreInstrumentation(options =>
+                    {
+                        options.RecordException = true;
+                    })
+                    .AddHttpClientInstrumentation(options =>
+                    {
+                        options.RecordException = true;
+                    })
+                    .AddOtlpExporter();
+            })
+            .WithMetrics(metrics =>
+            {
+                metrics
+                    .AddMeter(TelemetryConstants.MeterName)
+                    .AddAspNetCoreInstrumentation()
+                    .AddHttpClientInstrumentation()
+                    .AddOtlpExporter();
+            });
+
+        builder.Logging.AddOpenTelemetry(logging =>
+        {
+            logging.IncludeFormattedMessage = true;
+            logging.IncludeScopes = true;
+            logging.AddOtlpExporter();
+        });
+
         builder.Services.AddHealthChecks();
+
         return builder;
+    }
+
+    public static WebApplication UseCorrelationIdMiddleware(this WebApplication app)
+    {
+        ArgumentNullException.ThrowIfNull(app);
+
+        app.Use(async (context, next) =>
+        {
+            var correlationId = context.Request.Headers["X-Correlation-ID"].FirstOrDefault()
+                                ?? Guid.NewGuid().ToString("N");
+
+            context.Response.Headers["X-Correlation-ID"] = correlationId;
+            context.Items["CorrelationId"] = correlationId;
+
+            using (LogContext.PushProperty("CorrelationId", correlationId))
+            using (LogContext.PushProperty("TraceId", System.Diagnostics.Activity.Current?.TraceId.ToString() ?? context.TraceIdentifier))
+            {
+                await next();
+            }
+        });
+
+        return app;
     }
 
     public static IServiceCollection AddEnterpriseApiDocumentation(this IServiceCollection services)

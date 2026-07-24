@@ -1,0 +1,16 @@
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+scrape_configs:
+  - job_name: 'enterprise-ai-platform-services'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets:
+          - 'host.docker.internal:5000' # Gateway API
+          - 'host.docker.internal:5001' # Identity API
+          - 'host.docker.internal:5002' # Routing API
+          - 'host.docker.internal:5003' # Agents API
+          - 'host.docker.internal:5004' # Policy API
+          - 'host.docker.internal:5005' # Metering API
+          - 'host.docker.internal:5006' # Observability API
