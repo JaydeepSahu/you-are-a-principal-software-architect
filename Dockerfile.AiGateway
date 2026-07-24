@@ -1,0 +1,38 @@
+# Multi-stage production Dockerfile for Enterprise AI Gateway
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+WORKDIR /src
+
+# Copy Directory props & configs
+COPY ["Directory.Build.props", "."]
+COPY ["Directory.Packages.props", "."]
+COPY ["global.json", "."]
+COPY ["EnterpriseAiPlatform.sln", "."]
+
+# Copy Projects
+COPY ["src/BuildingBlocks/", "src/BuildingBlocks/"]
+COPY ["src/Gateways/EnterpriseAiPlatform.AiGateway.Api/", "src/Gateways/EnterpriseAiPlatform.AiGateway.Api/"]
+COPY ["src/Gateways/EnterpriseAiPlatform.AiGateway.Application/", "src/Gateways/EnterpriseAiPlatform.AiGateway.Application/"]
+COPY ["src/Gateways/EnterpriseAiPlatform.AiGateway.Contracts/", "src/Gateways/EnterpriseAiPlatform.AiGateway.Contracts/"]
+COPY ["src/Gateways/EnterpriseAiPlatform.AiGateway.Infrastructure/", "src/Gateways/EnterpriseAiPlatform.AiGateway.Infrastructure/"]
+
+# Restore & Publish
+RUN dotnet restore "src/Gateways/EnterpriseAiPlatform.AiGateway.Api/EnterpriseAiPlatform.AiGateway.Api.csproj"
+RUN dotnet publish "src/Gateways/EnterpriseAiPlatform.AiGateway.Api/EnterpriseAiPlatform.AiGateway.Api.csproj" -c Release -o /app/publish /p:UseAppHost=false
+
+# Runtime stage
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
+WORKDIR /app
+
+# Non-root security user setup
+RUN adduser --disabled-password --gecos "" --uid 10001 appuser && chown -R appuser:appuser /app
+USER 10001
+
+COPY --from=build --chown=appuser:appuser /app/publish .
+
+ENV ASPNETCORE_URLS=http://+:8080
+EXPOSE 8080
+
+HEALTHCHECK --interval=10s --timeout=5s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:8080/health/live || exit 1
+
+ENTRYPOINT ["dotnet", "EnterpriseAiPlatform.AiGateway.Api.dll"]

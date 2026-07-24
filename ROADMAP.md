@@ -8,6 +8,8 @@
 - Bruno health collection
 - Agent Framework (Planner, Executor, Memory, Tools, Parallel/Sequential, Retries, Approvals, Streaming, SDK)
 - Observability Stack (OpenTelemetry Tracing, Metrics, Serilog Logging, Prometheus, Grafana, Health Probes)
+- Production Deployment Stack (Docker, Docker Compose, Kubernetes, Helm v3, AKS, GitHub Actions CI/CD, HPA)
+
 
 
 

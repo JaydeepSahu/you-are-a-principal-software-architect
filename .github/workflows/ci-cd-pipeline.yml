@@ -1,0 +1,111 @@
+name: Production CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, release/* ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  id-token: write
+  contents: read
+  packages: write
+  security-events: write
+
+jobs:
+  build-and-test:
+    name: Build & Run Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 9 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore Dependencies
+        run: dotnet restore EnterpriseAiPlatform.sln
+
+      - name: Build Solution
+        run: dotnet build EnterpriseAiPlatform.sln --no-restore -c Release
+
+      - name: Run Unit Tests
+        run: dotnet test EnterpriseAiPlatform.sln --no-build -c Release --verbosity normal
+
+  docker-build-scan-push:
+    name: Docker Build, Security Scan & ACR Push
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Azure Container Registry (ACR)
+        uses: azure/docker-login@v2
+        with:
+          login-server: ${{ secrets.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build AI Gateway Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.AiGateway
+          load: true
+          tags: ${{ secrets.ACR_LOGIN_SERVER }}/enterprise-ai/aigateway-api:${{ github.sha }}
+
+      - name: Security Vulnerability Scan (Trivy)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: '${{ secrets.ACR_LOGIN_SERVER }}/enterprise-ai/aigateway-api:${{ github.sha }}'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Push Image to ACR
+        run: |
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/enterprise-ai/aigateway-api:${{ github.sha }}
+          docker tag ${{ secrets.ACR_LOGIN_SERVER }}/enterprise-ai/aigateway-api:${{ github.sha }} ${{ secrets.ACR_LOGIN_SERVER }}/enterprise-ai/aigateway-api:latest
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/enterprise-ai/aigateway-api:latest
+
+  deploy-to-aks:
+    name: Helm Deploy to AKS Production
+    needs: docker-build-scan-push
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    environment: production
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Set AKS Context
+        uses: azure/aks-set-context@v3
+        with:
+          resource-group: ${{ secrets.AKS_RESOURCE_GROUP }}
+          cluster-name: ${{ secrets.AKS_CLUSTER_NAME }}
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+
+      - name: Deploy Helm Chart
+        run: |
+          helm upgrade --install enterprise-ai ./deployments/helm/enterprise-ai-platform \
+            --namespace enterprise-ai-platform \
+            --values ./deployments/helm/enterprise-ai-platform/values.yaml \
+            --set image.repository=${{ secrets.ACR_LOGIN_SERVER }}/enterprise-ai/aigateway-api \
+            --set image.tag=${{ github.sha }}

@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: enterprise-ai-config
+  namespace: enterprise-ai-platform
+data:
+  ASPNETCORE_ENVIRONMENT: "Production"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.enterprise-ai-platform.svc.cluster.local:4317"
+  Redis__Host: "redis-cluster.enterprise-ai-platform.svc.cluster.local:6379"
+  Logging__LogLevel__Default: "Information"

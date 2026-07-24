@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aigateway-api
+  namespace: enterprise-ai-platform
+  labels:
+    app.kubernetes.io/name: aigateway-api
+    app.kubernetes.io/part-of: enterprise-ai-platform
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: aigateway-api
+  template:
+    metadata:
+      labels:
+        app: aigateway-api
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+      containers:
+        - name: aigateway-api
+          image: myacr.azurecr.io/enterprise-ai/aigateway-api:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+              name: http
+          envFrom:
+            - configMapRef:
+                name: enterprise-ai-config
+            - secretRef:
+                name: enterprise-ai-secrets
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1536Mi"
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 2

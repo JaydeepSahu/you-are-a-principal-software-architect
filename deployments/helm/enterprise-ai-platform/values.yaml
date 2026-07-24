@@ -1,0 +1,74 @@
+replicaCount: 3
+
+image:
+  repository: myacr.azurecr.io/enterprise-ai/aigateway-api
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "32m"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  hosts:
+    - host: ai-controlplane.enterprise.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: ai-controlplane-tls
+      hosts:
+        - ai-controlplane.enterprise.com
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1536Mi
+  requests:
+    cpu: 250m
+    memory: 512Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 20
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+config:
+  environment: "Production"
+  otlpEndpoint: "http://otel-collector.enterprise-ai-platform.svc.cluster.local:4317"
+  redisHost: "redis-cluster.enterprise-ai-platform.svc.cluster.local:6379"

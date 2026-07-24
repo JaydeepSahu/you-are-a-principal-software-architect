@@ -1,0 +1,14 @@
+.git
+.gitignore
+.vs
+.venv
+.idea
+*.user
+bin/
+obj/
+node_modules/
+outputs/
+site/
+tests/
+vector-search-api.err.log
+vector-search-api.out.log
