@@ -10,5 +10,7 @@
 - Added documentation portal, operational runbooks, observability, performance, testing, CI/CD, developer onboarding, and automation docs
 - Added code of conduct and contributing guidelines
 - Added roadmap and changelog tracking for future milestones
-- Added Bruno health-check collection scaffold
+- Added Agent Framework bounded context (`EnterpriseAiPlatform.Agents`) with support for Planner, Executor, Memory, Tools, Parallel (`Task.WhenAll`) & Sequential execution, Retries with exponential backoff, Human-in-the-loop Approvals, Cancellation, SSE Event Streaming, and Developer Agent SDK.
+- Added comprehensive unit test suite in `tests/EnterpriseAiPlatform.Agents.UnitTests`.
+
 

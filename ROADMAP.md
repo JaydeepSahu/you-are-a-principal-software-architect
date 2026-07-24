@@ -6,6 +6,8 @@
 - API documentation infrastructure
 - ADR baseline
 - Bruno health collection
+- Agent Framework (Planner, Executor, Memory, Tools, Parallel/Sequential, Retries, Approvals, Streaming, SDK)
+
 
 ## Next Milestones
 
