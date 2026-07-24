@@ -33,7 +33,7 @@ public enum TraceSeverity
     Critical,
 }
 
-public sealed record Trace : SharedKernel.Entity<SharedKernel.Entity<Guid>>
+public sealed class Trace : SharedKernel.Entity<Guid>
 {
     public Trace(
         Guid id,

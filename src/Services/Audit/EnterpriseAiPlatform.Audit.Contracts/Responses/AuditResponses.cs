@@ -1,5 +1,3 @@
-using EnterpriseAiPlatform.Audit.Domain;
-
 namespace EnterpriseAiPlatform.Audit.Contracts.Responses;
 
 public sealed record AuditEventRecordedResponse(

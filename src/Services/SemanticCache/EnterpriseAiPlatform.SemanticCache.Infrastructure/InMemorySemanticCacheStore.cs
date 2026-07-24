@@ -4,7 +4,7 @@ using System.Text;
 using EnterpriseAiPlatform.Application.Abstractions;
 using EnterpriseAiPlatform.SemanticCache.Application.Abstractions;
 using EnterpriseAiPlatform.SemanticCache.Domain;
-using SharedKernel = EnterpriseAiPlatform.SharedKernel;
+using EnterpriseAiPlatform.SharedKernel;
 
 namespace EnterpriseAiPlatform.SemanticCache.Infrastructure;
 
@@ -27,7 +27,7 @@ public sealed class InMemorySemanticCacheStore : ISemanticCacheStore
         var keyHash = ComputeKeyHash(tenantId, cacheType, version, key);
         var entryKey = CompositeKey(tenantId, cacheType, version, keyHash);
         var entry = new InMemoryEntry(
-            keyHash, tenantId, cacheType, version, embedding, value, ttl, tags ?? [],
+            keyHash, tenantId, cacheType, version, embedding, value, ttl, tags ?? new HashSet<string>(),
             DateTimeOffset.UtcNow, 0);
         _store[keyHash] = entry;
         Interlocked.Increment(ref _sets);
@@ -97,7 +97,7 @@ public sealed class InMemorySemanticCacheStore : ISemanticCacheStore
             if (key is not null)
                 remove = ComputeKeyHash(tenantId, cacheType, version ?? entry.Version, key) == k;
             else if (tag is not null)
-                remove = entry.Tags.Contains(tag, StringComparer.OrdinalIgnoreCase);
+                remove = entry.Tags.Contains(tag);
             else
                 remove = true;
 
@@ -146,10 +146,11 @@ public sealed class InMemorySemanticCacheStore : ISemanticCacheStore
             .OrderByDescending(e => e.CreatedAtUtc)
             .Skip(skip)
             .Take(pageSize2)
-            .Select(e => new CacheKeyInfo(e.KeyHash, e.CreatedAtUtc, e.ExpiresAtUtc, e.HitCount, e.Tags))
+            .Select(e => new CacheKeyInfo(e.KeyHash, e.CreatedAtUtc, e.ExpiresAtUtc, e.HitCount, e.Tags.ToList()))
             .ToList();
 
-        return Task.FromResult<IReadOnlyList<CacheKeyInfo>>(results);
+        IReadOnlyList<CacheKeyInfo> list = results;
+        return Task.FromResult(list);
     }
 
     public Task<long> CountKeysAsync(

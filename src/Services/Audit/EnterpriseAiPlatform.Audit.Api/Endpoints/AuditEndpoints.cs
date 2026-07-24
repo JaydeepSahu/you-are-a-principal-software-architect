@@ -1,5 +1,6 @@
 using EnterpriseAiPlatform.Audit.Application.AuditEvents;
 using EnterpriseAiPlatform.Audit.Contracts.Requests;
+using EnterpriseAiPlatform.SharedKernel;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -38,8 +39,8 @@ public static class AuditEndpoints
         CancellationToken cancellationToken)
     {
         var request = new QueryAuditLogRequest(
-            resourceType, resourceId, userId,
-            page: page ?? 1, pageSize: pageSize ?? 50);
+            resourceType, resourceId, userId, null, null, null, null,
+            page ?? 1, pageSize ?? 50);
         var result = await sender.Send(new QueryAuditLogQuery(request), cancellationToken);
         return result.IsSuccess ? Results.Ok(result.Value) : ToProblem(result.Error);
     }

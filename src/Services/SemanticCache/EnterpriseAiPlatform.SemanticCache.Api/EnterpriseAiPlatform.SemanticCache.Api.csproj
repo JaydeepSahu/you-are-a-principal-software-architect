@@ -8,5 +8,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\EnterpriseAiPlatform.SemanticCache.Infrastructure\EnterpriseAiPlatform.SemanticCache.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\EnterpriseAiPlatform.ServiceDefaults\EnterpriseAiPlatform.ServiceDefaults.csproj" />
   </ItemGroup>
 </Project>

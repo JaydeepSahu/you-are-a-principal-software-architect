@@ -1,5 +1,3 @@
-using EnterpriseAiPlatform.Policy.Domain;
-
 namespace EnterpriseAiPlatform.Policy.Contracts.Responses;
 
 public sealed record PolicyCreatedResponse(
@@ -19,8 +17,8 @@ public sealed record PolicyListResponse(
 public sealed record PolicySummaryResponse(
     Guid Id,
     string Name,
-    PolicyResourceType ResourceType,
-    PolicyEffect Effect,
+    string ResourceType,
+    string Effect,
     bool IsEnabled,
     DateTimeOffset CreatedAtUtc,
     DateTimeOffset? ExpiresAtUtc);

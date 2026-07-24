@@ -23,7 +23,7 @@ public sealed class InMemoryTraceRepository : ITraceRepository
         string? service,
         TraceSeverity? minSeverity,
         DateTimeOffset? from,
-        DateTimeOffset? to,
+        DateTimeOffset? until,
         int skip,
         int take,
         CancellationToken cancellationToken = default)
@@ -34,7 +34,7 @@ public sealed class InMemoryTraceRepository : ITraceRepository
             .Where(t => service is null || t.Service == service)
             .Where(t => minSeverity is null || t.Severity >= minSeverity)
             .Where(t => from is null || t.StartedAtUtc >= from)
-            .Where(t => to is null || t.StartedAtUtc <= to)
+            .Where(t => until is null || t.StartedAtUtc <= until)
             .OrderByDescending(t => t.StartedAtUtc)
             .Skip(skip).Take(take)
             .ToList();
@@ -47,7 +47,7 @@ public sealed class InMemoryTraceRepository : ITraceRepository
         string? service,
         TraceSeverity? minSeverity,
         DateTimeOffset? from,
-        DateTimeOffset? to,
+        DateTimeOffset? until,
         CancellationToken cancellationToken = default)
     {
         var count = _traces.Values
@@ -56,7 +56,7 @@ public sealed class InMemoryTraceRepository : ITraceRepository
                 && (service is null || t.Service == service)
                 && (minSeverity is null || t.Severity >= minSeverity)
                 && (from is null || t.StartedAtUtc >= from)
-                && (to is null || t.StartedAtUtc <= to));
+                && (until is null || t.StartedAtUtc <= until));
         return Task.FromResult(count);
     }
 }

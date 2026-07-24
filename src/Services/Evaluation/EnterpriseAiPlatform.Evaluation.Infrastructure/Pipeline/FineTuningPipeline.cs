@@ -14,7 +14,7 @@ public sealed class FineTuningPipeline : IFineTuningPipeline
         var pairs = trainingPairs.ToList();
         if (pairs.Count == 0)
         {
-            return Task.FromResult(Result<FineTuningJobResult>.Failure(new Error("FineTune.NoData", "Training dataset cannot be empty.")));
+            return Task.FromResult(Result<FineTuningJobResult>.Failure<FineTuningJobResult>(new Error("FineTune.NoData", "Training dataset cannot be empty.")));
         }
 
         var jobId = Guid.NewGuid();

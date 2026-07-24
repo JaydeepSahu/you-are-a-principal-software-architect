@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -5,6 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace EnterpriseAiPlatform.BackgroundWorkers.Infrastructure;
 
+[SuppressMessage("Reliability", "CA1848:Use the LoggerMessage delegates", Justification = "Background worker lifecycle logging.")]
 public sealed class MeteringAggregationWorker(
     IServiceScopeFactory scopeFactory,
     ILogger<MeteringAggregationWorker> logger)
@@ -38,6 +40,7 @@ public sealed class MeteringAggregationWorker(
     }
 }
 
+[SuppressMessage("Reliability", "CA1848:Use the LoggerMessage delegates", Justification = "Background worker lifecycle logging.")]
 public sealed class PolicyCleanupWorker(
     IServiceScopeFactory scopeFactory,
     ILogger<PolicyCleanupWorker> logger)
@@ -68,6 +71,7 @@ public sealed class PolicyCleanupWorker(
     }
 }
 
+[SuppressMessage("Reliability", "CA1848:Use the LoggerMessage delegates", Justification = "Background worker lifecycle logging.")]
 public sealed class AuditFlushWorker(
     IServiceScopeFactory scopeFactory,
     ILogger<AuditFlushWorker> logger)

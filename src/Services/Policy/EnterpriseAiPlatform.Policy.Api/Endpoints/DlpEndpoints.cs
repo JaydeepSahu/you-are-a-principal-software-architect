@@ -64,6 +64,8 @@ public static class DlpEndpoints
     private static TenantId GetTenantId(HttpContext httpContext)
     {
         var tenantHeader = httpContext.Request.Headers["X-Tenant-Id"].FirstOrDefault();
-        return TenantId.From(tenantHeader ?? "default-tenant");
+        return tenantHeader is not null && Guid.TryParse(tenantHeader, out var tid)
+            ? TenantId.From(tid)
+            : TenantId.From(Guid.Parse("00000000-0000-0000-0000-000000000001"));
     }
 }

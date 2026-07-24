@@ -13,13 +13,13 @@ public sealed class EvaluationEngine : IEvaluationEngine
     {
         if (string.IsNullOrWhiteSpace(prompt) || string.IsNullOrWhiteSpace(response))
         {
-            return Task.FromResult(Result<EvaluationScore>.Failure(new Error("Eval.InvalidInput", "Prompt and response cannot be empty.")));
+            return Task.FromResult(Result<EvaluationScore>.Failure<EvaluationScore>(new Error("Eval.InvalidInput", "Prompt and response cannot be empty.")));
         }
 
         // LLM-as-a-Judge heuristic calculation
         bool containsSecrets = response.Contains("AKIA", StringComparison.OrdinalIgnoreCase) || response.Contains("bearer ", StringComparison.OrdinalIgnoreCase);
         double relevance = Math.Min(1.0, (double)response.Length / Math.Max(10, prompt.Length));
-        double faithfulness = groundTruthContext == null ? 0.95 : (response.Split(' ').Count(w => groundTruthContext.Contains(w, StringComparison.OrdinalIgnoreCase)) > 0 ? 0.9 : 0.7);
+        double faithfulness = groundTruthContext == null ? 0.95 : (response.Split(' ').Any(w => groundTruthContext.Contains(w, StringComparison.OrdinalIgnoreCase)) ? 0.9 : 0.7);
         double security = containsSecrets ? 0.0 : 1.0;
         double overall = (relevance * 0.3) + (faithfulness * 0.4) + (security * 0.3);
 

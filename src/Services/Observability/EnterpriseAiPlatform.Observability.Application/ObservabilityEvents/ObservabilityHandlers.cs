@@ -4,6 +4,7 @@ using EnterpriseAiPlatform.Observability.Application.ObservabilityEvents;
 using EnterpriseAiPlatform.Observability.Contracts.Requests;
 using EnterpriseAiPlatform.Observability.Contracts.Responses;
 using EnterpriseAiPlatform.Observability.Domain;
+using EnterpriseAiPlatform.SharedKernel;
 
 namespace EnterpriseAiPlatform.Observability.Application.ObservabilityEvents;
 
@@ -17,13 +18,15 @@ public sealed class RecordTraceHandler(
         CancellationToken cancellationToken)
     {
         var now = DateTimeOffset.UtcNow;
+        var severity = Enum.TryParse<TraceSeverity>(command.Request.Severity, true, out var s) ? s : TraceSeverity.Info;
+
         var trace = new Trace(
             Guid.NewGuid(),
             requestContext.Current.TenantId,
             command.Request.TraceId,
             command.Request.SpanId,
             command.Request.Name,
-            command.Request.Severity,
+            severity,
             command.Request.Service,
             command.Request.Attributes ?? new Dictionary<string, string>(),
             now,
@@ -48,11 +51,13 @@ public sealed class QueryTracesHandler(
         var pageSize = Math.Clamp(query.Request.PageSize, 1, 500);
         var skip = (page - 1) * pageSize;
 
+        TraceSeverity? minSeverity = Enum.TryParse<TraceSeverity>(query.Request.MinSeverity, true, out var ms) ? ms : null;
+
         var traces = await repository.QueryAsync(
             requestContext.Current.TenantId,
             query.Request.TraceId,
             query.Request.Service,
-            query.Request.MinSeverity,
+            minSeverity,
             query.Request.From,
             query.Request.To,
             skip,
@@ -63,7 +68,7 @@ public sealed class QueryTracesHandler(
             requestContext.Current.TenantId,
             query.Request.TraceId,
             query.Request.Service,
-            query.Request.MinSeverity,
+            minSeverity,
             query.Request.From,
             query.Request.To,
             cancellationToken);

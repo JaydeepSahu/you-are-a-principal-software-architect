@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using EnterpriseAiPlatform.Application.Abstractions;
 using EnterpriseAiPlatform.Audit.Application.Abstractions;
 using EnterpriseAiPlatform.Audit.Domain;
+using EnterpriseAiPlatform.SharedKernel;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace EnterpriseAiPlatform.Audit.Infrastructure;
@@ -18,7 +19,7 @@ public sealed class InMemoryAuditRepository : IAuditRepository
         AuditAction? action,
         AuditSeverity? minSeverity,
         DateTimeOffset? from,
-        DateTimeOffset? to,
+        DateTimeOffset? until,
         int skip,
         int take,
         CancellationToken cancellationToken = default)
@@ -31,7 +32,7 @@ public sealed class InMemoryAuditRepository : IAuditRepository
             .Where(e => action is null || e.Action == action)
             .Where(e => minSeverity is null || e.Severity >= minSeverity)
             .Where(e => from is null || e.OccurredAtUtc >= from)
-            .Where(e => to is null || e.OccurredAtUtc <= to)
+            .Where(e => until is null || e.OccurredAtUtc <= until)
             .OrderByDescending(e => e.OccurredAtUtc);
 
         var results = query.Skip(skip).Take(take).ToList();
@@ -46,7 +47,7 @@ public sealed class InMemoryAuditRepository : IAuditRepository
         AuditAction? action,
         AuditSeverity? minSeverity,
         DateTimeOffset? from,
-        DateTimeOffset? to,
+        DateTimeOffset? until,
         CancellationToken cancellationToken = default)
     {
         var count = _entries.Values
@@ -57,7 +58,7 @@ public sealed class InMemoryAuditRepository : IAuditRepository
                 && (action is null || e.Action == action)
                 && (minSeverity is null || e.Severity >= minSeverity)
                 && (from is null || e.OccurredAtUtc >= from)
-                && (to is null || e.OccurredAtUtc <= to));
+                && (until is null || e.OccurredAtUtc <= until));
         return Task.FromResult(count);
     }
 

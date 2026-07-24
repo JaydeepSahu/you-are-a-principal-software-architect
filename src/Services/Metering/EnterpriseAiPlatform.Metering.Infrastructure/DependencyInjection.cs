@@ -22,7 +22,7 @@ public sealed class InMemoryMeteringRepository : IMeteringRepository
         string? provider,
         string? model,
         DateTimeOffset? from,
-        DateTimeOffset? to,
+        DateTimeOffset? until,
         CancellationToken cancellationToken = default)
     {
         var results = _records.Values
@@ -30,7 +30,7 @@ public sealed class InMemoryMeteringRepository : IMeteringRepository
             .Where(r => provider is null || r.Provider == provider)
             .Where(r => model is null || r.Model == model)
             .Where(r => from is null || r.RecordedAtUtc >= from)
-            .Where(r => to is null || r.RecordedAtUtc <= to)
+            .Where(r => until is null || r.RecordedAtUtc <= until)
             .OrderByDescending(r => r.RecordedAtUtc)
             .ToList();
         return Task.FromResult<IReadOnlyList<MeteringRecord>>(results);

@@ -1,6 +1,8 @@
 using EnterpriseAiPlatform.Application.Abstractions;
 using EnterpriseAiPlatform.SemanticCache.Application.Abstractions;
+using EnterpriseAiPlatform.SemanticCache.Application.Cache;
 using EnterpriseAiPlatform.SemanticCache.Application.Validation;
+
 using EnterpriseAiPlatform.SemanticCache.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

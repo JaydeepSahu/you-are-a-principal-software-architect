@@ -90,7 +90,7 @@ public sealed class InlineDlpScanner : IDlpScanner
 
     public Task<Result<IReadOnlyList<DlpRule>>> GetActiveRulesAsync(TenantId tenantId, CancellationToken cancellationToken = default)
     {
-        var rules = BuiltInRules.Select(r => r.Rule).ToList().AsReadOnly();
+        IReadOnlyList<DlpRule> rules = BuiltInRules.Select(r => r.Rule).ToList();
         return Task.FromResult(Result<IReadOnlyList<DlpRule>>.Success(rules));
     }
 }

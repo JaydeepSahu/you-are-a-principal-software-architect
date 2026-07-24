@@ -11,7 +11,7 @@ public interface ITraceRepository
         string? service,
         TraceSeverity? minSeverity,
         DateTimeOffset? from,
-        DateTimeOffset? to,
+        DateTimeOffset? until,
         int skip,
         int take,
         CancellationToken cancellationToken = default);
@@ -21,6 +21,6 @@ public interface ITraceRepository
         string? service,
         TraceSeverity? minSeverity,
         DateTimeOffset? from,
-        DateTimeOffset? to,
+        DateTimeOffset? until,
         CancellationToken cancellationToken = default);
 }

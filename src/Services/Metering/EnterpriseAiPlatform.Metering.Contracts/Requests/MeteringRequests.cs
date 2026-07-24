@@ -1,11 +1,9 @@
-using EnterpriseAiPlatform.Metering.Domain;
-
 namespace EnterpriseAiPlatform.Metering.Contracts.Requests;
 
 public sealed record RecordMeteringRequest(
     string Provider,
     string Model,
-    MeteringDimension Dimension,
+    string Dimension,
     double Value);
 
 public sealed record QueryMeteringReportRequest(

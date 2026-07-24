@@ -46,7 +46,8 @@ public sealed class HybridRagEngine : IKnowledgeEngine
             _chunks.Add(chunk);
         }
 
-        return Task.FromResult(Result<IReadOnlyList<KnowledgeChunk>>.Success(createdChunks.AsReadOnly()));
+        IReadOnlyList<KnowledgeChunk> resultList = createdChunks;
+        return Task.FromResult(Result<IReadOnlyList<KnowledgeChunk>>.Success(resultList));
     }
 
     public Task<Result<IReadOnlyList<RagSearchResult>>> HybridSearchAsync(
@@ -58,8 +59,9 @@ public sealed class HybridRagEngine : IKnowledgeEngine
     {
         if (string.IsNullOrWhiteSpace(query))
         {
-            return Task.FromResult(Result<IReadOnlyList<RagSearchResult>>.Failure(new Error("RAG.InvalidQuery", "Query cannot be empty.")));
+            return Task.FromResult(Result.Failure<IReadOnlyList<RagSearchResult>>(new Error("RAG.InvalidQuery", "Query cannot be empty.")));
         }
+
 
         var terms = query.ToLowerInvariant().Split(' ', StringSplitOptions.RemoveEmptyEntries);
         var allChunks = _chunks.ToList();
@@ -69,7 +71,7 @@ public sealed class HybridRagEngine : IKnowledgeEngine
             .Select(c =>
             {
                 var text = c.TextContent.ToLowerInvariant();
-                double matchScore = terms.Count(t => text.Contains(t)) * 1.0;
+                double matchScore = terms.Count(t => text.Contains(t, StringComparison.OrdinalIgnoreCase)) * 1.0;
                 return (Chunk: c, Score: matchScore);
             })
             .Where(r => r.Score > 0)
@@ -120,6 +122,7 @@ public sealed class HybridRagEngine : IKnowledgeEngine
             })
             .ToList();
 
-        return Task.FromResult(Result<IReadOnlyList<RagSearchResult>>.Success(fusedResults.AsReadOnly()));
+        IReadOnlyList<RagSearchResult> searchResultList = fusedResults;
+        return Task.FromResult(Result<IReadOnlyList<RagSearchResult>>.Success(searchResultList));
     }
 }

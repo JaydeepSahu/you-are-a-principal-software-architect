@@ -1,33 +1,33 @@
 namespace EnterpriseAiPlatform.Metering.Domain;
 
-public sealed record MeteringUsageReport : SharedKernel.Entity<MeteringRecordId>
+public sealed class MeteringUsageReport : SharedKernel.Entity<MeteringRecordId>
 {
     public MeteringUsageReport(
         MeteringRecordId id,
         SharedKernel.TenantId tenantId,
-        string Provider,
-        string Model,
-        long TokenCompletionTotal,
-        long TokenPromptTotal,
-        long RequestCountTotal,
-        long ErrorCountTotal,
-        double CostUsd,
-        DateTimeOffset PeriodStartUtc,
-        DateTimeOffset PeriodEndUtc,
-        DateTimeOffset GeneratedAtUtc)
+        string provider,
+        string model,
+        long tokenCompletionTotal,
+        long tokenPromptTotal,
+        long requestCountTotal,
+        long errorCountTotal,
+        double costUsd,
+        DateTimeOffset periodStartUtc,
+        DateTimeOffset periodEndUtc,
+        DateTimeOffset generatedAtUtc)
         : base(id)
     {
         TenantId = tenantId;
-        Provider = Provider;
-        Model = Model;
-        TokenCompletionTotal = TokenCompletionTotal;
-        TokenPromptTotal = TokenPromptTotal;
-        RequestCountTotal = RequestCountTotal;
-        ErrorCountTotal = ErrorCountTotal;
-        CostUsd = CostUsd;
-        PeriodStartUtc = PeriodStartUtc;
-        PeriodEndUtc = PeriodEndUtc;
-        GeneratedAtUtc = GeneratedAtUtc;
+        Provider = provider;
+        Model = model;
+        TokenCompletionTotal = tokenCompletionTotal;
+        TokenPromptTotal = tokenPromptTotal;
+        RequestCountTotal = requestCountTotal;
+        ErrorCountTotal = errorCountTotal;
+        CostUsd = costUsd;
+        PeriodStartUtc = periodStartUtc;
+        PeriodEndUtc = periodEndUtc;
+        GeneratedAtUtc = generatedAtUtc;
     }
 
     public SharedKernel.TenantId TenantId { get; }

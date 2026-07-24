@@ -1,6 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <ProjectReference Include="..\EnterpriseAiPlatform.Metering.Application\EnterpriseAiPlatform.Metering.Application.csproj" />
     <ProjectReference Include="..\EnterpriseAiPlatform.Metering.Domain\EnterpriseAiPlatform.Metering.Domain.csproj" />
     <ProjectReference Include="..\EnterpriseAiPlatform.Metering.Contracts\EnterpriseAiPlatform.Metering.Contracts.csproj" />

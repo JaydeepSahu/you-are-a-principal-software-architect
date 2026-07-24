@@ -1,9 +1,11 @@
+using PolicyEntity = EnterpriseAiPlatform.Policy.Domain.Policy;
 using EnterpriseAiPlatform.Application.Abstractions;
 using EnterpriseAiPlatform.Policy.Application.Abstractions;
 using EnterpriseAiPlatform.Policy.Application.PolicyEvents;
 using EnterpriseAiPlatform.Policy.Contracts.Requests;
 using EnterpriseAiPlatform.Policy.Contracts.Responses;
 using EnterpriseAiPlatform.Policy.Domain;
+using EnterpriseAiPlatform.SharedKernel;
 
 namespace EnterpriseAiPlatform.Policy.Application.PolicyEvents;
 
@@ -17,13 +19,16 @@ public sealed class CreatePolicyHandler(
         CancellationToken cancellationToken)
     {
         var now = DateTimeOffset.UtcNow;
-        var policy = new Policy(
+        var resourceType = Enum.TryParse<PolicyResourceType>(command.Request.ResourceType, true, out var rt) ? rt : PolicyResourceType.AiGateway;
+        var effect = Enum.TryParse<PolicyEffect>(command.Request.Effect, true, out var ef) ? ef : PolicyEffect.Allow;
+
+        var policy = new PolicyEntity(
             PolicyId.New(),
             requestContext.Current.TenantId,
             command.Request.Name,
             command.Request.Description,
-            command.Request.ResourceType,
-            command.Request.Effect,
+            resourceType,
+            effect,
             command.Request.Principals,
             command.Request.Actions,
             command.Request.Conditions,
@@ -45,9 +50,11 @@ public sealed class EvaluatePolicyHandler(
         EvaluatePolicyCommand command,
         CancellationToken cancellationToken)
     {
+        PolicyResourceType? resourceType = Enum.TryParse<PolicyResourceType>(command.Request.ResourceType, true, out var rt) ? rt : null;
+
         var policies = await repository.QueryAsync(
             requestContext.Current.TenantId,
-            command.Request.ResourceType,
+            resourceType,
             cancellationToken);
 
         var applicablePolicies = policies
@@ -91,8 +98,8 @@ public sealed class ListPoliciesHandler(
             policies.Select(p => new PolicySummaryResponse(
                 p.Id.Value,
                 p.Name,
-                p.ResourceType,
-                p.Effect,
+                p.ResourceType.ToString(),
+                p.Effect.ToString(),
                 p.IsEnabled,
                 p.CreatedAtUtc,
                 p.ExpiresAtUtc)).ToList()));

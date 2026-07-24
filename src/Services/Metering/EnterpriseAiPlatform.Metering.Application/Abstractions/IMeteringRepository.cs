@@ -10,6 +10,6 @@ public interface IMeteringRepository
         string? provider,
         string? model,
         DateTimeOffset? from,
-        DateTimeOffset? to,
+        DateTimeOffset? until,
         CancellationToken cancellationToken = default);
 }

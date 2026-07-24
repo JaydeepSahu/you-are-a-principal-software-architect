@@ -1,6 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <ProjectReference Include="..\EnterpriseAiPlatform.Observability.Application\EnterpriseAiPlatform.Observability.Application.csproj" />
     <ProjectReference Include="..\EnterpriseAiPlatform.Observability.Domain\EnterpriseAiPlatform.Observability.Domain.csproj" />
     <ProjectReference Include="..\EnterpriseAiPlatform.Observability.Contracts\EnterpriseAiPlatform.Observability.Contracts.csproj" />

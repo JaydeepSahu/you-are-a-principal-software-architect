@@ -1,3 +1,4 @@
+using PolicyEntity = EnterpriseAiPlatform.Policy.Domain.Policy;
 using System.Collections.Concurrent;
 using EnterpriseAiPlatform.Application.Abstractions;
 using EnterpriseAiPlatform.Policy.Application.Abstractions;
@@ -9,12 +10,12 @@ namespace EnterpriseAiPlatform.Policy.Infrastructure;
 
 public sealed class InMemoryPolicyRepository : IPolicyRepository
 {
-    private readonly ConcurrentDictionary<Guid, Policy> _policies = new();
+    private readonly ConcurrentDictionary<Guid, PolicyEntity> _policies = new();
 
-    public Task<Policy?> GetByIdAsync(PolicyId id, SharedKernel.TenantId tenantId, CancellationToken cancellationToken = default)
+    public Task<PolicyEntity?> GetByIdAsync(PolicyId id, SharedKernel.TenantId tenantId, CancellationToken cancellationToken = default)
         => Task.FromResult(_policies.Values.FirstOrDefault(p => p.Id == id && p.TenantId == tenantId));
 
-    public Task<IReadOnlyList<Policy>> QueryAsync(
+    public Task<IReadOnlyList<PolicyEntity>> QueryAsync(
         SharedKernel.TenantId tenantId,
         PolicyResourceType? resourceType,
         CancellationToken cancellationToken = default)
@@ -24,10 +25,10 @@ public sealed class InMemoryPolicyRepository : IPolicyRepository
             .Where(p => resourceType is null || p.ResourceType == resourceType)
             .OrderByDescending(p => p.CreatedAtUtc)
             .ToList();
-        return Task.FromResult<IReadOnlyList<Policy>>(results);
+        return Task.FromResult<IReadOnlyList<PolicyEntity>>(results);
     }
 
-    public Task AddAsync(Policy policy, CancellationToken cancellationToken = default)
+    public Task AddAsync(PolicyEntity policy, CancellationToken cancellationToken = default)
     {
         _policies[policy.Id.Value] = policy;
         return Task.CompletedTask;

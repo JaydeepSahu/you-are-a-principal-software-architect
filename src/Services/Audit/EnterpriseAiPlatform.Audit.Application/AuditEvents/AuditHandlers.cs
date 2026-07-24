@@ -4,10 +4,11 @@ using EnterpriseAiPlatform.Audit.Application.AuditEvents;
 using EnterpriseAiPlatform.Audit.Contracts.Requests;
 using EnterpriseAiPlatform.Audit.Contracts.Responses;
 using EnterpriseAiPlatform.Audit.Domain;
+using EnterpriseAiPlatform.SharedKernel;
 
 namespace EnterpriseAiPlatform.Audit.Application.AuditEvents;
 
-public sealed class RecordAuditEventHandler(
+public sealed class RecordAuditHandler(
     IAuditRepository repository,
     IRequestContextAccessor requestContext)
     : ICommandHandler<RecordAuditEventCommand, AuditEventRecordedResponse>
@@ -17,11 +18,14 @@ public sealed class RecordAuditEventHandler(
         CancellationToken cancellationToken)
     {
         var ctx = requestContext.Current;
+        var action = Enum.TryParse<AuditAction>(command.Request.Action, true, out var act) ? act : AuditAction.Execute;
+        var severity = Enum.TryParse<AuditSeverity>(command.Request.Severity, true, out var sev) ? sev : AuditSeverity.Info;
+
         var entry = new AuditEntry(
             AuditEntryId.New(),
             ctx.TenantId,
-            command.Request.Action,
-            command.Request.Severity,
+            action,
+            severity,
             command.Request.ResourceType,
             command.Request.ResourceId,
             command.Request.UserId ?? ctx.UserId,
@@ -53,13 +57,16 @@ public sealed class QueryAuditLogHandler(
         var page = Math.Max(query.Request.Page, 1);
         var skip = (page - 1) * pageSize;
 
+        AuditAction? action = Enum.TryParse<AuditAction>(query.Request.Action, true, out var act) ? act : null;
+        AuditSeverity? minSeverity = Enum.TryParse<AuditSeverity>(query.Request.MinSeverity, true, out var sev) ? sev : null;
+
         var entries = await repository.QueryAsync(
             tenantId,
             query.Request.ResourceType,
             query.Request.ResourceId,
             query.Request.UserId,
-            query.Request.Action,
-            query.Request.MinSeverity,
+            action,
+            minSeverity,
             query.Request.From,
             query.Request.To,
             skip,
@@ -71,8 +78,8 @@ public sealed class QueryAuditLogHandler(
             query.Request.ResourceType,
             query.Request.ResourceId,
             query.Request.UserId,
-            query.Request.Action,
-            query.Request.MinSeverity,
+            action,
+            minSeverity,
             query.Request.From,
             query.Request.To,
             cancellationToken);

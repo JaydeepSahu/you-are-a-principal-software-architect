@@ -17,6 +17,8 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Scalar.AspNetCore;
 using Serilog;
+using Serilog.Context;
+
 
 namespace EnterpriseAiPlatform.ServiceDefaults;
 

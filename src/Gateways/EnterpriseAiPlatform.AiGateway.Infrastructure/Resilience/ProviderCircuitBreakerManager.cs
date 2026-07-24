@@ -9,7 +9,7 @@ namespace EnterpriseAiPlatform.AiGateway.Infrastructure.Resilience;
 
 public sealed class ProviderCircuitBreakerManager : ICircuitBreakerManager
 {
-    private class CircuitTracker
+    private sealed class CircuitTracker
     {
         public string ProviderName { get; }
         public string FallbackProvider { get; }
@@ -136,7 +136,7 @@ public sealed class ProviderCircuitBreakerManager : ICircuitBreakerManager
             ));
         }
 
-        RecordOutcome(targetProvider, isSuccess: false, isRateLimit: result.Error.Code.Contains("RateLimit"));
+        RecordOutcome(targetProvider, isSuccess: false, isRateLimit: result.Error.Code.Contains("RateLimit", StringComparison.OrdinalIgnoreCase));
 
         if (!wasFallback)
         {
@@ -159,8 +159,9 @@ public sealed class ProviderCircuitBreakerManager : ICircuitBreakerManager
             }
         }
 
-        return Result<ResilientRoutingResult>.Failure(result.Error);
+        return Result.Failure<ResilientRoutingResult>(result.Error);
     }
+
 
     private CircuitTracker GetOrCreateTracker(string providerName)
     {

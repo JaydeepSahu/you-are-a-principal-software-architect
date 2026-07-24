@@ -4,8 +4,8 @@ using System.Text;
 using EnterpriseAiPlatform.Application.Abstractions;
 using EnterpriseAiPlatform.SemanticCache.Application.Abstractions;
 using EnterpriseAiPlatform.SemanticCache.Domain;
+using EnterpriseAiPlatform.SharedKernel;
 using Microsoft.Extensions.Options;
-using SharedKernel = EnterpriseAiPlatform.SharedKernel;
 using StackExchange.Redis;
 
 namespace EnterpriseAiPlatform.SemanticCache.Infrastructure;
@@ -17,7 +17,6 @@ public sealed class RedisSemanticCacheStore : ISemanticCacheStore
     private readonly int _dimensions;
     private readonly IRequestContextAccessor _requestContext;
 
-    // Lua script: atomically get entry + increment hit count
     private static readonly string GetAndHitScript = """
         local key = KEYS[1]
         local entry = redis.call('HGETALL', key)
@@ -28,7 +27,6 @@ public sealed class RedisSemanticCacheStore : ISemanticCacheStore
         return entry
         """;
 
-    // Lua script: scan sorted set index, get top-N by score descending
     private static readonly string ScanIndexScript = """
         local indexKey = KEYS[1]
         local startScore = tonumber(ARGV[1]) or 0
@@ -66,12 +64,10 @@ public sealed class RedisSemanticCacheStore : ISemanticCacheStore
         var now = DateTimeOffset.UtcNow;
         var expiresAt = now.Add(ttl);
         var embeddingStr = EncodeEmbedding(embedding);
-        var dotProduct = embedding[0]; // placeholder — we'll use score directly as similarity
 
         var batch = db.CreateBatch();
         var tasks = new List<Task>();
 
-        // Store entry hash
         var hashEntries = new HashEntry[]
         {
             new("value", value ?? string.Empty),
@@ -84,13 +80,10 @@ public sealed class RedisSemanticCacheStore : ISemanticCacheStore
         tasks.Add(batch.HashSetAsync(entryKey, hashEntries));
         tasks.Add(batch.KeyExpireAsync(entryKey, ttl));
 
-        // Add to sorted set index — use dot product seed as score for fast similarity filtering
-        // Real similarity is computed client-side from full embeddings
         var norm = Math.Sqrt(embedding.Sum(v => v * v));
         var normalizedSeed = norm > 0 ? embedding[0] / norm : 0;
         tasks.Add(batch.SortedSetAddAsync(indexKey, keyHash, normalizedSeed));
 
-        // Store tags
         if (tags is { Count: > 0 })
         {
             foreach (var tag in tags)
@@ -104,7 +97,6 @@ public sealed class RedisSemanticCacheStore : ISemanticCacheStore
         batch.Execute();
         await Task.WhenAll(tasks);
 
-        // Increment counters in Redis
         await IncrementCounterAsync(db, tenantId, cacheType, version, "sets", 1);
     }
 
@@ -121,7 +113,6 @@ public sealed class RedisSemanticCacheStore : ISemanticCacheStore
         var indexKey = IndexKey(tenantId, cacheType, version);
         var maxCandidates = _options.MaxSimilarityCandidates;
 
-        // Scan index for candidates
         var candidates = await db.ScriptEvaluateAsync(
             ScanIndexScript,
             [indexKey],
@@ -141,14 +132,14 @@ public sealed class RedisSemanticCacheStore : ISemanticCacheStore
         foreach (var candidateHash in candidateHashes)
         {
             var entryKey = EntryKey(tenantId, cacheType, version, candidateHash);
-            var entry = (RedisResult[]?)await db.HashGetAllAsync(entryKey);
+            var entry = await db.HashGetAllAsync(entryKey);
 
             if (entry is null or { Length: 0 })
                 continue;
 
             var dict = entry.ToDictionary(
-                r => (string)r.Name!,
-                r => (string?)r.Value!);
+                r => r.Name.ToString(),
+                r => r.Value.ToString());
 
             if (!dict.TryGetValue("expires_at", out var expiresStr)
                 || !long.TryParse(expiresStr, out var expiresMs))
@@ -156,7 +147,6 @@ public sealed class RedisSemanticCacheStore : ISemanticCacheStore
 
             if (DateTimeOffset.UtcNow >= DateTimeOffset.FromUnixTimeMilliseconds(expiresMs))
             {
-                // expired — evict
                 _ = EvictExpiredEntryAsync(db, entryKey, indexKey, candidateHash);
                 continue;
             }
@@ -182,13 +172,12 @@ public sealed class RedisSemanticCacheStore : ISemanticCacheStore
         }
 
         var entryDict = bestEntry.ToDictionary(
-            r => (string)r.Name!,
-            r => (string?)r.Value!);
+            r => r.Name.ToString(),
+            r => r.Value.ToString());
 
         entryDict.TryGetValue("created_at", out var createdStr);
         entryDict.TryGetValue("value", out var value);
 
-        // Atomic hit count increment
         await db.ScriptEvaluateAsync(
             GetAndHitScript,
             [EntryKey(tenantId, cacheType, version, bestKeyHash)],
@@ -217,13 +206,13 @@ public sealed class RedisSemanticCacheStore : ISemanticCacheStore
     {
         var db = _redis.GetDatabase();
         var count = 0;
+        var effectiveVersion = version ?? SemanticCacheVersion.Default;
 
         if (key is not null)
         {
-            // Exact key invalidation
-            var keyHash = ComputeKeyHash(tenantId, cacheType, version ?? SemanticCacheVersion.Default, key);
-            var entryKey = EntryKey(tenantId, cacheType, version ?? SemanticCacheVersion.Default, keyHash);
-            var indexKey = IndexKey(tenantId, cacheType, version ?? SemanticCacheVersion.Default);
+            var keyHash = ComputeKeyHash(tenantId, cacheType, effectiveVersion, key);
+            var entryKey = EntryKey(tenantId, cacheType, effectiveVersion, keyHash);
+            var indexKey = IndexKey(tenantId, cacheType, effectiveVersion);
 
             if (await db.KeyDeleteAsync(entryKey))
                 count++;
@@ -232,24 +221,22 @@ public sealed class RedisSemanticCacheStore : ISemanticCacheStore
             return count;
         }
 
-        if (tag is not null && version is not null)
+        if (tag is not null)
         {
-            // Tag-based invalidation
-            var tagKey = TagKey(tenantId, cacheType, version, tag);
+            var tagKey = TagKey(tenantId, cacheType, effectiveVersion, tag);
             var members = await db.SetMembersAsync(tagKey);
 
             if (members.Length > 0)
             {
                 var entryKeys = members
-                    .Select(m => (RedisKey)EntryKey(tenantId, cacheType, version, (string?)m!))
+                    .Select(m => (RedisKey)EntryKey(tenantId, cacheType, effectiveVersion, m.ToString()))
                     .ToArray();
-                var indexKey = IndexKey(tenantId, cacheType, version);
+                var indexKey = IndexKey(tenantId, cacheType, effectiveVersion);
 
                 count += (int)await db.KeyDeleteAsync(entryKeys);
                 await db.KeyDeleteAsync(tagKey);
 
-                // Remove from sorted set index
-                var indexMembers = members.Select(m => (RedisValue)(string?)m!).ToArray();
+                var indexMembers = members.Select(m => (RedisValue)m.ToString()).ToArray();
                 await db.SortedSetRemoveAsync(indexKey, indexMembers);
             }
 
@@ -258,12 +245,11 @@ public sealed class RedisSemanticCacheStore : ISemanticCacheStore
 
         if (version is not null)
         {
-            // Version flush — delete index + scan for matching keys
-            var indexKey = IndexKey(tenantId, cacheType, version);
+            var indexKey = IndexKey(tenantId, cacheType, effectiveVersion);
             await db.KeyDeleteAsync(indexKey);
 
             var server = _redis.GetServers().First();
-            var pattern = $"{_options.KeyPrefix}:{tenantId.Value:N}:{cacheType}:{version}:*";
+            var pattern = $"{_options.KeyPrefix}:{tenantId.Value:N}:{cacheType}:{effectiveVersion}:*";
             var keysToDelete = new List<RedisKey>();
 
             await foreach (var k in server.KeysAsync(pattern: pattern))
@@ -277,8 +263,7 @@ public sealed class RedisSemanticCacheStore : ISemanticCacheStore
             return count;
         }
 
-        // Full type flush per tenant
-        var allVersions = new[] { "v1" }; // could expand with VERSION SCAN
+        var allVersions = new[] { "v1" };
         foreach (var v in allVersions)
         {
             var ver = new SemanticCacheVersion(v);
@@ -347,13 +332,16 @@ public sealed class RedisSemanticCacheStore : ISemanticCacheStore
 
         foreach (var member in members)
         {
-            var entryKey = EntryKey(tenantId, cacheType, version, (string?)member!);
+            var keyHashStr = member.ToString();
+            if (string.IsNullOrEmpty(keyHashStr)) continue;
+
+            var entryKey = EntryKey(tenantId, cacheType, version, keyHashStr);
             var entry = await db.HashGetAllAsync(entryKey);
 
             if (entry.Length == 0)
                 continue;
 
-            var dict = entry.ToDictionary(r => (string)r.Name!, r => (string?)r.Value!);
+            var dict = entry.ToDictionary(r => r.Name.ToString(), r => r.Value.ToString());
 
             if (!dict.TryGetValue("expires_at", out var expiresStr)
                 || !long.TryParse(expiresStr, out var expiresMs))
@@ -366,11 +354,11 @@ public sealed class RedisSemanticCacheStore : ISemanticCacheStore
             dict.TryGetValue("hit_count", out var hitCountStr);
 
             results.Add(new CacheKeyInfo(
-                (string?)member!,
+                keyHashStr,
                 long.TryParse(createdStr, out var ct) ? DateTimeOffset.FromUnixTimeMilliseconds(ct) : DateTimeOffset.UtcNow,
                 DateTimeOffset.FromUnixTimeMilliseconds(expiresMs),
                 long.TryParse(hitCountStr, out var hc) ? hc : 0,
-                []));
+                Array.Empty<string>()));
         }
 
         return results;
@@ -386,8 +374,6 @@ public sealed class RedisSemanticCacheStore : ISemanticCacheStore
         var indexKey = IndexKey(tenantId, cacheType, version);
         return await db.SortedSetLengthAsync(indexKey);
     }
-
-    // --- Key builders ---
 
     private string EntryKey(TenantId tenantId, SemanticCacheType cacheType, SemanticCacheVersion version, string keyHash) =>
         $"{_options.KeyPrefix}:{tenantId.Value:N}:{cacheType}:{version}:{keyHash}";
@@ -430,16 +416,16 @@ public sealed class RedisSemanticCacheStore : ISemanticCacheStore
         var dot = 0d;
         for (var i = 0; i < len; i++)
             dot += a[i] * b[i];
-        return Math.Max(0, dot); // pre-normalized vectors
+        return Math.Max(0, dot);
     }
 
-    private async Task IncrementCounterAsync(IDatabase db, TenantId tenantId, SemanticCacheType cacheType, SemanticCacheVersion version, string counter, long delta)
+    private static async Task IncrementCounterAsync(IDatabase db, TenantId tenantId, SemanticCacheType cacheType, SemanticCacheVersion version, string counter, long delta)
     {
         var key = CounterKey(tenantId, cacheType, version, counter);
         await db.StringIncrementAsync(key);
     }
 
-    private async Task EvictExpiredEntryAsync(IDatabase db, string entryKey, string indexKey, string keyHash)
+    private static async Task EvictExpiredEntryAsync(IDatabase db, string entryKey, string indexKey, string keyHash)
     {
         try
         {
@@ -448,7 +434,6 @@ public sealed class RedisSemanticCacheStore : ISemanticCacheStore
         }
         catch
         {
-            // best-effort eviction
         }
     }
 }

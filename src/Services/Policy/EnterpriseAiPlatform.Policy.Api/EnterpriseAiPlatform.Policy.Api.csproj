@@ -5,6 +5,7 @@
     <ProjectReference Include="..\EnterpriseAiPlatform.Policy.Infrastructure\EnterpriseAiPlatform.Policy.Infrastructure.csproj" />
     <ProjectReference Include="..\EnterpriseAiPlatform.Policy.Contracts\EnterpriseAiPlatform.Policy.Contracts.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\EnterpriseAiPlatform.ServiceDefaults\EnterpriseAiPlatform.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\EnterpriseAiPlatform.Security\EnterpriseAiPlatform.Security.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

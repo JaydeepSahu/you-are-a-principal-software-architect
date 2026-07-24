@@ -1,6 +1,7 @@
 using System.Diagnostics.Metrics;
 using EnterpriseAiPlatform.SemanticCache.Application.Abstractions;
 using EnterpriseAiPlatform.SemanticCache.Domain;
+using EnterpriseAiPlatform.SharedKernel;
 
 namespace EnterpriseAiPlatform.SemanticCache.Infrastructure;
 
@@ -68,9 +69,11 @@ public sealed class SemanticCacheMetrics : ISemanticCacheMetrics
 
     public void RecordCacheLatency(TenantId tenantId, SemanticCacheType cacheType, string version, TimeSpan elapsed, bool hit)
     {
-        var tags = [.. Tags(tenantId, cacheType, version), new KeyValuePair<string, object?>("hit", hit)];
-        CacheLatency.Record(elapsed.TotalMilliseconds, tags);
+        var tagList = Tags(tenantId, cacheType, version).ToList();
+        tagList.Add(new KeyValuePair<string, object?>("hit", hit));
+        CacheLatency.Record(elapsed.TotalMilliseconds, tagList.ToArray());
     }
+
 
     private static KeyValuePair<string, object?>[] Tags(TenantId tenantId, SemanticCacheType cacheType, string version) =>
     [

@@ -14,7 +14,8 @@ public sealed class GpuClusterManager : IGpuClusterManager
 
     public Task<Result<IReadOnlyList<GpuNodeStatus>>> GetClusterStatusAsync(CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(Result<IReadOnlyList<GpuNodeStatus>>.Success(_nodes.AsReadOnly()));
+        IReadOnlyList<GpuNodeStatus> list = _nodes;
+        return Task.FromResult(Result<IReadOnlyList<GpuNodeStatus>>.Success(list));
     }
 
     public Task<Result<GpuNodeStatus>> SelectOptimalNodeForModelAsync(string modelId, CancellationToken cancellationToken = default)
@@ -22,7 +23,7 @@ public sealed class GpuClusterManager : IGpuClusterManager
         var healthyNodes = _nodes.Where(n => n.IsHealthy).OrderBy(n => n.GpuUtilizationPercentage).FirstOrDefault();
         if (healthyNodes == null)
         {
-            return Task.FromResult(Result<GpuNodeStatus>.Failure(new Error("GPU.NoCapacity", "No healthy GPU nodes available.")));
+            return Task.FromResult(Result<GpuNodeStatus>.Failure<GpuNodeStatus>(new Error("GPU.NoCapacity", "No healthy GPU nodes available.")));
         }
 
         return Task.FromResult(Result<GpuNodeStatus>.Success(healthyNodes));

@@ -26,11 +26,10 @@ public sealed class ModelMarketplace : IModelMarketplace
 
         if (!string.IsNullOrWhiteSpace(query))
         {
-            var q = query.ToLowerInvariant();
-            results = results.Where(e => e.Name.ToLowerInvariant().Contains(q) || e.Description.ToLowerInvariant().Contains(q));
+            results = results.Where(e => e.Name.Contains(query, StringComparison.OrdinalIgnoreCase) || e.Description.Contains(query, StringComparison.OrdinalIgnoreCase));
         }
 
-        var list = results.OrderByDescending(e => e.BenchmarkQualityScore).ToList().AsReadOnly();
+        IReadOnlyList<MarketplaceEntry> list = results.OrderByDescending(e => e.BenchmarkQualityScore).ToList();
         return Task.FromResult(Result<IReadOnlyList<MarketplaceEntry>>.Success(list));
     }
 }

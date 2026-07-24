@@ -31,7 +31,7 @@
     <ProjectReference Include="..\..\src\Services\Evaluation\EnterpriseAiPlatform.Evaluation.Contracts\EnterpriseAiPlatform.Evaluation.Contracts.csproj" />
     <ProjectReference Include="..\..\src\Services\Evaluation\EnterpriseAiPlatform.Evaluation.Domain\EnterpriseAiPlatform.Evaluation.Domain.csproj" />
     <ProjectReference Include="..\..\src\Services\Evaluation\EnterpriseAiPlatform.Evaluation.Infrastructure\EnterpriseAiPlatform.Evaluation.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\BuildingBlocks\EnterpriseAiPlatform.Application.Abstractions\EnterpriseAiPlatform.Application.Abstractions.csproj" />
+    <ProjectReference Include="..\..\src\BuildingBlocks\EnterpriseAiPlatform.Application.Abstractions\EnterpriseAiPlatform.Application.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>

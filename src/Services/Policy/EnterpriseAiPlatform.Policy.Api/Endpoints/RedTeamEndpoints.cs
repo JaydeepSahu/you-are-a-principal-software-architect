@@ -30,7 +30,6 @@ public static class RedTeamEndpoints
                 async (payload, ct) =>
                 {
                     await Task.Delay(20, ct);
-                    // Safe default mock model response resisting adversarial attacks
                     string safeResponse = $"[Refusal]: Model '{request.TargetModelId}' rejected adversarial request and enforced enterprise safety invariants.";
                     return Result<string>.Success(safeResponse);
                 },
@@ -50,6 +49,8 @@ public static class RedTeamEndpoints
     private static TenantId GetTenantId(HttpContext httpContext)
     {
         var tenantHeader = httpContext.Request.Headers["X-Tenant-Id"].FirstOrDefault();
-        return TenantId.From(tenantHeader ?? "default-tenant");
+        return tenantHeader is not null && Guid.TryParse(tenantHeader, out var tid)
+            ? TenantId.From(tid)
+            : TenantId.From(Guid.Parse("00000000-0000-0000-0000-000000000001"));
     }
 }

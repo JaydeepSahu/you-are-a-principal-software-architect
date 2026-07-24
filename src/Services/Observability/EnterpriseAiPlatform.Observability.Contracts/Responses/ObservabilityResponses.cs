@@ -1,5 +1,3 @@
-using EnterpriseAiPlatform.Observability.Domain;
-
 namespace EnterpriseAiPlatform.Observability.Contracts.Responses;
 
 public sealed record TraceRecordedResponse(Guid TraceRecordId, DateTimeOffset RecordedAtUtc);

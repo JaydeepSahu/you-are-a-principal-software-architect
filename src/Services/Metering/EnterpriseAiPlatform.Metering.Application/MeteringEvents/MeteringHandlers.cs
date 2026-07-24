@@ -4,6 +4,7 @@ using EnterpriseAiPlatform.Metering.Application.MeteringEvents;
 using EnterpriseAiPlatform.Metering.Contracts.Requests;
 using EnterpriseAiPlatform.Metering.Contracts.Responses;
 using EnterpriseAiPlatform.Metering.Domain;
+using EnterpriseAiPlatform.SharedKernel;
 
 namespace EnterpriseAiPlatform.Metering.Application.MeteringEvents;
 
@@ -16,12 +17,16 @@ public sealed class RecordMeteringHandler(
         RecordMeteringCommand command,
         CancellationToken cancellationToken)
     {
+        var dimension = Enum.TryParse<MeteringDimension>(command.Request.Dimension, true, out var dim)
+            ? dim
+            : MeteringDimension.TokenPrompt;
+
         var record = new MeteringRecord(
             MeteringRecordId.New(),
             requestContext.Current.TenantId,
             command.Request.Provider,
             command.Request.Model,
-            command.Request.Dimension,
+            dimension,
             command.Request.Value,
             DateTimeOffset.UtcNow);
 

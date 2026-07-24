@@ -1,4 +1,5 @@
 using EnterpriseAiPlatform.Audit.Domain;
+using EnterpriseAiPlatform.SharedKernel;
 
 namespace EnterpriseAiPlatform.Audit.Application.Abstractions;
 
@@ -12,7 +13,7 @@ public interface IAuditRepository
         AuditAction? action,
         AuditSeverity? minSeverity,
         DateTimeOffset? from,
-        DateTimeOffset? to,
+        DateTimeOffset? until,
         int skip,
         int take,
         CancellationToken cancellationToken = default);
@@ -25,7 +26,7 @@ public interface IAuditRepository
         AuditAction? action,
         AuditSeverity? minSeverity,
         DateTimeOffset? from,
-        DateTimeOffset? to,
+        DateTimeOffset? until,
         CancellationToken cancellationToken = default);
 
     Task AddAsync(AuditEntry entry, CancellationToken cancellationToken = default);

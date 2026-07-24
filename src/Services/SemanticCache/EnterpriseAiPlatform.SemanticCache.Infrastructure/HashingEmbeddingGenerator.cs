@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
-using EnterpriseAiPlatform.SemanticCache.Application.Abstractions;
+using EnterpriseAiPlatform.SemanticCache.Application.Cache;
 
 namespace EnterpriseAiPlatform.SemanticCache.Infrastructure;
 

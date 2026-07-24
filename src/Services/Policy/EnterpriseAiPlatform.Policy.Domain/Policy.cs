@@ -31,7 +31,7 @@ public enum PolicyResourceType
     KnowledgeBase,
 }
 
-public sealed record Policy : SharedKernel.Entity<PolicyId>
+public sealed class Policy : SharedKernel.Entity<PolicyId>
 {
     public Policy(
         PolicyId id,

@@ -1,6 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <ProjectReference Include="..\EnterpriseAiPlatform.Policy.Application\EnterpriseAiPlatform.Policy.Application.csproj" />
     <ProjectReference Include="..\EnterpriseAiPlatform.Policy.Domain\EnterpriseAiPlatform.Policy.Domain.csproj" />
     <ProjectReference Include="..\EnterpriseAiPlatform.Policy.Contracts\EnterpriseAiPlatform.Policy.Contracts.csproj" />

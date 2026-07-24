@@ -22,7 +22,7 @@ public enum MeteringDimension
     CacheMiss,
 }
 
-public sealed record MeteringRecord : SharedKernel.Entity<MeteringRecordId>
+public sealed class MeteringRecord : SharedKernel.Entity<MeteringRecordId>
 {
     public MeteringRecord(
         MeteringRecordId id,

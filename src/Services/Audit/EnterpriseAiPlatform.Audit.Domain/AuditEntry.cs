@@ -4,7 +4,7 @@ namespace EnterpriseAiPlatform.Audit.Domain;
 
 public sealed class AuditEntry : Entity<AuditEntryId>
 {
-    internal AuditEntry(
+    public AuditEntry(
         AuditEntryId id,
         TenantId tenantId,
         AuditAction action,
