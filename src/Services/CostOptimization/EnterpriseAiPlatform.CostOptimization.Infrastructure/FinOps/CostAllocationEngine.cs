@@ -19,7 +19,8 @@ public sealed class CostAllocationEngine : ICostAllocationEngine
         DateTimeOffset? month = null,
         CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(Result<IReadOnlyList<DepartmentChargeback>>.Success(DefaultBreakdown.AsReadOnly()));
+        IReadOnlyList<DepartmentChargeback> list = DefaultBreakdown;
+        return Task.FromResult(Result<IReadOnlyList<DepartmentChargeback>>.Success(list));
     }
 
     public Task<Result<CostForecastResult>> ForecastMonthlySpendAsync(

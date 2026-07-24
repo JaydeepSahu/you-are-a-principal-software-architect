@@ -12,7 +12,7 @@ public class ProviderCircuitBreakerManagerTests
     {
         // Arrange
         var manager = new ProviderCircuitBreakerManager();
-        var tenantId = TenantId.From("tenant-resilience");
+        var tenantId = TenantId.From(Guid.Parse("22222222-2222-2222-2222-222222222222"));
 
         // Trip AzureOpenAi circuit breaker to Open state
         for (int i = 0; i < 5; i++)

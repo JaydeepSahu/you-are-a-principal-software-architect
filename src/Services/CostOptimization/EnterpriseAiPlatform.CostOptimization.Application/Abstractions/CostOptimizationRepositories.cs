@@ -50,8 +50,8 @@ public interface ICostRecordRepository
 {
     Task<CostRecord?> GetByIdAsync(CostRecordId id, TenantId tenantId, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<CostRecord>> GetAllAsync(TenantId tenantId, int skip, int take, CancellationToken cancellationToken = default);
-    Task<IReadOnlyList<CostRecord>> QueryAsync(TenantId tenantId, string? userId, string? departmentId, string? providerId, string? modelId, CostCategory? category, DateTimeOffset? from, DateTimeOffset? to, int skip, int take, CancellationToken cancellationToken = default);
-    Task<int> CountAsync(TenantId tenantId, string? userId, string? departmentId, string? providerId, string? modelId, CostCategory? category, DateTimeOffset? from, DateTimeOffset? to, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<CostRecord>> QueryAsync(TenantId tenantId, string? userId, string? departmentId, string? providerId, string? modelId, CostCategory? category, DateTimeOffset? from, DateTimeOffset? until, int skip, int take, CancellationToken cancellationToken = default);
+    Task<int> CountAsync(TenantId tenantId, string? userId, string? departmentId, string? providerId, string? modelId, CostCategory? category, DateTimeOffset? from, DateTimeOffset? until, CancellationToken cancellationToken = default);
     Task AddAsync(CostRecord record, CancellationToken cancellationToken = default);
     Task AddRangeAsync(IEnumerable<CostRecord> records, CancellationToken cancellationToken = default);
     Task<CostAggregation> GetAggregationAsync(TenantId tenantId, int year, int month, string? departmentId, string? userId, CancellationToken cancellationToken = default);
@@ -61,8 +61,8 @@ public interface IAlertRepository
 {
     Task<Alert?> GetByIdAsync(AlertId id, TenantId tenantId, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<Alert>> GetAllAsync(TenantId tenantId, int skip, int take, CancellationToken cancellationToken = default);
-    Task<IReadOnlyList<Alert>> QueryAsync(TenantId tenantId, string? departmentId, string? userId, AlertStatus? status, AlertSeverity? severity, string? type, DateTimeOffset? from, DateTimeOffset? to, int skip, int take, CancellationToken cancellationToken = default);
-    Task<int> CountAsync(TenantId tenantId, string? departmentId, string? userId, AlertStatus? status, AlertSeverity? severity, string? type, DateTimeOffset? from, DateTimeOffset? to, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Alert>> QueryAsync(TenantId tenantId, string? departmentId, string? userId, AlertStatus? status, AlertSeverity? severity, string? type, DateTimeOffset? from, DateTimeOffset? until, int skip, int take, CancellationToken cancellationToken = default);
+    Task<int> CountAsync(TenantId tenantId, string? departmentId, string? userId, AlertStatus? status, AlertSeverity? severity, string? type, DateTimeOffset? from, DateTimeOffset? until, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<Alert>> GetActiveAlertsAsync(TenantId tenantId, CancellationToken cancellationToken = default);
     Task AddAsync(Alert alert, CancellationToken cancellationToken = default);
     Task UpdateAsync(Alert alert, CancellationToken cancellationToken = default);

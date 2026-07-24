@@ -11,7 +11,7 @@ public class SemanticCacheEngineTests
     {
         // Arrange
         var cache = new SemanticCacheEngine();
-        var tenantId = TenantId.From("tenant-cache-test");
+        var tenantId = TenantId.From(Guid.Parse("33333333-3333-3333-3333-333333333333"));
         string originalPrompt = "Explain Clean Architecture invariants in detail";
         string cachedResponse = "Clean Architecture maintains inner domain boundary isolation.";
 
@@ -36,7 +36,7 @@ public class SemanticCacheEngineTests
     {
         // Arrange
         var cache = new SemanticCacheEngine();
-        var tenantId = TenantId.From("tenant-cache-test");
+        var tenantId = TenantId.From(Guid.Parse("33333333-3333-3333-3333-333333333333"));
         await cache.CacheResponseAsync(tenantId, "Explain Clean Architecture", "Response A", "azure-gpt-4o");
 
         // Act

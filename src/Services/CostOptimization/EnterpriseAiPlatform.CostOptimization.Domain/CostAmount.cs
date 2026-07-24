@@ -21,7 +21,7 @@ public sealed class CostAmount : ValueObject
         if (string.IsNullOrWhiteSpace(currency) || currency.Length != 3)
             throw new ArgumentException("Currency must be a valid 3-letter code", nameof(currency));
 
-        return new CostAmount(Math.Round(value, 4), currency.ToUpperInvariant());
+        return new CostAmount(Math.Round(value, 8), currency.ToUpperInvariant());
     }
 
     public static CostAmount Zero(string currency = "USD") => new(0, currency);

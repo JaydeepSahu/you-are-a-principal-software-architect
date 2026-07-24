@@ -7,7 +7,7 @@ namespace EnterpriseAiPlatform.CostOptimization.UnitTests.Domain;
 
 public class BudgetTests
 {
-    private static readonly TenantId TestTenantId = TenantId.Create(Guid.NewGuid());
+    private static readonly TenantId TestTenantId = TenantId.From(Guid.NewGuid());
 
     [Fact]
     public void Create_WithValidData_ShouldCreateBudget()
@@ -197,10 +197,10 @@ public class BudgetTests
             null,
             null);
         budget.Suspend("Test");
-        budget.AddSpending(CostAmount.Create(500, "USD"));
 
         // Act
         budget.Resume();
+        budget.AddSpending(CostAmount.Create(500, "USD"));
 
         // Assert
         budget.Status.Should().Be(BudgetStatus.Active);
@@ -209,7 +209,7 @@ public class BudgetTests
 
 public class UserQuotaTests
 {
-    private static readonly TenantId TestTenantId = TenantId.Create(Guid.NewGuid());
+    private static readonly TenantId TestTenantId = TenantId.From(Guid.NewGuid());
 
     [Fact]
     public void Create_WithValidData_ShouldCreateUserQuota()
@@ -448,7 +448,7 @@ public class CostAmountTests
 
 public class ModelCostTests
 {
-    private static readonly TenantId TestTenantId = TenantId.Create(Guid.NewGuid());
+    private static readonly TenantId TestTenantId = TenantId.From(Guid.NewGuid());
 
     [Fact]
     public void Create_WithValidData_ShouldCreateModelCost()

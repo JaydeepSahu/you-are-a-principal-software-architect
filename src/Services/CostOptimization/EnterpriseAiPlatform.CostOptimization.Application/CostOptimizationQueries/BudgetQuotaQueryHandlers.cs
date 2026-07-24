@@ -122,7 +122,7 @@ internal sealed class GetDepartmentQuotaByIdHandler : IRequestHandler<GetDepartm
         if (quota is null)
             return Result.Failure<DepartmentQuotaResponse>(CostOptimizationErrors.QuotaNotFound);
 
-        return MapToResponse(quota);
+        return quota.MapToResponse();
     }
 }
 
@@ -143,7 +143,7 @@ internal sealed class GetDepartmentQuotaByDepartmentIdHandler : IRequestHandler<
         if (quota is null)
             return Result.Failure<DepartmentQuotaResponse>(CostOptimizationErrors.QuotaNotFound);
 
-        return MapToResponse(quota);
+        return quota.MapToResponse();
     }
 }
 
@@ -176,7 +176,7 @@ internal sealed class GetDepartmentQuotasHandler : IRequestHandler<GetDepartment
             request.Request.IsActive,
             cancellationToken);
 
-        var items = quotas.Select(MapToResponse).ToList();
+        var items = quotas.Select(q => q.MapToResponse()).ToList();
         return new PaginatedResult<DepartmentQuotaResponse>(items, totalCount, request.Request.Skip, request.Request.Take);
     }
 }
@@ -198,7 +198,7 @@ internal sealed class GetUserQuotaByIdHandler : IRequestHandler<GetUserQuotaById
         if (quota is null)
             return Result.Failure<UserQuotaResponse>(CostOptimizationErrors.QuotaNotFound);
 
-        return MapToResponse(quota);
+        return quota.MapToResponse();
     }
 }
 
@@ -219,7 +219,7 @@ internal sealed class GetUserQuotaByUserIdHandler : IRequestHandler<GetUserQuota
         if (quota is null)
             return Result.Failure<UserQuotaResponse>(CostOptimizationErrors.QuotaNotFound);
 
-        return MapToResponse(quota);
+        return quota.MapToResponse();
     }
 }
 
@@ -252,7 +252,7 @@ internal sealed class GetUserQuotasHandler : IRequestHandler<GetUserQuotasQuery,
             request.Request.IsActive,
             cancellationToken);
 
-        var items = quotas.Select(MapToResponse).ToList();
+        var items = quotas.Select(q => q.MapToResponse()).ToList();
         return new PaginatedResult<UserQuotaResponse>(items, totalCount, request.Request.Skip, request.Request.Take);
     }
 }

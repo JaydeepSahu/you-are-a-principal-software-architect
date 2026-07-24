@@ -11,7 +11,7 @@ public class InlineDlpScannerTests
     {
         // Arrange
         var scanner = new InlineDlpScanner();
-        var tenantId = TenantId.From("tenant-sec");
+        var tenantId = TenantId.From(Guid.Parse("11111111-1111-1111-1111-111111111111"));
         var promptText = "Connect using key AKIAIOSFODNN7EXAMPLE and notify user john.doe@company.com";
 
         // Act
@@ -31,7 +31,7 @@ public class InlineDlpScannerTests
     {
         // Arrange
         var scanner = new InlineDlpScanner();
-        var tenantId = TenantId.From("tenant-sec");
+        var tenantId = TenantId.From(Guid.Parse("11111111-1111-1111-1111-111111111111"));
         var promptText = "Push code using token ghp_123456789012345678901234567890123456";
 
         // Act

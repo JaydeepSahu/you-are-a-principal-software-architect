@@ -92,7 +92,7 @@ public sealed class InMemoryCostRecordRepository : ICostRecordRepository
         return Task.FromResult<IReadOnlyList<CostRecord>>(results);
     }
 
-    public Task<IReadOnlyList<CostRecord>> QueryAsync(TenantId tenantId, string? userId, string? departmentId, string? providerId, string? modelId, CostCategory? category, DateTimeOffset? from, DateTimeOffset? to, int skip, int take, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<CostRecord>> QueryAsync(TenantId tenantId, string? userId, string? departmentId, string? providerId, string? modelId, CostCategory? category, DateTimeOffset? from, DateTimeOffset? until, int skip, int take, CancellationToken cancellationToken = default)
     {
         var query = _records.Values.Where(r => r.TenantId == tenantId);
 
@@ -114,14 +114,14 @@ public sealed class InMemoryCostRecordRepository : ICostRecordRepository
         if (from.HasValue)
             query = query.Where(r => r.RecordedAt >= from.Value);
 
-        if (to.HasValue)
-            query = query.Where(r => r.RecordedAt <= to.Value);
+        if (until.HasValue)
+            query = query.Where(r => r.RecordedAt <= until.Value);
 
         var results = query.OrderByDescending(r => r.RecordedAt).Skip(skip).Take(take).ToList();
         return Task.FromResult<IReadOnlyList<CostRecord>>(results);
     }
 
-    public Task<int> CountAsync(TenantId tenantId, string? userId, string? departmentId, string? providerId, string? modelId, CostCategory? category, DateTimeOffset? from, DateTimeOffset? to, CancellationToken cancellationToken = default)
+    public Task<int> CountAsync(TenantId tenantId, string? userId, string? departmentId, string? providerId, string? modelId, CostCategory? category, DateTimeOffset? from, DateTimeOffset? until, CancellationToken cancellationToken = default)
     {
         var query = _records.Values.Where(r => r.TenantId == tenantId);
 
@@ -143,8 +143,8 @@ public sealed class InMemoryCostRecordRepository : ICostRecordRepository
         if (from.HasValue)
             query = query.Where(r => r.RecordedAt >= from.Value);
 
-        if (to.HasValue)
-            query = query.Where(r => r.RecordedAt <= to.Value);
+        if (until.HasValue)
+            query = query.Where(r => r.RecordedAt <= until.Value);
 
         return Task.FromResult(query.Count());
     }
@@ -192,7 +192,7 @@ public sealed class InMemoryCostRecordRepository : ICostRecordRepository
 
         var dailyBreakdown = records
             .GroupBy(r => r.PeriodDay)
-            .Select(g => new DailyAggregation(g.Key, g.Sum(r => r.Amount.Value), g.Count(), g.Sum(r => r.TotalTokens)))
+            .Select(g => new DailyAggregation(g.Key ?? 1, g.Sum(r => r.Amount.Value), g.Count(), g.Sum(r => r.TotalTokens)))
             .OrderBy(d => d.Day)
             .ToList();
 
@@ -227,7 +227,7 @@ public sealed class InMemoryAlertRepository : IAlertRepository
         return Task.FromResult<IReadOnlyList<Alert>>(results);
     }
 
-    public Task<IReadOnlyList<Alert>> QueryAsync(TenantId tenantId, string? departmentId, string? userId, AlertStatus? status, AlertSeverity? severity, string? type, DateTimeOffset? from, DateTimeOffset? to, int skip, int take, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<Alert>> QueryAsync(TenantId tenantId, string? departmentId, string? userId, AlertStatus? status, AlertSeverity? severity, string? type, DateTimeOffset? from, DateTimeOffset? until, int skip, int take, CancellationToken cancellationToken = default)
     {
         var query = _alerts.Values.Where(a => a.TenantId == tenantId);
 
@@ -249,14 +249,14 @@ public sealed class InMemoryAlertRepository : IAlertRepository
         if (from.HasValue)
             query = query.Where(a => a.TriggeredAt >= from.Value);
 
-        if (to.HasValue)
-            query = query.Where(a => a.TriggeredAt <= to.Value);
+        if (until.HasValue)
+            query = query.Where(a => a.TriggeredAt <= until.Value);
 
         var results = query.OrderByDescending(a => a.TriggeredAt).Skip(skip).Take(take).ToList();
         return Task.FromResult<IReadOnlyList<Alert>>(results);
     }
 
-    public Task<int> CountAsync(TenantId tenantId, string? departmentId, string? userId, AlertStatus? status, AlertSeverity? severity, string? type, DateTimeOffset? from, DateTimeOffset? to, CancellationToken cancellationToken = default)
+    public Task<int> CountAsync(TenantId tenantId, string? departmentId, string? userId, AlertStatus? status, AlertSeverity? severity, string? type, DateTimeOffset? from, DateTimeOffset? until, CancellationToken cancellationToken = default)
     {
         var query = _alerts.Values.Where(a => a.TenantId == tenantId);
 
@@ -278,8 +278,8 @@ public sealed class InMemoryAlertRepository : IAlertRepository
         if (from.HasValue)
             query = query.Where(a => a.TriggeredAt >= from.Value);
 
-        if (to.HasValue)
-            query = query.Where(a => a.TriggeredAt <= to.Value);
+        if (until.HasValue)
+            query = query.Where(a => a.TriggeredAt <= until.Value);
 
         return Task.FromResult(query.Count());
     }

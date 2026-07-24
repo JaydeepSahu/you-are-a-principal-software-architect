@@ -11,7 +11,7 @@ public class CostAllocationEngineTests
     {
         // Arrange
         var engine = new CostAllocationEngine();
-        var tenantId = TenantId.From("tenant-finops");
+        var tenantId = TenantId.From(Guid.Parse("44444444-4444-4444-4444-444444444444"));
 
         // Act
         var result = await engine.GenerateChargebackReportAsync(tenantId);
@@ -29,7 +29,7 @@ public class CostAllocationEngineTests
     {
         // Arrange
         var engine = new CostAllocationEngine();
-        var tenantId = TenantId.From("tenant-finops");
+        var tenantId = TenantId.From(Guid.Parse("44444444-4444-4444-4444-444444444444"));
 
         // Act
         var result = await engine.ForecastMonthlySpendAsync(tenantId);

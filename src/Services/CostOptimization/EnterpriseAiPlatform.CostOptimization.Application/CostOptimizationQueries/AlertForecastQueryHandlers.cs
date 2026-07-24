@@ -26,7 +26,7 @@ internal sealed class GetAlertByIdHandler : IRequestHandler<GetAlertByIdQuery, R
         if (alert is null)
             return Result.Failure<AlertResponse>(CostOptimizationErrors.AlertNotFound);
 
-        return MapToResponse(alert);
+        return alert.MapToResponse();
     }
 }
 
@@ -75,7 +75,7 @@ internal sealed class GetAlertsHandler : IRequestHandler<GetAlertsQuery, Result<
             request.Request.To,
             cancellationToken);
 
-        var items = alerts.Select(MapToResponse).ToList();
+        var items = alerts.Select(a => a.MapToResponse()).ToList();
         return new PaginatedResult<AlertResponse>(items, totalCount, request.Request.Skip, request.Request.Take);
     }
 }
@@ -94,8 +94,8 @@ internal sealed class GetActiveAlertsHandler : IRequestHandler<GetActiveAlertsQu
     public async Task<Result<IReadOnlyList<AlertResponse>>> Handle(GetActiveAlertsQuery request, CancellationToken cancellationToken)
     {
         var alerts = await _alertRepository.GetActiveAlertsAsync(_requestContext.TenantId, cancellationToken);
-        var responses = alerts.Select(MapToResponse).ToList();
-        return responses as IReadOnlyList<AlertResponse>;
+        var responses = alerts.Select(a => a.MapToResponse()).ToList();
+        return Result.Success<IReadOnlyList<AlertResponse>>(responses);
     }
 }
 
@@ -116,7 +116,7 @@ internal sealed class GetRoutingRuleByIdHandler : IRequestHandler<GetRoutingRule
         if (rule is null)
             return Result.Failure<RoutingRuleResponse>(CostOptimizationErrors.RoutingRuleNotFound);
 
-        return MapToResponse(rule);
+        return rule.MapToResponse();
     }
 }
 
@@ -151,7 +151,7 @@ internal sealed class GetRoutingRulesHandler : IRequestHandler<GetRoutingRulesQu
             request.Request.IsEnabled,
             cancellationToken);
 
-        var items = rules.Select(MapToResponse).ToList();
+        var items = rules.Select(r => r.MapToResponse()).ToList();
         return new PaginatedResult<RoutingRuleResponse>(items, totalCount, request.Request.Skip, request.Request.Take);
     }
 }
@@ -200,12 +200,12 @@ internal sealed class GenerateForecastHandler : IRequestHandler<GenerateForecast
             0, 1,
             cancellationToken);
 
-        var budget = budgets.FirstOrDefault();
+        var budget = budgets.Count > 0 ? budgets[0] : null;
         var projectedOverage = budget is not null
             ? Math.Max(0, projectedTotalCost - budget.AllocatedAmount.Value)
             : 0;
 
-        var trendPercentage = today > 1
+        var trendPercentage = today > 1 && aggregation.TotalCost > 0
             ? ((dailyAverageSoFar * daysInMonth - aggregation.TotalCost) / aggregation.TotalCost) * 100
             : 0;
 
@@ -306,7 +306,7 @@ internal sealed class GenerateMonthlyReportHandler : IRequestHandler<GenerateMon
             0, 1,
             cancellationToken);
 
-        var budget = budgets.FirstOrDefault();
+        var budget = budgets.Count > 0 ? budgets[0] : null;
         var budgetSummary = new BudgetSummary(
             budget?.AllocatedAmount.Value ?? 0,
             currentAggregation.TotalCost,
@@ -367,7 +367,7 @@ internal sealed class GenerateMonthlyReportHandler : IRequestHandler<GenerateMon
         var recommendations = new RecommendationsSummary(
             new List<string> { "Enable semantic caching to reduce redundant API calls", "Consider using smaller models for simple tasks" },
             new List<string>(),
-            currentAggregation.TotalCost > (budget?.AllocatedAmount.Value ?? 0) * 0.8
+            currentAggregation.TotalCost > (budget?.AllocatedAmount.Value ?? 0) * 0.8m
                 ? new List<string> { "Budget threshold warning - approaching limit" }
                 : new List<string>());
 

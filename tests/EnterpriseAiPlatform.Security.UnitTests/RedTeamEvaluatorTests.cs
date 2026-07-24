@@ -11,7 +11,7 @@ public class RedTeamEvaluatorTests
     {
         // Arrange
         var evaluator = new RedTeamEvaluator();
-        var tenantId = TenantId.From("tenant-sec-test");
+        var tenantId = TenantId.From(Guid.Parse("11111111-1111-1111-1111-111111111111"));
 
         // Act
         var result = await evaluator.RunRedTeamEvaluationAsync(
@@ -33,7 +33,7 @@ public class RedTeamEvaluatorTests
     {
         // Arrange
         var evaluator = new RedTeamEvaluator();
-        var tenantId = TenantId.From("tenant-sec-test");
+        var tenantId = TenantId.From(Guid.Parse("11111111-1111-1111-1111-111111111111"));
 
         // Act
         var result = await evaluator.RunRedTeamEvaluationAsync(

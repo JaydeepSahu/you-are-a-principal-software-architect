@@ -26,7 +26,7 @@ internal sealed class GetModelCostByIdHandler : IRequestHandler<GetModelCostById
         if (modelCost is null)
             return Result.Failure<ModelCostResponse>(CostOptimizationErrors.ModelCostNotFound);
 
-        return MapToResponse(modelCost);
+        return modelCost.MapToResponse();
     }
 }
 
@@ -47,7 +47,7 @@ internal sealed class GetModelCostByProviderModelHandler : IRequestHandler<GetMo
         if (modelCost is null)
             return Result.Failure<ModelCostResponse>(CostOptimizationErrors.ModelCostNotFound);
 
-        return MapToResponse(modelCost);
+        return modelCost.MapToResponse();
     }
 }
 
@@ -80,7 +80,7 @@ internal sealed class GetModelCostsHandler : IRequestHandler<GetModelCostsQuery,
             request.Request.IsActive,
             cancellationToken);
 
-        var items = modelCosts.Select(MapToResponse).ToList();
+        var items = modelCosts.Select(mc => mc.MapToResponse()).ToList();
         return new PaginatedResult<ModelCostResponse>(items, totalCount, request.Request.Skip, request.Request.Take);
     }
 }
@@ -244,7 +244,7 @@ internal sealed class GetCostSummaryHandler : IRequestHandler<GetCostSummaryQuer
             0, 1,
             cancellationToken);
 
-        var budget = budgets.FirstOrDefault();
+        var budget = budgets.Count > 0 ? budgets[0] : null;
         var budgetUtilization = budget?.UtilizationPercentage ?? 0;
 
         var dailyBreakdown = aggregation.DailyBreakdown.Select(d => new DailyCostSummary(
