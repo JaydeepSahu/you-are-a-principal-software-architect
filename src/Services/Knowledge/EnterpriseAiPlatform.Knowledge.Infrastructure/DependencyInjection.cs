@@ -1,4 +1,5 @@
 using EnterpriseAiPlatform.Application.Abstractions;
+using EnterpriseAiPlatform.Infrastructure.Abstractions;
 using EnterpriseAiPlatform.Knowledge.Application.Abstractions;
 using EnterpriseAiPlatform.Knowledge.Domain;
 using EnterpriseAiPlatform.Knowledge.Infrastructure.Connectors;
@@ -17,8 +18,8 @@ public static class DependencyInjection
         services.AddSingleton<IDocumentChunker, SlidingWindowDocumentChunker>();
         services.AddSingleton<IEmbeddingGenerator, HashingEmbeddingGenerator>();
         services.AddSingleton<IMetadataExtractor, HeuristicMetadataExtractor>();
-        services.AddScoped<IRequestContextAccessor, HttpContextRequestContextAccessor>();
         services.AddHttpContextAccessor();
+        services.AddScoped<IRequestContextAccessor, HttpContextRequestContextAccessor>();
 
         services.AddSingleton<IKnowledgeSourceConnector>(new InlineKnowledgeSourceConnector(KnowledgeSourceType.Document));
         services.AddSingleton<IKnowledgeSourceConnector>(new InlineKnowledgeSourceConnector(KnowledgeSourceType.GitHub));

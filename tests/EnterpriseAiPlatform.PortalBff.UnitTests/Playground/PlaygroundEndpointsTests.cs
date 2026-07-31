@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using static EnterpriseAiPlatform.ServiceDefaults.ServiceDefaultsExtensions;
 using Xunit;
 
 namespace EnterpriseAiPlatform.PortalBff.UnitTests.Playground;
@@ -13,7 +14,7 @@ namespace EnterpriseAiPlatform.PortalBff.UnitTests.Playground;
 public class PlaygroundEndpointsTests
 {
     [Fact]
-    public async Task CompareModelsEndpoint_ReturnsSideBySideMetricsForRequestedModels()
+    public async Task CompareModelsEndpoint_WhenGatewayBackendIsNotConfigured_ReturnsServiceUnavailable()
     {
         // Arrange
         var builder = new HostBuilder()
@@ -23,10 +24,18 @@ public class PlaygroundEndpointsTests
                 webHost.ConfigureServices(services =>
                 {
                     services.AddRouting();
+                    services.AddHttpClient();
+                    services.AddAuthorization(options =>
+                    {
+                        options.AddPolicy(
+                            EnterpriseAuthorizationPolicies.Developer,
+                            policy => policy.RequireAssertion(_ => true));
+                    });
                 });
                 webHost.Configure(app =>
                 {
                     app.UseRouting();
+                    app.UseAuthorization();
                     app.UseEndpoints(endpoints =>
                     {
                         endpoints.MapPlaygroundEndpoints();
@@ -46,12 +55,6 @@ public class PlaygroundEndpointsTests
         var response = await client.PostAsJsonAsync("/api/v1/portal/playground/compare", requestPayload);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var results = await response.Content.ReadFromJsonAsync<List<ModelCompareResult>>();
-        Assert.NotNull(results);
-        Assert.Equal(2, results.Count);
-        Assert.Contains(results, r => r.ModelId == "azure-gpt-4o");
-        Assert.Contains(results, r => r.ModelId == "vllm-deepseek-coder");
-        Assert.All(results, r => Assert.True(r.LatencyMs > 0));
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
     }
 }

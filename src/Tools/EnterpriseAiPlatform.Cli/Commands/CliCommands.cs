@@ -1,6 +1,5 @@
-using EnterpriseAiPlatform.Agents.Domain.Enums;
-using EnterpriseAiPlatform.Agents.Sdk.Builder;
-using EnterpriseAiPlatform.SharedKernel;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
 
 namespace EnterpriseAiPlatform.Cli.Commands;
 
@@ -8,98 +7,133 @@ public static class CliCommands
 {
     public static async Task<int> ExecutePromptAsync(string prompt, string? model = null)
     {
-        model ??= "azure-gpt-4o";
-        Console.WriteLine($"⚡ [Enterprise AI CLI] Executing prompt against provider model '{model}'...");
-        Console.WriteLine($"[Prompt]: {prompt}\n");
+        if (!TryCreateBackendClient("ENTERPRISE_AI_GATEWAY_URL", out var client, out var error))
+        {
+            return WriteConfigurationError(error);
+        }
 
-        await Task.Delay(150); // Simulated gateway proxy call
+        using (client)
+        {
+            using var response = await client.PostAsJsonAsync("/api/v1/ai/chat/completions", new
+            {
+                model = model ?? Environment.GetEnvironmentVariable("ENTERPRISE_AI_DEFAULT_MODEL") ?? "default",
+                messages = new[]
+                {
+                    new { role = "user", content = prompt }
+                }
+            });
 
-        Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine($"[Response from {model}]:");
-        Console.WriteLine($"Synthesized architecture analysis for '{prompt}'. Invariants verified. Zero-retention policy applied.");
-        Console.ResetColor();
-
-        Console.WriteLine($"\n[Metrics]: Latency: 142ms | Tokens: 48 (Prompt: 18, Completion: 30) | Cost: $0.00014");
-        return 0;
+            return await WriteResponseAsync(response);
+        }
     }
 
     public static async Task<int> RunAgentAsync(string goal)
     {
-        Console.WriteLine($"🤖 [Enterprise AI CLI] Launching Autonomous Agent for goal: '{goal}'...");
-
-        var client = new AgentBuilder("cli-dev-agent")
-            .AddTool("analyze_codebase", "Analyze code module", (args, ct) => Task.FromResult("Codebase structure verified clean."))
-            .Build();
-
-        var tenantId = TenantId.From("tenant-cli-dev");
-        var result = await client.RunAsync(tenantId, goal);
-
-        if (result.IsFailure)
+        if (!TryCreateBackendClient("ENTERPRISE_AI_AGENTS_URL", out var client, out var error))
         {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"❌ Agent Execution Failed: {result.Error.Message}");
-            Console.ResetColor();
-            return 1;
+            return WriteConfigurationError(error);
         }
 
-        var response = result.Value;
-        Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine($"✅ Agent '{response.AgentId}' completed plan '{response.PlanId}' with status: {response.Status}");
-        Console.ResetColor();
-
-        foreach (var step in response.Steps)
+        using (client)
         {
-            Console.WriteLine($"  - Step [{step.Status}]: {step.StepName} -> {step.Output}");
-        }
+            using var response = await client.PostAsJsonAsync("/api/v1/agents/execute", new
+            {
+                agentId = Environment.GetEnvironmentVariable("ENTERPRISE_AI_AGENT_ID") ?? "cli-agent",
+                goal,
+                initialWorkingMemory = new Dictionary<string, string>()
+            });
 
-        return 0;
+            return await WriteResponseAsync(response);
+        }
     }
 
     public static async Task<int> SearchRagAsync(string query)
     {
-        Console.WriteLine($"🔍 [Enterprise AI CLI] Executing Hybrid RAG Search (Dense Vector + BM25) for: '{query}'...\n");
+        if (!TryCreateBackendClient("ENTERPRISE_AI_KNOWLEDGE_URL", out var client, out var error))
+        {
+            return WriteConfigurationError(error);
+        }
 
-        await Task.Delay(120);
+        using (client)
+        {
+            using var response = await client.PostAsJsonAsync("/api/v1/knowledge/search", new
+            {
+                query,
+                take = 10,
+                minScore = 0.05
+            });
 
-        Console.WriteLine("Top Ranked RAG Results (RRF Fused):");
-        Console.WriteLine(" 1. [Score: 0.032] Clean Architecture Guidelines (docs/clean-arch.md)");
-        Console.WriteLine("    \"Clean Architecture per bounded context: Domain owns aggregates, Application owns use cases.\"");
-        Console.WriteLine(" 2. [Score: 0.028] API Standards (docs/api/api-guidelines.md)");
-        Console.WriteLine("    \"Keep public APIs versioned under /api/v1/... Explicit request/response contracts.\"");
-
-        return 0;
+            return await WriteResponseAsync(response);
+        }
     }
 
     public static async Task<int> ShowStatusAsync()
     {
-        Console.WriteLine("⚡ [Enterprise AI Platform Status]");
-        Console.WriteLine("---------------------------------------------");
-        Console.WriteLine(" API Gateway:           HEALTHY (http://localhost:5000)");
-        Console.WriteLine(" Agent API:             HEALTHY (http://localhost:5003)");
-        Console.WriteLine(" Web Portal BFF:        HEALTHY (http://localhost:5007)");
-        Console.WriteLine("\n[Circuit Breakers]:");
-        Console.WriteLine("  - AzureOpenAi:        CLOSED (0.0% failure rate) -> Fallback: Anthropic");
-        Console.WriteLine("  - Anthropic:          CLOSED (0.0% failure rate) -> Fallback: GoogleGemini");
-        Console.WriteLine("  - SelfHostedVllm:     CLOSED (0.0% failure rate) -> Fallback: CopilotProxy");
-        Console.WriteLine("\n[Token Quota Summary]:");
-        Console.WriteLine("  - Tenant:             tenant-enterprise-eng");
-        Console.WriteLine("  - Monthly Usage:      685.0M / 1,000.0M Tokens (68.5%)");
-        Console.WriteLine("  - Budget Consumed:    $34,250.00 / $50,000.00");
-        Console.WriteLine("  - Status:             HEALTHY");
-        return 0;
+        if (!TryCreateBackendClient("ENTERPRISE_AI_GATEWAY_URL", out var client, out var error))
+        {
+            return WriteConfigurationError(error);
+        }
+
+        using (client)
+        {
+            using var response = await client.GetAsync("/health/ready");
+            return await WriteResponseAsync(response);
+        }
     }
 
     public static async Task<int> ListModelsAsync()
     {
-        Console.WriteLine("📋 [Available AI Models & GPU Cluster Catalog]");
-        Console.WriteLine("----------------------------------------------------------------------");
-        Console.WriteLine(" MODEL ID               PROVIDER           LATENCY    COST/1K    STATUS");
-        Console.WriteLine("----------------------------------------------------------------------");
-        Console.WriteLine(" azure-gpt-4o           Azure OpenAI       145 ms     $0.0050    Active");
-        Console.WriteLine(" anthropic-claude-3-5   Anthropic          160 ms     $0.0030    Active");
-        Console.WriteLine(" gemini-1-5-pro         Google Gemini      130 ms     $0.0025    Active");
-        Console.WriteLine(" vllm-deepseek-coder    Self-Hosted (GPU)   45 ms     $0.0002    Active (A100)");
-        Console.WriteLine(" ollama-codegemma       Self-Hosted (GPU)   60 ms     $0.0001    Active (L40S)");
-        return 0;
+        if (!TryCreateBackendClient("ENTERPRISE_AI_MODEL_REGISTRY_URL", out var client, out var error))
+        {
+            return WriteConfigurationError(error);
+        }
+
+        using (client)
+        {
+            using var response = await client.GetAsync("/api/v1/model-registry/models");
+            return await WriteResponseAsync(response);
+        }
+    }
+
+    private static bool TryCreateBackendClient(
+        string urlEnvironmentVariable,
+        out HttpClient client,
+        out string error)
+    {
+        client = new HttpClient();
+        error = string.Empty;
+
+        string? baseUrl = Environment.GetEnvironmentVariable(urlEnvironmentVariable);
+        if (!Uri.TryCreate(baseUrl, UriKind.Absolute, out var baseUri)
+            || baseUri.Scheme is not ("http" or "https"))
+        {
+            error = $"{urlEnvironmentVariable} must be set to an absolute HTTP(S) service URL.";
+            return false;
+        }
+
+        string? accessToken = Environment.GetEnvironmentVariable("ENTERPRISE_AI_ACCESS_TOKEN");
+        if (string.IsNullOrWhiteSpace(accessToken))
+        {
+            error = "ENTERPRISE_AI_ACCESS_TOKEN must contain a platform JWT.";
+            return false;
+        }
+
+        client.BaseAddress = baseUri;
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        client.DefaultRequestHeaders.Add("X-Correlation-ID", Guid.NewGuid().ToString("N"));
+        return true;
+    }
+
+    private static int WriteConfigurationError(string error)
+    {
+        Console.Error.WriteLine(error);
+        return 2;
+    }
+
+    private static async Task<int> WriteResponseAsync(HttpResponseMessage response)
+    {
+        string body = await response.Content.ReadAsStringAsync();
+        Console.WriteLine(body);
+        return response.IsSuccessStatusCode ? 0 : 1;
     }
 }

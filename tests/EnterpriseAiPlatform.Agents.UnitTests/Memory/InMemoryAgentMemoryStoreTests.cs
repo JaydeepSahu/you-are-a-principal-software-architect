@@ -13,7 +13,7 @@ public class InMemoryAgentMemoryStoreTests
         // Arrange
         var store = new InMemoryAgentMemoryStore();
         var planId = PlanId.New();
-        var tenantId = TenantId.From("t1");
+        var tenantId = TenantId.From(Guid.Parse("55555555-5555-5555-5555-555555555555"));
         var agentId = AgentId.From("a1");
 
         // Act

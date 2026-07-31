@@ -1,8 +1,9 @@
+using EnterpriseAiPlatform.Application.Abstractions;
 using EnterpriseAiPlatform.Policy.Application.Abstractions;
-using EnterpriseAiPlatform.SharedKernel;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using static EnterpriseAiPlatform.ServiceDefaults.ServiceDefaultsExtensions;
 
 namespace EnterpriseAiPlatform.Policy.Api.Endpoints;
 
@@ -14,15 +15,16 @@ public static class DlpEndpoints
     {
         var group = endpoints.MapGroup("/api/v1/policy/dlp")
             .WithTags("Inline Data Loss Prevention (DLP)")
-            .WithOpenApi();
+            .WithOpenApi()
+            .RequireAuthorization(EnterpriseAuthorizationPolicies.Developer);
 
         group.MapPost("/scan", async (
             DlpScanRequest request,
             IDlpScanner scanner,
-            HttpContext httpContext,
+            IRequestContextAccessor requestContext,
             CancellationToken cancellationToken) =>
         {
-            var tenantId = GetTenantId(httpContext);
+            var tenantId = requestContext.Current.TenantId;
             var result = await scanner.ScanAndRedactAsync(tenantId, request.Payload, cancellationToken);
 
             if (result.IsFailure)
@@ -45,10 +47,10 @@ public static class DlpEndpoints
 
         group.MapGet("/rules", async (
             IDlpScanner scanner,
-            HttpContext httpContext,
+            IRequestContextAccessor requestContext,
             CancellationToken cancellationToken) =>
         {
-            var tenantId = GetTenantId(httpContext);
+            var tenantId = requestContext.Current.TenantId;
             var result = await scanner.GetActiveRulesAsync(tenantId, cancellationToken);
 
             return result.IsSuccess
@@ -59,13 +61,5 @@ public static class DlpEndpoints
         .WithSummary("Get active DLP rules and secret detection patterns.");
 
         return endpoints;
-    }
-
-    private static TenantId GetTenantId(HttpContext httpContext)
-    {
-        var tenantHeader = httpContext.Request.Headers["X-Tenant-Id"].FirstOrDefault();
-        return tenantHeader is not null && Guid.TryParse(tenantHeader, out var tid)
-            ? TenantId.From(tid)
-            : TenantId.From(Guid.Parse("00000000-0000-0000-0000-000000000001"));
     }
 }

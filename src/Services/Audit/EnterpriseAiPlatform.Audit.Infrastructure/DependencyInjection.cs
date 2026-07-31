@@ -2,7 +2,11 @@ using System.Collections.Concurrent;
 using EnterpriseAiPlatform.Application.Abstractions;
 using EnterpriseAiPlatform.Audit.Application.Abstractions;
 using EnterpriseAiPlatform.Audit.Domain;
+using EnterpriseAiPlatform.Audit.Infrastructure.Persistence;
+using EnterpriseAiPlatform.Infrastructure.Abstractions;
 using EnterpriseAiPlatform.SharedKernel;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace EnterpriseAiPlatform.Audit.Infrastructure;
@@ -71,14 +75,42 @@ public sealed class InMemoryAuditRepository : IAuditRepository
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddAuditInfrastructure(this IServiceCollection services)
+    public static IServiceCollection AddAuditInfrastructure(
+        this IServiceCollection services,
+        IConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configuration);
 
         services.AddHttpContextAccessor();
         services.AddScoped<IRequestContextAccessor, HttpContextRequestContextAccessor>();
-        services.AddSingleton<IAuditRepository, InMemoryAuditRepository>();
 
+        string? connectionString = configuration.GetConnectionString("PostgreSQL")
+                                   ?? configuration.GetConnectionString("AuditDatabase");
+
+        if (!string.IsNullOrWhiteSpace(connectionString))
+        {
+            services.AddDbContext<AuditDbContext>(options =>
+                options.UseNpgsql(
+                    connectionString,
+                    npgsql => npgsql.MigrationsHistoryTable("__ef_migrations_history", "audit")));
+
+            services.AddScoped<IAuditRepository, EfCoreAuditRepository>();
+        }
+        else
+        {
+            services.AddSingleton<IAuditRepository, InMemoryAuditRepository>();
+        }
+
+        return services;
+    }
+
+    public static IServiceCollection AddAuditInfrastructure(this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        services.AddHttpContextAccessor();
+        services.AddScoped<IRequestContextAccessor, HttpContextRequestContextAccessor>();
+        services.AddSingleton<IAuditRepository, InMemoryAuditRepository>();
         return services;
     }
 }

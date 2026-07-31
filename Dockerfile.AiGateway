@@ -1,39 +1,61 @@
-# Multi-stage production Dockerfile for Enterprise AI Gateway
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+# ─────────────────────────────────────────────────────────────────────────────
+# Enterprise AI Platform — AI Gateway API Dockerfile
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Stage 1: Restore ──────────────────────────────────────────────────────────
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS restore
 WORKDIR /src
 
-# Copy Directory props & configs
 COPY ["Directory.Build.props", "."]
 COPY ["Directory.Packages.props", "."]
 COPY ["global.json", "."]
-COPY ["EnterpriseAiPlatform.sln", "."]
+COPY ["src/", "src/"]
 
-# Copy Projects
-COPY ["src/BuildingBlocks/", "src/BuildingBlocks/"]
-COPY ["src/Gateways/EnterpriseAiPlatform.AiGateway.Api/", "src/Gateways/EnterpriseAiPlatform.AiGateway.Api/"]
-COPY ["src/Gateways/EnterpriseAiPlatform.AiGateway.Application/", "src/Gateways/EnterpriseAiPlatform.AiGateway.Application/"]
-COPY ["src/Gateways/EnterpriseAiPlatform.AiGateway.Contracts/", "src/Gateways/EnterpriseAiPlatform.AiGateway.Contracts/"]
-COPY ["src/Services/Identity/EnterpriseAiPlatform.Identity.Contracts/", "src/Services/Identity/EnterpriseAiPlatform.Identity.Contracts/"]
-COPY ["src/Gateways/EnterpriseAiPlatform.AiGateway.Infrastructure/", "src/Gateways/EnterpriseAiPlatform.AiGateway.Infrastructure/"]
+RUN dotnet restore \
+    "src/Gateways/EnterpriseAiPlatform.AiGateway.Api/EnterpriseAiPlatform.AiGateway.Api.csproj" \
+    --runtime linux-musl-x64 \
+    /p:PublishReadyToRun=false
 
-# Restore & Publish
-RUN dotnet restore "src/Gateways/EnterpriseAiPlatform.AiGateway.Api/EnterpriseAiPlatform.AiGateway.Api.csproj"
-RUN dotnet publish "src/Gateways/EnterpriseAiPlatform.AiGateway.Api/EnterpriseAiPlatform.AiGateway.Api.csproj" -c Release -o /app/publish /p:UseAppHost=false
+# ── Stage 2: Publish ──────────────────────────────────────────────────────────
+FROM restore AS publish
 
-# Runtime stage
-FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
+RUN dotnet publish \
+    "src/Gateways/EnterpriseAiPlatform.AiGateway.Api/EnterpriseAiPlatform.AiGateway.Api.csproj" \
+    --configuration Release \
+    --no-restore \
+    --output /app/publish \
+    --runtime linux-musl-x64 \
+    --self-contained false \
+    /p:UseAppHost=false \
+    /p:PublishReadyToRun=true \
+    /p:DebugType=none \
+    /p:DebugSymbols=false
+
+# ── Stage 3: Runtime ──────────────────────────────────────────────────────────
+FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS final
+
+LABEL org.opencontainers.image.title="Enterprise AI Platform — AI Gateway" \
+      org.opencontainers.image.description="AI Gateway service — routes, governs, and meters AI provider traffic" \
+      org.opencontainers.image.vendor="Enterprise AI Platform"
+
+RUN addgroup --system --gid 10001 appgroup \
+    && adduser --system --uid 10001 --ingroup appgroup --no-create-home appuser
+
 WORKDIR /app
 
-# Non-root security user setup
-RUN adduser --disabled-password --gecos "" --uid 10001 appuser && chown -R appuser:appuser /app
+COPY --from=publish --chown=appuser:appgroup /app/publish .
+
+ENV ASPNETCORE_HTTP_PORTS=8080 \
+    ASPNETCORE_ENVIRONMENT=Production \
+    DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false \
+    DOTNET_RUNNING_IN_CONTAINER=true \
+    DOTNET_EnableDiagnostics=0
+
 USER 10001
 
-COPY --from=build --chown=appuser:appuser /app/publish .
-
-ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
 
-HEALTHCHECK --interval=10s --timeout=5s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:8080/health/live || exit 1
+HEALTHCHECK --interval=15s --timeout=5s --start-period=10s --retries=3 \
+    CMD wget --quiet --tries=1 --spider http://localhost:8080/health/live || exit 1
 
 ENTRYPOINT ["dotnet", "EnterpriseAiPlatform.AiGateway.Api.dll"]

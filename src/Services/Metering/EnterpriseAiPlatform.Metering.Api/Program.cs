@@ -8,8 +8,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddEnterpriseServiceDefaults();
 builder.Services.AddEnterpriseApiDocumentation("Metering Service", "Records granular token usage, latency, and cost metrics per request.");
+builder.Services.AddEnterprisePlatformSecurity(builder.Configuration, builder.Environment);
 builder.Services.AddMeteringApplication();
-builder.Services.AddMeteringInfrastructure();
+builder.Services.AddMeteringInfrastructure(builder.Configuration);
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
@@ -20,7 +21,8 @@ var app = builder.Build();
 
 app.UseForwardedHeaders();
 if (!app.Environment.IsDevelopment()) app.UseHsts();
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment()) { app.UseHttpsRedirection(); }
+app.UseEnterpriseRequestPipeline();
 app.MapMeteringEndpoints();
 app.UseEnterpriseApiDocumentation();
 app.MapEnterpriseHealthChecks();

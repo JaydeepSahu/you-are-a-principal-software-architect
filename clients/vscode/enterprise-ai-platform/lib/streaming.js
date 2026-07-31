@@ -47,33 +47,56 @@ function extractTextFromJson(value) {
 }
 
 function parseStreamingChunk(chunk) {
-  const text = chunk.toString();
-  const lines = text.split(/\r?\n/u);
-  const parts = [];
+  const parser = createStreamingParser();
+  return parser.push(chunk) + parser.flush();
+}
 
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (trimmed.length === 0 || trimmed === 'data: [DONE]' || trimmed === '[DONE]') {
-      continue;
-    }
-
-    const payload = trimmed.startsWith('data:') ? trimmed.slice(5).trim() : trimmed;
-    if (payload.length === 0 || payload === '[DONE]') {
-      continue;
-    }
-
-    try {
-      const parsed = JSON.parse(payload);
-      const extracted = extractTextFromJson(parsed);
-      if (extracted.length > 0) {
-        parts.push(extracted);
-      }
-    } catch {
-      parts.push(payload);
-    }
+function parseStreamingLine(line) {
+  const trimmed = line.trim();
+  if (trimmed.length === 0 || trimmed === 'data: [DONE]' || trimmed === '[DONE]') {
+    return '';
   }
 
-  return parts.join('');
+  const payload = trimmed.startsWith('data:') ? trimmed.slice(5).trim() : trimmed;
+  if (payload.length === 0 || payload === '[DONE]') {
+    return '';
+  }
+
+  try {
+    const parsed = JSON.parse(payload);
+    return extractTextFromJson(parsed);
+  } catch {
+    return payload;
+  }
+}
+
+function createStreamingParser() {
+  let pending = '';
+
+  function drain(text, includePending) {
+    pending += text.toString();
+    const lines = pending.split(/\r?\n/u);
+
+    if (includePending) {
+      pending = '';
+    } else {
+      pending = lines.pop() || '';
+    }
+
+    return lines
+      .map(parseStreamingLine)
+      .filter(part => part.length > 0)
+      .join('');
+  }
+
+  return {
+    push(chunk) {
+      return drain(chunk, false);
+    },
+    flush() {
+      return pending.length > 0 ? drain('\n', true) : '';
+    }
+  };
 }
 
 async function readStreamingResponse(response, onDelta, cancellationToken) {
@@ -82,6 +105,7 @@ async function readStreamingResponse(response, onDelta, cancellationToken) {
   }
 
   let completed = '';
+  const parser = createStreamingParser();
 
   if (typeof response.body.getReader === 'function') {
     const reader = response.body.getReader();
@@ -98,14 +122,14 @@ async function readStreamingResponse(response, onDelta, cancellationToken) {
         break;
       }
 
-      const delta = parseStreamingChunk(decoder.decode(result.value, { stream: true }));
+      const delta = parser.push(decoder.decode(result.value, { stream: true }));
       if (delta.length > 0) {
         completed += delta;
         onDelta(delta);
       }
     }
 
-    const finalDelta = parseStreamingChunk(decoder.decode());
+    const finalDelta = parser.push(decoder.decode()) + parser.flush();
     if (finalDelta.length > 0) {
       completed += finalDelta;
       onDelta(finalDelta);
@@ -119,17 +143,24 @@ async function readStreamingResponse(response, onDelta, cancellationToken) {
       break;
     }
 
-    const delta = parseStreamingChunk(chunk);
+    const delta = parser.push(chunk);
     if (delta.length > 0) {
       completed += delta;
       onDelta(delta);
     }
   }
 
+  const finalDelta = parser.flush();
+  if (finalDelta.length > 0) {
+    completed += finalDelta;
+    onDelta(finalDelta);
+  }
+
   return completed;
 }
 
 module.exports = {
+  createStreamingParser,
   extractTextFromJson,
   parseStreamingChunk,
   readStreamingResponse

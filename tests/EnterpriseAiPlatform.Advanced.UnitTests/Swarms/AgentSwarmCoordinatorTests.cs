@@ -21,7 +21,7 @@ public class AgentSwarmCoordinatorTests
         var memoryStore = new InMemoryAgentMemoryStore();
         var coordinator = new AgentSwarmCoordinator(executor, memoryStore);
 
-        var tenantId = TenantId.From("swarm-tenant");
+        var tenantId = TenantId.From(Guid.Parse("22222222-2222-2222-2222-222222222222"));
         var tasks = new List<SwarmTask>
         {
             new SwarmTask("task-1", "research-agent", "Research codebase", new List<string>()),

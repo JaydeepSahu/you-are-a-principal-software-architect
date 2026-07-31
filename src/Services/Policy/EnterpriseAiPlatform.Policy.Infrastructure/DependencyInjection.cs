@@ -1,10 +1,13 @@
-using PolicyEntity = EnterpriseAiPlatform.Policy.Domain.Policy;
 using System.Collections.Concurrent;
 using EnterpriseAiPlatform.Application.Abstractions;
+using EnterpriseAiPlatform.Infrastructure.Abstractions;
 using EnterpriseAiPlatform.Policy.Application.Abstractions;
 using EnterpriseAiPlatform.Policy.Domain;
-using Microsoft.AspNetCore.Http;
+using EnterpriseAiPlatform.Policy.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using PolicyEntity = EnterpriseAiPlatform.Policy.Domain.Policy;
 
 namespace EnterpriseAiPlatform.Policy.Infrastructure;
 
@@ -35,29 +38,38 @@ public sealed class InMemoryPolicyRepository : IPolicyRepository
     }
 }
 
-public sealed class HttpContextRequestContextAccessor(IHttpContextAccessor httpContextAccessor) : IRequestContextAccessor
-{
-    public RequestContext Current
-    {
-        get
-        {
-            var httpContext = httpContextAccessor.HttpContext
-                ?? throw new InvalidOperationException("No HTTP context available.");
-            var tenantClaim = httpContext.User.FindFirst("tenant_id")?.Value;
-            var tenantId = tenantClaim is not null && Guid.TryParse(tenantClaim, out var parsedTenantId)
-                ? SharedKernel.TenantId.From(parsedTenantId)
-                : SharedKernel.TenantId.From(Guid.Parse("00000000-0000-0000-0000-000000000001"));
-            return new RequestContext(
-                tenantId,
-                httpContext.Request.Headers["X-Correlation-ID"].FirstOrDefault() ?? httpContext.TraceIdentifier,
-                httpContext.User.FindFirst("sub")?.Value,
-                httpContext.User.FindFirst("application_id")?.Value);
-        }
-    }
-}
-
 public static class DependencyInjection
 {
+    public static IServiceCollection AddPolicyInfrastructure(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configuration);
+
+        services.AddHttpContextAccessor();
+        services.AddScoped<IRequestContextAccessor, HttpContextRequestContextAccessor>();
+
+        string? connectionString = configuration.GetConnectionString("PostgreSQL")
+                                   ?? configuration.GetConnectionString("PolicyDatabase");
+
+        if (!string.IsNullOrWhiteSpace(connectionString))
+        {
+            services.AddDbContext<PolicyDbContext>(options =>
+                options.UseNpgsql(
+                    connectionString,
+                    npgsql => npgsql.MigrationsHistoryTable("__ef_migrations_history", "policy")));
+
+            services.AddScoped<IPolicyRepository, EfCorePolicyRepository>();
+        }
+        else
+        {
+            services.AddSingleton<IPolicyRepository, InMemoryPolicyRepository>();
+        }
+
+        return services;
+    }
+
     public static IServiceCollection AddPolicyInfrastructure(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);

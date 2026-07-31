@@ -8,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddEnterpriseServiceDefaults();
 builder.Services.AddEnterpriseApiDocumentation("Vector Search Service", "Provides embedding-based vector similarity search over enterprise document stores.");
+builder.Services.AddEnterprisePlatformSecurity(builder.Configuration, builder.Environment);
 builder.Services.AddVectorSearchApplication();
 builder.Services.AddVectorSearchInfrastructure(builder.Configuration);
 
@@ -25,7 +26,8 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment()) { app.UseHttpsRedirection(); }
+app.UseEnterpriseRequestPipeline();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 app.MapVectorSearchEndpoints();

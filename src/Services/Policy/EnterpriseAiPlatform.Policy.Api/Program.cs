@@ -8,8 +8,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddEnterpriseServiceDefaults();
 builder.Services.AddEnterpriseApiDocumentation("Policy and Governance Service", "Manages AI governance policies, inline DLP scanning, and LLM red-team adversarial evaluations.");
+builder.Services.AddEnterprisePlatformSecurity(builder.Configuration, builder.Environment);
+builder.Services.AddHttpClient();
 builder.Services.AddPolicyApplication();
-builder.Services.AddPolicyInfrastructure();
+builder.Services.AddPolicyInfrastructure(builder.Configuration);
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
@@ -20,7 +22,8 @@ var app = builder.Build();
 
 app.UseForwardedHeaders();
 if (!app.Environment.IsDevelopment()) app.UseHsts();
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment()) { app.UseHttpsRedirection(); }
+app.UseEnterpriseRequestPipeline();
 app.MapPolicyEndpoints();
 app.UseEnterpriseApiDocumentation();
 app.MapEnterpriseHealthChecks();

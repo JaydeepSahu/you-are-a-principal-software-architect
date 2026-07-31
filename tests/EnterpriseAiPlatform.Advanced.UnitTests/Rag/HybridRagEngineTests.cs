@@ -11,7 +11,7 @@ public class HybridRagEngineTests
     {
         // Arrange
         var engine = new HybridRagEngine();
-        var tenantId = TenantId.From("tenant-rag");
+        var tenantId = TenantId.From(Guid.Parse("11111111-1111-1111-1111-111111111111"));
 
         // Act
         await engine.IngestDocumentAsync(

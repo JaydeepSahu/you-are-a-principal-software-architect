@@ -2,9 +2,6 @@
 
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\EnterpriseAiPlatform.ModelRegistry.Application\EnterpriseAiPlatform.ModelRegistry.Application.csproj" />
     <ProjectReference Include="..\EnterpriseAiPlatform.ModelRegistry.Domain\EnterpriseAiPlatform.ModelRegistry.Domain.csproj" />
     <ProjectReference Include="..\EnterpriseAiPlatform.ModelRegistry.Contracts\EnterpriseAiPlatform.ModelRegistry.Contracts.csproj" />

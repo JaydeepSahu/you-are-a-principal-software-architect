@@ -30,7 +30,7 @@ public class AgentExecutorTests
         var executor = new AgentExecutor(registry, approvalManager);
 
         var planId = PlanId.New();
-        var tenantId = TenantId.From("tenant-123");
+        var tenantId = TenantId.From(Guid.Parse("66666666-6666-6666-6666-666666666666"));
         var agentId = AgentId.From("agent-abc");
 
         var plan = new AgentPlan(planId, agentId, tenantId, "Execute task");
@@ -65,7 +65,7 @@ public class AgentExecutorTests
         var executor = new AgentExecutor(registry, approvalManager);
 
         var planId = PlanId.New();
-        var tenantId = TenantId.From("tenant-123");
+        var tenantId = TenantId.From(Guid.Parse("66666666-6666-6666-6666-666666666666"));
         var agentId = AgentId.From("deployer-agent");
 
         var plan = new AgentPlan(planId, agentId, tenantId, "Deploy app");

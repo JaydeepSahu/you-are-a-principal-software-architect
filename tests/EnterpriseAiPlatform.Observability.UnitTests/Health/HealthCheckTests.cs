@@ -2,6 +2,7 @@ using System.Net;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using EnterpriseAiPlatform.ServiceDefaults;
 using Xunit;
@@ -20,6 +21,7 @@ public class HealthCheckTests
                 webHost.UseTestServer();
                 webHost.ConfigureServices(services =>
                 {
+                    services.AddRouting();
                     services.AddHealthChecks();
                 });
                 webHost.Configure(app =>

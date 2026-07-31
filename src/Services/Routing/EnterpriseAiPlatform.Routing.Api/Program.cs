@@ -8,8 +8,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddEnterpriseServiceDefaults();
 builder.Services.AddEnterpriseApiDocumentation("Routing Service", "Applies intelligent routing rules to select the optimal AI provider per request.");
+builder.Services.AddEnterprisePlatformSecurity(builder.Configuration, builder.Environment);
 builder.Services.AddRoutingApplication();
-builder.Services.AddRoutingInfrastructure();
+builder.Services.AddRoutingInfrastructure(builder.Configuration);
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
@@ -25,7 +26,8 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment()) { app.UseHttpsRedirection(); }
+app.UseEnterpriseRequestPipeline();
 app.MapRoutingEndpoints();
 app.UseEnterpriseApiDocumentation();
 app.MapEnterpriseHealthChecks();

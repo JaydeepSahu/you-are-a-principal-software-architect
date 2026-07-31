@@ -8,6 +8,7 @@ namespace EnterpriseAiPlatform.Knowledge.Infrastructure.Rag;
 public sealed class HybridRagEngine : IKnowledgeEngine
 {
     private readonly ConcurrentBag<KnowledgeChunk> _chunks = new();
+    private readonly HashingEmbeddingGenerator _embeddingGenerator = new();
 
     public Task<Result<IReadOnlyList<KnowledgeChunk>>> IngestDocumentAsync(
         TenantId tenantId,
@@ -30,14 +31,16 @@ public sealed class HybridRagEngine : IKnowledgeEngine
         {
             int length = Math.Min(chunkSize, content.Length - i);
             string chunkText = content.Substring(i, length);
-            float[] dummyEmbedding = Enumerable.Range(0, 128).Select(_ => (float)Random.Shared.NextDouble()).ToArray();
+            float[] embedding = _embeddingGenerator.GenerateEmbedding(chunkText)
+                .Select(value => (float)value)
+                .ToArray();
 
             var chunk = new KnowledgeChunk(
                 ChunkId.New(),
                 docId,
                 createdChunks.Count,
                 chunkText,
-                dummyEmbedding,
+                embedding,
                 new Dictionary<string, string> { { "title", title }, { "source", sourceUri } }
             );
 
@@ -79,7 +82,9 @@ public sealed class HybridRagEngine : IKnowledgeEngine
             .ToList();
 
         // 2. Vector Cosine Similarity Search
-        queryEmbedding ??= Enumerable.Range(0, 128).Select(_ => 0.5f).ToArray();
+        queryEmbedding ??= _embeddingGenerator.GenerateEmbedding(query)
+            .Select(value => (float)value)
+            .ToArray();
         var vectorResults = allChunks
             .Select(c =>
             {

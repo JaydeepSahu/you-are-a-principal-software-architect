@@ -1,5 +1,6 @@
 using EnterpriseAiPlatform.Application.Abstractions;
 using EnterpriseAiPlatform.Evaluation.Application.Abstractions;
+using EnterpriseAiPlatform.Infrastructure.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace EnterpriseAiPlatform.Evaluation.Infrastructure;

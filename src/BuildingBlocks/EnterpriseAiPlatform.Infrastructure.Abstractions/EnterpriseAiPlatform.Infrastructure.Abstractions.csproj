@@ -1,6 +1,13 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="StackExchange.Redis" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EnterpriseAiPlatform.Application.Abstractions\EnterpriseAiPlatform.Application.Abstractions.csproj" />
+    <ProjectReference Include="..\EnterpriseAiPlatform.Contracts\EnterpriseAiPlatform.Contracts.csproj" />
     <ProjectReference Include="..\EnterpriseAiPlatform.SharedKernel\EnterpriseAiPlatform.SharedKernel.csproj" />
   </ItemGroup>
 

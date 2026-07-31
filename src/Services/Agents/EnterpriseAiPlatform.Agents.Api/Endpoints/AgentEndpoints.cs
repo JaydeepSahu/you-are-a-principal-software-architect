@@ -1,13 +1,15 @@
 using System.Text.Json;
+using EnterpriseAiPlatform.Application.Abstractions;
 using EnterpriseAiPlatform.Agents.Application.Abstractions;
 using EnterpriseAiPlatform.Agents.Application.Commands;
 using EnterpriseAiPlatform.Agents.Application.Queries;
 using EnterpriseAiPlatform.Agents.Contracts.Requests;
-using EnterpriseAiPlatform.SharedKernel;
+using EnterpriseAiPlatform.ServiceDefaults;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using static EnterpriseAiPlatform.ServiceDefaults.ServiceDefaultsExtensions;
 
 namespace EnterpriseAiPlatform.Agents.Api.Endpoints;
 
@@ -17,15 +19,16 @@ public static class AgentEndpoints
     {
         var group = endpoints.MapGroup("/api/v1/agents")
             .WithTags("Agents")
-            .WithOpenApi();
+            .WithOpenApi()
+            .RequireAuthorization(EnterpriseAuthorizationPolicies.Developer);
 
         group.MapPost("/execute", async (
             AgentExecutionRequest request,
             ISender sender,
-            HttpContext httpContext,
+            IRequestContextAccessor requestContext,
             CancellationToken cancellationToken) =>
         {
-            var tenantId = GetTenantId(httpContext);
+            var tenantId = requestContext.Current.TenantId;
             var command = new ExecuteAgentPlanCommand(tenantId, request);
             var result = await sender.Send(command, cancellationToken);
 
@@ -41,10 +44,10 @@ public static class AgentEndpoints
         group.MapGet("/plans/{planId:guid}", async (
             Guid planId,
             ISender sender,
-            HttpContext httpContext,
+            IRequestContextAccessor requestContext,
             CancellationToken cancellationToken) =>
         {
-            var tenantId = GetTenantId(httpContext);
+            var tenantId = requestContext.Current.TenantId;
             var query = new GetAgentPlanQuery(tenantId, planId);
             var result = await sender.Send(query, cancellationToken);
 
@@ -60,10 +63,10 @@ public static class AgentEndpoints
         group.MapPost("/approvals/decide", async (
             ApprovalDecisionRequest request,
             ISender sender,
-            HttpContext httpContext,
+            IRequestContextAccessor requestContext,
             CancellationToken cancellationToken) =>
         {
-            var tenantId = GetTenantId(httpContext);
+            var tenantId = requestContext.Current.TenantId;
             var command = new SubmitApprovalDecisionCommand(tenantId, request);
             var result = await sender.Send(command, cancellationToken);
 
@@ -96,13 +99,5 @@ public static class AgentEndpoints
         .WithSummary("Server-Sent Events (SSE) stream of real-time agent execution events.");
 
         return endpoints;
-    }
-
-    private static TenantId GetTenantId(HttpContext httpContext)
-    {
-        var tenantHeader = httpContext.Request.Headers["X-Tenant-Id"].FirstOrDefault();
-        return tenantHeader is not null && Guid.TryParse(tenantHeader, out var tid)
-            ? TenantId.From(tid)
-            : TenantId.From(Guid.Parse("00000000-0000-0000-0000-000000000001"));
     }
 }

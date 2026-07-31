@@ -3,6 +3,8 @@ using EnterpriseAiPlatform.ModelRegistry.Application.Abstractions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Configuration;
+using static EnterpriseAiPlatform.ServiceDefaults.ServiceDefaultsExtensions;
 
 namespace EnterpriseAiPlatform.PortalBff.Api.Endpoints;
 
@@ -12,23 +14,29 @@ public static class GovernancePortalEndpoints
     {
         var group = endpoints.MapGroup("/api/v1/portal")
             .WithTags("Governance Portal BFF")
-            .WithOpenApi();
+            .WithOpenApi()
+            .RequireAuthorization(EnterpriseAuthorizationPolicies.Auditor);
 
-        group.MapGet("/analytics/overview", () =>
+        group.MapGet("/analytics/overview", async (
+            IConfiguration configuration,
+            IHttpClientFactory httpClientFactory,
+            HttpContext httpContext,
+            CancellationToken cancellationToken) =>
         {
-            var summary = new
+            if (!PortalBackendProxy.TryGetBackendBaseUri(configuration, "Metering", out var meteringBaseUri))
             {
-                TotalRequests = 1450230,
-                TotalTokens = 892104500,
-                EstimatedCostSavedDollars = 42500.00,
-                ActiveTenants = 18,
-                AverageLatencyMs = 185,
-                PolicyInterceptionsCount = 342
-            };
-            return Results.Ok(summary);
+                return PortalBackendProxy.BackendNotConfigured("Metering");
+            }
+
+            return await PortalBackendProxy.ForwardJsonAsync(
+                httpContext,
+                httpClientFactory,
+                meteringBaseUri,
+                "/api/v1/metering/usage",
+                cancellationToken);
         })
         .WithName("GetAnalyticsOverview")
-        .WithSummary("Get real-time AI control plane analytics summary.");
+        .WithSummary("Get AI control plane usage analytics from the Metering service.");
 
         group.MapGet("/marketplace/catalog", async (IModelMarketplace marketplace, CancellationToken ct) =>
         {

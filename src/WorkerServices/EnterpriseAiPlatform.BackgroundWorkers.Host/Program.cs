@@ -6,7 +6,7 @@ var builder = Host.CreateApplicationBuilder(args);
 
 builder.AddEnterpriseServiceDefaults();
 builder.Services.AddBackgroundWorkersApplication();
-builder.Services.AddBackgroundWorkersInfrastructure();
+builder.Services.AddBackgroundWorkersInfrastructure(builder.Configuration);
 
 var app = builder.Build();
 

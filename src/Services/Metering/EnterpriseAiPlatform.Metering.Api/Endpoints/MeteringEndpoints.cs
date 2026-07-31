@@ -12,7 +12,8 @@ public static class MeteringEndpoints
     {
         var group = endpoints.MapGroup("/api/v1/metering")
             .WithTags("Token Usage Metering")
-            .WithOpenApi();
+            .WithOpenApi()
+            .RequireAuthorization();
 
         group.MapPost("/records", RecordAsync)
             .WithName("RecordMeteringEvent")

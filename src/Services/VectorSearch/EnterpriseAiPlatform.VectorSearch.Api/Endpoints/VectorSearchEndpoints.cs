@@ -12,7 +12,8 @@ public static class VectorSearchEndpoints
     {
         var group = endpoints.MapGroup("/api/v1/vector-search")
             .WithTags("Vector Search")
-            .WithOpenApi();
+            .WithOpenApi()
+            .RequireAuthorization();
 
         group.MapPost("/documents", UpsertAsync)
             .WithName("UpsertVectorDocuments")

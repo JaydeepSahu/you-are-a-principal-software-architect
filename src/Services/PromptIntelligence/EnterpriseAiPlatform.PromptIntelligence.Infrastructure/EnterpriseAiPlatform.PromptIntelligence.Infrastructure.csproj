@@ -15,6 +15,7 @@
   <ItemGroup>
     <ProjectReference Include="..\EnterpriseAiPlatform.PromptIntelligence.Application\EnterpriseAiPlatform.PromptIntelligence.Application.csproj" />
     <ProjectReference Include="..\EnterpriseAiPlatform.PromptIntelligence.Domain\EnterpriseAiPlatform.PromptIntelligence.Domain.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\EnterpriseAiPlatform.Infrastructure.Abstractions\EnterpriseAiPlatform.Infrastructure.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>

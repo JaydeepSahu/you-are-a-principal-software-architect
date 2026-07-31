@@ -8,8 +8,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddEnterpriseServiceDefaults();
 builder.Services.AddEnterpriseApiDocumentation("Model Registry", "Maintains the catalog of registered AI models, versions, and capability metadata.");
+builder.Services.AddEnterprisePlatformSecurity(builder.Configuration, builder.Environment);
 builder.Services.AddModelRegistryApplication();
-builder.Services.AddModelRegistryInfrastructure();
+builder.Services.AddModelRegistryInfrastructure(builder.Configuration);
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
@@ -25,7 +26,8 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment()) { app.UseHttpsRedirection(); }
+app.UseEnterpriseRequestPipeline();
 app.MapModelRegistryEndpoints();
 app.UseEnterpriseApiDocumentation();
 app.MapEnterpriseHealthChecks();

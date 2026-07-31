@@ -16,7 +16,7 @@ public class ToolRegistryTests
         var toolDef = new ToolDefinition(
             "calculator",
             "Perform calculation",
-            new[] { new ToolParameter("expression", ToolParameterType.String, "Math expression", isRequired: true) }
+            new[] { new ToolParameter("expression", ToolParameterType.String, "Math expression", IsRequired: true) }
         );
 
         registry.RegisterTool(toolDef, (argsJson, ct) => Task.FromResult("42"));

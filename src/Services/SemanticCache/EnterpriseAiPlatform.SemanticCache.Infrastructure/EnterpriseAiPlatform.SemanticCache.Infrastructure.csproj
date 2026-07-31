@@ -12,5 +12,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\EnterpriseAiPlatform.SemanticCache.Application\EnterpriseAiPlatform.SemanticCache.Application.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\EnterpriseAiPlatform.Infrastructure.Abstractions\EnterpriseAiPlatform.Infrastructure.Abstractions.csproj" />
   </ItemGroup>
 </Project>

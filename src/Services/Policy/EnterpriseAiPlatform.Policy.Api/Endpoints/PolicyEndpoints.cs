@@ -14,7 +14,8 @@ public static class PolicyEndpoints
     {
         var group = endpoints.MapGroup("/api/v1/policies")
             .WithTags("Governance Policies")
-            .WithOpenApi();
+            .WithOpenApi()
+            .RequireAuthorization();
 
         group.MapPost("", CreateAsync)
             .WithName("CreatePolicy")

@@ -19,9 +19,9 @@ public class RetryPolicyExecutorTests
                 attemptCount++;
                 if (attemptCount < 2)
                 {
-                    return Task.FromResult(Result<string>.Failure(new Error("Transient.Error", "Temporary network failure")));
+                    return Task.FromResult(Result.Failure<string>(new Error("Transient.Error", "Temporary network failure")));
                 }
-                return Task.FromResult(Result<string>.Success("SuccessPayload"));
+                return Task.FromResult(Result.Success("SuccessPayload"));
             },
             maxRetries: 3
         );

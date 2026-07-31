@@ -13,7 +13,8 @@ public static class ObservabilityEndpoints
     {
         var group = endpoints.MapGroup("/api/v1/observability")
             .WithTags("Observability")
-            .WithOpenApi();
+            .WithOpenApi()
+            .RequireAuthorization();
 
         group.MapPost("/traces", RecordAsync)
             .WithName("RecordTrace")

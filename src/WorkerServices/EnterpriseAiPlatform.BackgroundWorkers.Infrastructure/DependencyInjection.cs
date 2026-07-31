@@ -1,8 +1,11 @@
 using System.Diagnostics.CodeAnalysis;
+using EnterpriseAiPlatform.Infrastructure.Abstractions;
 using MediatR;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using StackExchange.Redis;
 
 namespace EnterpriseAiPlatform.BackgroundWorkers.Infrastructure;
 
@@ -21,6 +24,18 @@ public sealed class MeteringAggregationWorker(
             {
                 await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
                 using var scope = scopeFactory.CreateScope();
+
+                var leaseProvider = scope.ServiceProvider.GetService<IDistributedLeaseProvider>();
+                if (leaseProvider is not null)
+                {
+                    await using var lease = await leaseProvider.TryAcquireAsync("metering-aggregation", TimeSpan.FromMinutes(4), stoppingToken);
+                    if (lease is null)
+                    {
+                        logger.LogDebug("MeteringAggregationWorker skipped cycle: lease currently held by another replica.");
+                        continue;
+                    }
+                }
+
                 var mediator = scope.ServiceProvider.GetRequiredService<ISender>();
                 await mediator.Send(new Contracts.MeteringAggregationCommand(
                     Guid.NewGuid(),
@@ -55,6 +70,18 @@ public sealed class PolicyCleanupWorker(
             {
                 await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
                 using var scope = scopeFactory.CreateScope();
+
+                var leaseProvider = scope.ServiceProvider.GetService<IDistributedLeaseProvider>();
+                if (leaseProvider is not null)
+                {
+                    await using var lease = await leaseProvider.TryAcquireAsync("policy-cleanup", TimeSpan.FromMinutes(50), stoppingToken);
+                    if (lease is null)
+                    {
+                        logger.LogDebug("PolicyCleanupWorker skipped cycle: lease currently held by another replica.");
+                        continue;
+                    }
+                }
+
                 var mediator = scope.ServiceProvider.GetRequiredService<ISender>();
                 await mediator.Send(new Contracts.CleanupExpiredPoliciesCommand(Guid.NewGuid()), stoppingToken);
             }
@@ -86,6 +113,18 @@ public sealed class AuditFlushWorker(
             {
                 await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
                 using var scope = scopeFactory.CreateScope();
+
+                var leaseProvider = scope.ServiceProvider.GetService<IDistributedLeaseProvider>();
+                if (leaseProvider is not null)
+                {
+                    await using var lease = await leaseProvider.TryAcquireAsync("audit-flush", TimeSpan.FromSeconds(25), stoppingToken);
+                    if (lease is null)
+                    {
+                        logger.LogDebug("AuditFlushWorker skipped cycle: lease currently held by another replica.");
+                        continue;
+                    }
+                }
+
                 var mediator = scope.ServiceProvider.GetRequiredService<ISender>();
                 await mediator.Send(new Contracts.FlushAuditBufferCommand(Guid.NewGuid(), 100), stoppingToken);
             }
@@ -104,6 +143,26 @@ public sealed class AuditFlushWorker(
 
 public static class DependencyInjection
 {
+    public static IServiceCollection AddBackgroundWorkersInfrastructure(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configuration);
+
+        var redisCs = configuration.GetConnectionString("Redis");
+        if (!string.IsNullOrWhiteSpace(redisCs))
+        {
+            services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(redisCs));
+            services.AddSingleton<IDistributedLeaseProvider, RedisDistributedLeaseProvider>();
+        }
+
+        services.AddHostedService<MeteringAggregationWorker>();
+        services.AddHostedService<PolicyCleanupWorker>();
+        services.AddHostedService<AuditFlushWorker>();
+        return services;
+    }
+
     public static IServiceCollection AddBackgroundWorkersInfrastructure(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);

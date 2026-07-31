@@ -27,7 +27,7 @@ public class AgentPlannerTests
 
         var planner = new AgentPlanner(registry);
         var agentId = AgentId.From("code-architect-agent");
-        var tenantId = TenantId.From("test-tenant");
+        var tenantId = TenantId.From(Guid.Parse("44444444-4444-4444-4444-444444444444"));
         var memory = new AgentMemory(PlanId.New(), tenantId, agentId);
 
         // Act

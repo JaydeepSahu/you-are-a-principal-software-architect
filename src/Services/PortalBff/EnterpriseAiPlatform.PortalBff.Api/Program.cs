@@ -10,6 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddEnterpriseServiceDefaults();
 builder.Services.AddEnterpriseApiDocumentation("Admin Portal BFF", "Backend-for-frontend gateway for the web admin portal and developer playground.");
+builder.Services.AddEnterprisePlatformSecurity(builder.Configuration, builder.Environment);
 
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<IModelMarketplace, ModelMarketplace>();
@@ -23,6 +24,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 var app = builder.Build();
 
 app.UseForwardedHeaders();
+app.UseEnterpriseRequestPipeline();
 app.UseStaticFiles();
 
 app.MapGovernancePortalEndpoints();

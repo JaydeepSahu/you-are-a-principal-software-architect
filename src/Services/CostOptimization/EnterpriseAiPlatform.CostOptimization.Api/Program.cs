@@ -8,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddEnterpriseServiceDefaults();
 builder.Services.AddEnterpriseApiDocumentation("Cost Optimization and FinOps", "Tracks AI spend, allocates costs to departments, enforces budgets and quotas, and forecasts monthly spend.");
+builder.Services.AddEnterprisePlatformSecurity(builder.Configuration, builder.Environment);
 builder.Services.AddCostOptimizationApplication();
 builder.Services.AddCostOptimizationInfrastructure();
 
@@ -20,7 +21,8 @@ var app = builder.Build();
 
 app.UseForwardedHeaders();
 if (!app.Environment.IsDevelopment()) app.UseHsts();
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment()) { app.UseHttpsRedirection(); }
+app.UseEnterpriseRequestPipeline();
 app.MapCostOptimizationEndpoints();
 app.UseEnterpriseApiDocumentation();
 app.MapEnterpriseHealthChecks();

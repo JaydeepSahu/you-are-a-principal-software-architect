@@ -1,8 +1,11 @@
 using System.Collections.Concurrent;
 using EnterpriseAiPlatform.Application.Abstractions;
+using EnterpriseAiPlatform.Infrastructure.Abstractions;
 using EnterpriseAiPlatform.Metering.Application.Abstractions;
 using EnterpriseAiPlatform.Metering.Domain;
-using Microsoft.AspNetCore.Http;
+using EnterpriseAiPlatform.Metering.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace EnterpriseAiPlatform.Metering.Infrastructure;
@@ -37,29 +40,38 @@ public sealed class InMemoryMeteringRepository : IMeteringRepository
     }
 }
 
-public sealed class HttpContextRequestContextAccessor(IHttpContextAccessor httpContextAccessor) : IRequestContextAccessor
-{
-    public RequestContext Current
-    {
-        get
-        {
-            var httpContext = httpContextAccessor.HttpContext
-                ?? throw new InvalidOperationException("No HTTP context available.");
-            var tenantClaim = httpContext.User.FindFirst("tenant_id")?.Value;
-            var tenantId = tenantClaim is not null && Guid.TryParse(tenantClaim, out var parsedTenantId)
-                ? SharedKernel.TenantId.From(parsedTenantId)
-                : SharedKernel.TenantId.From(Guid.Parse("00000000-0000-0000-0000-000000000001"));
-            return new RequestContext(
-                tenantId,
-                httpContext.Request.Headers["X-Correlation-ID"].FirstOrDefault() ?? httpContext.TraceIdentifier,
-                httpContext.User.FindFirst("sub")?.Value,
-                httpContext.User.FindFirst("application_id")?.Value);
-        }
-    }
-}
-
 public static class DependencyInjection
 {
+    public static IServiceCollection AddMeteringInfrastructure(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configuration);
+
+        services.AddHttpContextAccessor();
+        services.AddScoped<IRequestContextAccessor, HttpContextRequestContextAccessor>();
+
+        string? connectionString = configuration.GetConnectionString("PostgreSQL")
+                                   ?? configuration.GetConnectionString("MeteringDatabase");
+
+        if (!string.IsNullOrWhiteSpace(connectionString))
+        {
+            services.AddDbContext<MeteringDbContext>(options =>
+                options.UseNpgsql(
+                    connectionString,
+                    npgsql => npgsql.MigrationsHistoryTable("__ef_migrations_history", "metering")));
+
+            services.AddScoped<IMeteringRepository, EfCoreMeteringRepository>();
+        }
+        else
+        {
+            services.AddSingleton<IMeteringRepository, InMemoryMeteringRepository>();
+        }
+
+        return services;
+    }
+
     public static IServiceCollection AddMeteringInfrastructure(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);

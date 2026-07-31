@@ -6,7 +6,9 @@ public static class Program
 {
     public static async Task<int> Main(string[] args)
     {
-        if (args.Length == 0 || args[0] == "--help" || args[0] == "-h")
+        if (args.Length == 0
+            || string.Equals(args[0], "--help", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(args[0], "-h", StringComparison.OrdinalIgnoreCase))
         {
             PrintHelp();
             return 0;
@@ -17,8 +19,8 @@ public static class Program
         return command switch
         {
             "prompt" => await CliCommands.ExecutePromptAsync(GetArgValue(args, 1, "Explain Clean Architecture")),
-            "agent" when args.Length > 1 && args[1].ToLowerInvariant() == "run" => await CliCommands.RunAgentAsync(GetArgValue(args, 2, "Refactor module")),
-            "rag" when args.Length > 1 && args[1].ToLowerInvariant() == "search" => await CliCommands.SearchRagAsync(GetArgValue(args, 2, "coding standards")),
+            "agent" when args.Length > 1 && string.Equals(args[1], "run", StringComparison.OrdinalIgnoreCase) => await CliCommands.RunAgentAsync(GetArgValue(args, 2, "Refactor module")),
+            "rag" when args.Length > 1 && string.Equals(args[1], "search", StringComparison.OrdinalIgnoreCase) => await CliCommands.SearchRagAsync(GetArgValue(args, 2, "coding standards")),
             "status" => await CliCommands.ShowStatusAsync(),
             "models" => await CliCommands.ListModelsAsync(),
             _ => UnknownCommand(command)

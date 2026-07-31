@@ -1,8 +1,11 @@
 using System.Collections.Concurrent;
 using EnterpriseAiPlatform.Application.Abstractions;
+using EnterpriseAiPlatform.Infrastructure.Abstractions;
 using EnterpriseAiPlatform.Observability.Application.Abstractions;
 using EnterpriseAiPlatform.Observability.Domain;
-using Microsoft.AspNetCore.Http;
+using EnterpriseAiPlatform.Observability.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace EnterpriseAiPlatform.Observability.Infrastructure;
@@ -61,29 +64,38 @@ public sealed class InMemoryTraceRepository : ITraceRepository
     }
 }
 
-public sealed class HttpContextRequestContextAccessor(IHttpContextAccessor httpContextAccessor) : IRequestContextAccessor
-{
-    public RequestContext Current
-    {
-        get
-        {
-            var httpContext = httpContextAccessor.HttpContext
-                ?? throw new InvalidOperationException("No HTTP context available.");
-            var tenantClaim = httpContext.User.FindFirst("tenant_id")?.Value;
-            var tenantId = tenantClaim is not null && Guid.TryParse(tenantClaim, out var parsedTenantId)
-                ? SharedKernel.TenantId.From(parsedTenantId)
-                : SharedKernel.TenantId.From(Guid.Parse("00000000-0000-0000-0000-000000000001"));
-            return new RequestContext(
-                tenantId,
-                httpContext.Request.Headers["X-Correlation-ID"].FirstOrDefault() ?? httpContext.TraceIdentifier,
-                httpContext.User.FindFirst("sub")?.Value,
-                httpContext.User.FindFirst("application_id")?.Value);
-        }
-    }
-}
-
 public static class DependencyInjection
 {
+    public static IServiceCollection AddObservabilityInfrastructure(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configuration);
+
+        services.AddHttpContextAccessor();
+        services.AddScoped<IRequestContextAccessor, HttpContextRequestContextAccessor>();
+
+        string? connectionString = configuration.GetConnectionString("PostgreSQL")
+                                   ?? configuration.GetConnectionString("ObservabilityDatabase");
+
+        if (!string.IsNullOrWhiteSpace(connectionString))
+        {
+            services.AddDbContext<ObservabilityDbContext>(options =>
+                options.UseNpgsql(
+                    connectionString,
+                    npgsql => npgsql.MigrationsHistoryTable("__ef_migrations_history", "observability")));
+
+            services.AddScoped<ITraceRepository, EfCoreTraceRepository>();
+        }
+        else
+        {
+            services.AddSingleton<ITraceRepository, InMemoryTraceRepository>();
+        }
+
+        return services;
+    }
+
     public static IServiceCollection AddObservabilityInfrastructure(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);

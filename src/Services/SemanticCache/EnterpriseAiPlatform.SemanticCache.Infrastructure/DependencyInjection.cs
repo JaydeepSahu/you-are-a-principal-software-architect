@@ -1,4 +1,5 @@
 using EnterpriseAiPlatform.Application.Abstractions;
+using EnterpriseAiPlatform.Infrastructure.Abstractions;
 using EnterpriseAiPlatform.SemanticCache.Application.Abstractions;
 using EnterpriseAiPlatform.SemanticCache.Application.Cache;
 using EnterpriseAiPlatform.SemanticCache.Application.Validation;
@@ -22,13 +23,14 @@ public static class DependencyInjection
         services.AddSingleton<ISemanticCacheMetrics, SemanticCacheMetrics>();
         services.AddSingleton<IEmbeddingGenerator, HashingEmbeddingGenerator>();
 
-        // Register Redis if connection string is configured
-        var redisConnString = configuration["SemanticCache:RedisConnectionString"];
-        if (!string.IsNullOrWhiteSpace(redisConnString))
+        // Register Redis when a connection string is present; fall back to InMemory for
+        // local development where Redis is not available.
+        var redisCs = configuration.GetConnectionString("Redis");
+        if (!string.IsNullOrWhiteSpace(redisCs))
         {
             services.AddSingleton<IConnectionMultiplexer>(_ =>
-                ConnectionMultiplexer.Connect(redisConnString));
-            services.AddScoped<ISemanticCacheStore, RedisSemanticCacheStore>();
+                ConnectionMultiplexer.Connect(redisCs));
+            services.AddSingleton<ISemanticCacheStore, RedisSemanticCacheStore>();
         }
         else
         {

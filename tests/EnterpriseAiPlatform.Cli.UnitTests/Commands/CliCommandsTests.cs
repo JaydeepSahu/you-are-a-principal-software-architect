@@ -6,32 +6,32 @@ namespace EnterpriseAiPlatform.Cli.UnitTests.Commands;
 public class CliCommandsTests
 {
     [Fact]
-    public async Task ExecutePromptAsync_ReturnsSuccessExitCode()
+    public async Task ExecutePromptAsync_WhenGatewayIsNotConfigured_ReturnsConfigurationError()
     {
         // Act
         int exitCode = await CliCommands.ExecutePromptAsync("Test prompt");
 
         // Assert
-        Assert.Equal(0, exitCode);
+        Assert.Equal(2, exitCode);
     }
 
     [Fact]
-    public async Task RunAgentAsync_ReturnsSuccessExitCode()
+    public async Task RunAgentAsync_WhenAgentsServiceIsNotConfigured_ReturnsConfigurationError()
     {
         // Act
         int exitCode = await CliCommands.RunAgentAsync("Refactor module");
 
         // Assert
-        Assert.Equal(0, exitCode);
+        Assert.Equal(2, exitCode);
     }
 
     [Fact]
-    public async Task ShowStatusAsync_ReturnsSuccessExitCode()
+    public async Task ShowStatusAsync_WhenGatewayIsNotConfigured_ReturnsConfigurationError()
     {
         // Act
         int exitCode = await CliCommands.ShowStatusAsync();
 
         // Assert
-        Assert.Equal(0, exitCode);
+        Assert.Equal(2, exitCode);
     }
 }

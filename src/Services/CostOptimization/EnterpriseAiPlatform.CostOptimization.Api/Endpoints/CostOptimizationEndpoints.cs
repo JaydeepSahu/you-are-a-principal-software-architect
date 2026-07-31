@@ -1,8 +1,9 @@
+using EnterpriseAiPlatform.Application.Abstractions;
 using EnterpriseAiPlatform.CostOptimization.Application.Abstractions;
-using EnterpriseAiPlatform.SharedKernel;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using static EnterpriseAiPlatform.ServiceDefaults.ServiceDefaultsExtensions;
 
 namespace EnterpriseAiPlatform.CostOptimization.Api.Endpoints;
 
@@ -12,14 +13,15 @@ public static class CostOptimizationEndpoints
     {
         var group = endpoints.MapGroup("/api/v1/cost")
             .WithTags("Financial Predictability & FinOps")
-            .WithOpenApi();
+            .WithOpenApi()
+            .RequireAuthorization(EnterpriseAuthorizationPolicies.Developer);
 
         group.MapGet("/chargeback", async (
             ICostAllocationEngine finOpsEngine,
-            HttpContext httpContext,
+            IRequestContextAccessor requestContext,
             CancellationToken cancellationToken) =>
         {
-            var tenantId = GetTenantId(httpContext);
+            var tenantId = requestContext.Current.TenantId;
             var result = await finOpsEngine.GenerateChargebackReportAsync(tenantId, cancellationToken: cancellationToken);
 
             return result.IsSuccess
@@ -28,16 +30,16 @@ public static class CostOptimizationEndpoints
         })
         .WithName("GetDepartmentalChargeback")
         .WithSummary("Generate departmental cost allocation and token chargeback reports.")
-        .WithDescription("Returns a breakdown of AI spend by department, cost centre, and token volume for the current billing period. Requires the `X-Tenant-Id` header.")
+        .WithDescription("Returns a breakdown of AI spend by department, cost centre, and token volume for the current billing period.")
         .Produces(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest);
 
         group.MapGet("/forecast", async (
             ICostAllocationEngine finOpsEngine,
-            HttpContext httpContext,
+            IRequestContextAccessor requestContext,
             CancellationToken cancellationToken) =>
         {
-            var tenantId = GetTenantId(httpContext);
+            var tenantId = requestContext.Current.TenantId;
             var result = await finOpsEngine.ForecastMonthlySpendAsync(tenantId, cancellationToken);
 
             return result.IsSuccess
@@ -52,10 +54,10 @@ public static class CostOptimizationEndpoints
 
         group.MapGet("/budgets", async (
             ICostAllocationEngine finOpsEngine,
-            HttpContext httpContext,
+            IRequestContextAccessor requestContext,
             CancellationToken cancellationToken) =>
         {
-            var tenantId = GetTenantId(httpContext);
+            var tenantId = requestContext.Current.TenantId;
             var result = await finOpsEngine.GetTenantBudgetStatusAsync(tenantId, cancellationToken);
 
             return result.IsSuccess
@@ -69,13 +71,5 @@ public static class CostOptimizationEndpoints
         .ProducesProblem(StatusCodes.Status400BadRequest);
 
         return endpoints;
-    }
-
-    private static TenantId GetTenantId(HttpContext httpContext)
-    {
-        var tenantHeader = httpContext.Request.Headers["X-Tenant-Id"].FirstOrDefault();
-        return tenantHeader is not null && Guid.TryParse(tenantHeader, out var tid)
-            ? TenantId.From(tid)
-            : TenantId.From(Guid.Parse("00000000-0000-0000-0000-000000000001"));
     }
 }

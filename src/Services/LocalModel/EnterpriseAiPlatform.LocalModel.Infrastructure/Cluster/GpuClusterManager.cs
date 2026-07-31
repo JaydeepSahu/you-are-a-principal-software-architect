@@ -1,21 +1,17 @@
 using EnterpriseAiPlatform.LocalModel.Application.Abstractions;
 using EnterpriseAiPlatform.SharedKernel;
+using Microsoft.Extensions.Configuration;
 
 namespace EnterpriseAiPlatform.LocalModel.Infrastructure.Cluster;
 
-public sealed class GpuClusterManager : IGpuClusterManager
+public sealed class GpuClusterManager(IConfiguration configuration) : IGpuClusterManager
 {
-    private readonly List<GpuNodeStatus> _nodes = new()
-    {
-        new GpuNodeStatus("gpu-node-01", "NVIDIA A100-80GB", 81920, 24576, 32.5, 4, new() { "vllm-deepseek-coder", "vllm-llama-3" }, true),
-        new GpuNodeStatus("gpu-node-02", "NVIDIA H100-80GB", 81920, 12288, 15.0, 2, new() { "vllm-qwen-2.5-coder" }, true),
-        new GpuNodeStatus("gpu-node-03", "NVIDIA L40S-48GB", 49152, 36864, 75.0, 8, new() { "ollama-codegemma" }, true)
-    };
+    private readonly IReadOnlyList<GpuNodeStatus> _nodes =
+        configuration.GetSection("LocalModel:GpuNodes").Get<List<GpuNodeStatus>>() ?? [];
 
     public Task<Result<IReadOnlyList<GpuNodeStatus>>> GetClusterStatusAsync(CancellationToken cancellationToken = default)
     {
-        IReadOnlyList<GpuNodeStatus> list = _nodes;
-        return Task.FromResult(Result<IReadOnlyList<GpuNodeStatus>>.Success(list));
+        return Task.FromResult(Result<IReadOnlyList<GpuNodeStatus>>.Success(_nodes));
     }
 
     public Task<Result<GpuNodeStatus>> SelectOptimalNodeForModelAsync(string modelId, CancellationToken cancellationToken = default)

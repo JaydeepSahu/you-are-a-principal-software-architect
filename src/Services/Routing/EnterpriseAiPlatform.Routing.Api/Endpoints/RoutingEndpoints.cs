@@ -13,7 +13,8 @@ public static class RoutingEndpoints
     {
         var group = endpoints.MapGroup("/api/v1/routing")
             .WithTags("Provider Routing")
-            .WithOpenApi();
+            .WithOpenApi()
+            .RequireAuthorization();
 
         group.MapGet("/modes", GetModesAsync)
             .WithName("GetRoutingModes")

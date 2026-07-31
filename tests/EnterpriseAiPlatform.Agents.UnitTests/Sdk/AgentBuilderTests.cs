@@ -14,12 +14,12 @@ public class AgentBuilderTests
         var client = new AgentBuilder("code-reviewer")
             .AddTool(tb => tb
                 .WithDescription("Runs static analysis")
-                .WithParameter("target", ToolParameterType.String, "Target file")
+                .WithParameter("target", ToolParameterType.String, "Target file", isRequired: false)
                 .OnExecute((args, ct) => Task.FromResult("Static analysis passed clean."))
             )
             .Build();
 
-        var tenantId = TenantId.From("tenant-test");
+        var tenantId = TenantId.From(Guid.Parse("33333333-3333-3333-3333-333333333333"));
 
         // Act
         var result = await client.RunAsync(tenantId, "Perform code review");

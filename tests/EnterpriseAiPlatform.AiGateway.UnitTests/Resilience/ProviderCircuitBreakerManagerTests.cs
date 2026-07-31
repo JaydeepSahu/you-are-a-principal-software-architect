@@ -1,6 +1,8 @@
+using EnterpriseAiPlatform.Application.Abstractions.Configuration;
 using EnterpriseAiPlatform.AiGateway.Application.Abstractions;
 using EnterpriseAiPlatform.AiGateway.Infrastructure.Resilience;
 using EnterpriseAiPlatform.SharedKernel;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace EnterpriseAiPlatform.AiGateway.UnitTests.Resilience;
@@ -11,7 +13,7 @@ public class ProviderCircuitBreakerManagerTests
     public async Task RouteWithResilienceAsync_WhenPrimaryOpen_ReroutesToFallbackProvider()
     {
         // Arrange
-        var manager = new ProviderCircuitBreakerManager();
+        var manager = new ProviderCircuitBreakerManager(Options.Create(new ResilienceOptions()));
         var tenantId = TenantId.From(Guid.Parse("22222222-2222-2222-2222-222222222222"));
 
         // Trip AzureOpenAi circuit breaker to Open state

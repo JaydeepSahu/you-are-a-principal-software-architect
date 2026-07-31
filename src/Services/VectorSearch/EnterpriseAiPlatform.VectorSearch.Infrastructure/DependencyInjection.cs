@@ -1,4 +1,5 @@
 using EnterpriseAiPlatform.Application.Abstractions;
+using EnterpriseAiPlatform.Infrastructure.Abstractions;
 using EnterpriseAiPlatform.VectorSearch.Application.Abstractions;
 using EnterpriseAiPlatform.VectorSearch.Domain;
 using Microsoft.Extensions.Configuration;
@@ -24,6 +25,9 @@ public static class DependencyInjection
         services.AddSingleton<InMemoryVectorStore>();
         services.AddSingleton<PgVectorStore>();
         services.AddSingleton<QdrantVectorStore>();
+        // VectorSearch provider is configured via VectorSearch:Provider.
+        // Defaults to InMemory for local development. Set VectorSearch__Provider=PgVector
+        // (requires pgvector extension) or Qdrant in production environments.
         services.AddSingleton<IVectorStore>(serviceProvider =>
         {
             var options = serviceProvider.GetRequiredService<IOptions<VectorSearchOptions>>().Value;

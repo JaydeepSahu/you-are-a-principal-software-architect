@@ -10,7 +10,8 @@ public static class SemanticCacheEndpoints
     {
         var group = app.MapGroup("/api/v1/semantic-cache")
             .WithTags("SemanticCache")
-            .WithOpenApi();
+            .WithOpenApi()
+            .RequireAuthorization();
 
         group.MapPost("cache", async (SetCacheRequest request, ISender sender, CancellationToken ct) =>
         {

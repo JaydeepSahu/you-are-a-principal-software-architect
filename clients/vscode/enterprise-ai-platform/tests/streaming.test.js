@@ -2,7 +2,7 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { extractTextFromJson, parseStreamingChunk } = require('../lib/streaming');
+const { createStreamingParser, extractTextFromJson, parseStreamingChunk } = require('../lib/streaming');
 
 test('parseStreamingChunk extracts server sent event deltas', () => {
   const chunk = [
@@ -19,6 +19,19 @@ test('parseStreamingChunk supports ndjson content fields', () => {
   const chunk = '{"content":"first"}\n{"delta":" second"}\n';
 
   assert.equal(parseStreamingChunk(chunk), 'first second');
+});
+
+test('createStreamingParser preserves split server sent event frames', () => {
+  const parser = createStreamingParser();
+
+  const first = parser.push('data: {"choices":[{"delta":{"content":"hel');
+  const second = parser.push('lo"}}]}\n');
+  const third = parser.push('data: {"choices":[{"delta":{"content":" world"}}]}\n');
+
+  assert.equal(first, '');
+  assert.equal(second, 'hello');
+  assert.equal(third, ' world');
+  assert.equal(parser.flush(), '');
 });
 
 test('extractTextFromJson supports common gateway payload shapes', () => {

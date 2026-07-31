@@ -1,14 +1,54 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Build context exclusions — keep the Docker context lean and fast.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Source control
 .git
+.github
 .gitignore
+.gitattributes
+
+# IDE & OS artifacts
 .vs
-.venv
+.vscode
 .idea
+.editorconfig
+.DS_Store
+Thumbs.db
 *.user
-bin/
-obj/
-node_modules/
-outputs/
-site/
+*.suo
+
+# Build outputs (never needed in context — rebuild happens inside Docker)
+**/bin/
+**/obj/
+
+# Test projects (not shipped to production)
 tests/
+**/*.Tests/
+**/*.Tests.*/**
+
+# Frontend / tooling
+node_modules/
+clients/vscode/enterprise-ai-platform/node_modules/
+
+# Documentation and static site
+docs/
+site/
+outputs/
+*.md
+!README.md
+
+# Deployment configs not needed at build time
+deployments/
+*.helm
+*.yaml
+
+# Log files
+*.log
 vector-search-api.err.log
 vector-search-api.out.log
+
+# Environment / secrets (never baked into image)
+.env
+.env.*
+!.env.example

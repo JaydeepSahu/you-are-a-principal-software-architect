@@ -8,8 +8,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddEnterpriseServiceDefaults();
 builder.Services.AddEnterpriseApiDocumentation("Observability Service", "Provides dashboards and query endpoints for traces, metrics, and structured logs.");
+builder.Services.AddEnterprisePlatformSecurity(builder.Configuration, builder.Environment);
 builder.Services.AddObservabilityApplication();
-builder.Services.AddObservabilityInfrastructure();
+builder.Services.AddObservabilityInfrastructure(builder.Configuration);
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
@@ -20,7 +21,8 @@ var app = builder.Build();
 
 app.UseForwardedHeaders();
 if (!app.Environment.IsDevelopment()) app.UseHsts();
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment()) { app.UseHttpsRedirection(); }
+app.UseEnterpriseRequestPipeline();
 app.MapObservabilityEndpoints();
 app.UseEnterpriseApiDocumentation();
 app.MapEnterpriseHealthChecks();

@@ -64,14 +64,14 @@ public sealed class LocalAgentClient : IAgentClient
         var planResult = await _planner.CreatePlanAsync(agentId, tenantId, goal, memory, cancellationToken);
         if (planResult.IsFailure)
         {
-            return Result<AgentExecutionResponse>.Failure(planResult.Error);
+            return Result.Failure<AgentExecutionResponse>(planResult.Error);
         }
 
         var plan = planResult.Value;
         var execResult = await _executor.ExecutePlanAsync(plan, memory, null, cancellationToken);
         if (execResult.IsFailure)
         {
-            return Result<AgentExecutionResponse>.Failure(execResult.Error);
+            return Result.Failure<AgentExecutionResponse>(execResult.Error);
         }
 
         await _memoryStore.SaveAsync(memory, cancellationToken);
@@ -108,7 +108,7 @@ public sealed class LocalAgentClient : IAgentClient
             plan.CompletedAt
         );
 
-        return Result<AgentExecutionResponse>.Success(response);
+        return Result.Success(response);
     }
 
     public Task<Result<ApprovalRequestDto>> SubmitApprovalDecisionAsync(
@@ -123,13 +123,13 @@ public sealed class LocalAgentClient : IAgentClient
         var req = _approvalManager.GetRequest(appGuid);
         if (req == null)
         {
-            return Task.FromResult(Result<ApprovalRequestDto>.Failure(new Error("Approval.NotFound", $"Approval request {approvalId} not found.")));
+            return Task.FromResult(Result.Failure<ApprovalRequestDto>(new Error("Approval.NotFound", $"Approval request {approvalId} not found.")));
         }
 
         var success = _approvalManager.SubmitDecision(appGuid, approve, decidedBy, reason);
         if (!success)
         {
-            return Task.FromResult(Result<ApprovalRequestDto>.Failure(new Error("Approval.InvalidState", $"Approval request {approvalId} is not pending.")));
+            return Task.FromResult(Result.Failure<ApprovalRequestDto>(new Error("Approval.InvalidState", $"Approval request {approvalId} is not pending.")));
         }
 
         var dto = new ApprovalRequestDto(
@@ -145,6 +145,6 @@ public sealed class LocalAgentClient : IAgentClient
             req.DecidedAt
         );
 
-        return Task.FromResult(Result<ApprovalRequestDto>.Success(dto));
+        return Task.FromResult(Result.Success(dto));
     }
 }

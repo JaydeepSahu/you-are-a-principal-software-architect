@@ -13,7 +13,7 @@ public class TraceContextTests
         using var listener = new ActivityListener
         {
             ShouldListenTo = source => source.Name == TelemetryConstants.ActivitySourceName,
-            Sample = (ref ActivityCreationOptions<string> _) => ActivitySamplingResult.AllData
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData
         };
         ActivitySource.AddActivityListener(listener);
 

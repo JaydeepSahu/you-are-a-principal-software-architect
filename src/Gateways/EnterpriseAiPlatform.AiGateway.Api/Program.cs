@@ -46,7 +46,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment()) { app.UseHttpsRedirection(); }
 app.Use(async (context, next) =>
 {
     context.ApplyCorrelationId();

@@ -1,4 +1,5 @@
-using EnterpriseAiPlatform.Agents.Api;
+using EnterpriseAiPlatform.Agents.Application.Commands;
+using EnterpriseAiPlatform.Agents.Infrastructure;
 using EnterpriseAiPlatform.Agents.Sdk.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -8,7 +9,8 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddAgentSdk(this IServiceCollection services)
     {
-        services.AddAgentServices();
+        services.AddAgentInfrastructure();
+        services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(ExecuteAgentPlanCommand).Assembly));
         return services;
     }
 }

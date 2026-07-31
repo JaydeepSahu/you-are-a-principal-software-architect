@@ -1,4 +1,5 @@
 using EnterpriseAiPlatform.Application.Abstractions;
+using EnterpriseAiPlatform.Infrastructure.Abstractions;
 using EnterpriseAiPlatform.PromptIntelligence.Application.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -13,6 +14,7 @@ public static class DependencyInjection
         services.AddScoped<IProfileRepository, InMemoryProfileRepository>();
         services.AddScoped<ISessionRepository, InMemorySessionRepository>();
         services.AddSingleton<IPromptOptimizer, PromptOptimizer>();
+        services.AddHttpContextAccessor();
         services.AddScoped<IRequestContextAccessor, HttpContextRequestContextAccessor>();
 
         return services;

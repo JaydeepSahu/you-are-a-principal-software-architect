@@ -13,7 +13,8 @@ public static class ModelRegistryEndpoints
     {
         var group = endpoints.MapGroup("/api/v1/model-registry")
             .WithTags("Model Registry")
-            .WithOpenApi();
+            .WithOpenApi()
+            .RequireAuthorization();
 
         group.MapGet("/providers", GetProvidersAsync)
             .WithName("GetProviders")

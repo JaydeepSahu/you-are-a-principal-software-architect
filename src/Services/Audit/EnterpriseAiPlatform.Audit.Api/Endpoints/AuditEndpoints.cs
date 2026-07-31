@@ -13,7 +13,8 @@ public static class AuditEndpoints
     {
         var group = endpoints.MapGroup("/api/v1/audit")
             .WithTags("Audit Log")
-            .WithOpenApi();
+            .WithOpenApi()
+            .RequireAuthorization();
 
         group.MapPost("/events", RecordAsync)
             .WithName("RecordAuditEvent")
