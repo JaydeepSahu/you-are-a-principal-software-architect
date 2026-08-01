@@ -54,6 +54,27 @@ public static class GovernancePortalEndpoints
         .WithName("GetGpuClusterStatus")
         .WithSummary("Get live GPU cluster metrics and inference slot utilization.");
 
+        group.MapGet("/models", async (
+            IConfiguration configuration,
+            IHttpClientFactory httpClientFactory,
+            HttpContext httpContext,
+            CancellationToken cancellationToken) =>
+        {
+            if (!PortalBackendProxy.TryGetBackendBaseUri(configuration, "ModelRegistry", out var registryBaseUri))
+            {
+                return PortalBackendProxy.BackendNotConfigured("ModelRegistry");
+            }
+
+            return await PortalBackendProxy.ForwardJsonAsync(
+                httpContext,
+                httpClientFactory,
+                registryBaseUri,
+                "/api/v1/model-registry/models?take=50",
+                cancellationToken);
+        })
+        .WithName("GetRegisteredModels")
+        .WithSummary("List all registered AI models from the Model Registry for the playground selector.");
+
         return endpoints;
     }
 }

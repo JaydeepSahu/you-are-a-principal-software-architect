@@ -1,0 +1,70 @@
+# =============================================================================
+# Enterprise AI Platform — Worker Services
+# =============================================================================
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+x-api-healthcheck: &api-healthcheck
+  test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/health/live"]
+  interval: 15s
+  timeout: 5s
+  retries: 3
+  start_period: 10s
+
+x-common-env: &common-env
+  ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+
+x-postgres-env: &postgres-env
+  ConnectionStrings__PostgreSQL: Host=postgres;Database=${POSTGRES_DB:-enterprise_ai_db};Username=${POSTGRES_USER:-ai_platform_user};Password=${POSTGRES_PASSWORD}
+
+x-redis-env: &redis-env
+  ConnectionStrings__Redis: redis:6379
+
+x-rabbitmq-env: &rabbitmq-env
+  ConnectionStrings__RabbitMQ: amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASSWORD:-guest}@rabbitmq:5672/
+
+x-api-service: &api-service
+  restart: unless-stopped
+  logging: *default-logging
+  healthcheck: *api-healthcheck
+  networks:
+    - enterprise-ai-network
+
+services:
+  # ---------------------------------------------------------------------------
+  # Background Workers Host
+  # ---------------------------------------------------------------------------
+  backgroundworkers-host:
+    <<: *api-service
+    profiles: ["workers"]
+    # CI/CD: Replace build block with pre-built image
+    # image: ${CONTAINER_REGISTRY}/enterprise-ai/backgroundworkers:${IMAGE_TAG:-latest}
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        SERVICE_PROJECT: src/WorkerServices/EnterpriseAiPlatform.BackgroundWorkers.Host/EnterpriseAiPlatform.BackgroundWorkers.Host.csproj
+        SERVICE_DLL: EnterpriseAiPlatform.BackgroundWorkers.Host.dll
+    environment:
+      <<:
+        - *common-env
+        - *postgres-env
+        - *redis-env
+        - *rabbitmq-env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+networks:
+  enterprise-ai-network:
+    name: enterprise-ai-network
+    driver: bridge

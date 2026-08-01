@@ -16,7 +16,9 @@ public static class DependencyInjection
         services.AddSingleton<IPromptOptimizer, PromptOptimizer>();
         services.AddHttpContextAccessor();
         services.AddScoped<IRequestContextAccessor, HttpContextRequestContextAccessor>();
+        services.AddScoped<IRequestContext>(sp => sp.GetRequiredService<IRequestContextAccessor>().Current);
 
         return services;
     }
 }
+

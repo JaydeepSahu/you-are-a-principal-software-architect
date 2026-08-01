@@ -1,0 +1,112 @@
+# =============================================================================
+# Enterprise AI Platform — Infrastructure Services
+# =============================================================================
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    profiles: ["infrastructure"]
+    restart: unless-stopped
+    logging: *default-logging
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-enterprise_ai_db}
+      POSTGRES_USER: ${POSTGRES_USER:-ai_platform_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    expose:
+      - "5432"
+    networks:
+      - enterprise-ai-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ai_platform_user} -d ${POSTGRES_DB:-enterprise_ai_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # Redis
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    profiles: ["infrastructure"]
+    restart: unless-stopped
+    logging: *default-logging
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    expose:
+      - "6379"
+    networks:
+      - enterprise-ai-network
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # OpenTelemetry Collector
+  # ---------------------------------------------------------------------------
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.105.0
+    profiles: ["infrastructure"]
+    restart: unless-stopped
+    logging: *default-logging
+    command: ["--config=/etc/otelcol-contrib/otel-collector.yml"]
+    volumes:
+      - ../otel-collector/otel-collector.yml:/etc/otelcol-contrib/otel-collector.yml:ro
+    expose:
+      - "4317"
+      - "4318"
+      - "8889"
+    networks:
+      - enterprise-ai-network
+
+  # ---------------------------------------------------------------------------
+  # RabbitMQ — Message Broker for Async Communication
+  # ---------------------------------------------------------------------------
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    profiles: ["infrastructure"]
+    restart: unless-stopped
+    logging: *default-logging
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    expose:
+      - "5672"
+    ports:
+      - "15672:15672"
+    networks:
+      - enterprise-ai-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_running"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+networks:
+  enterprise-ai-network:
+    name: enterprise-ai-network
+    driver: bridge
+
+volumes:
+  postgres_data:
+    name: enterprise-ai-postgres-data
+  redis_data:
+    name: enterprise-ai-redis-data
+  rabbitmq_data:
+    name: enterprise-ai-rabbitmq-data

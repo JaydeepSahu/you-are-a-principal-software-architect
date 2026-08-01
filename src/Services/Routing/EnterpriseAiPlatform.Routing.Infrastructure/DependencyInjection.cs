@@ -20,6 +20,7 @@ public static class DependencyInjection
 
         services.AddHttpContextAccessor();
         services.AddScoped<IRequestContextAccessor, HttpContextRequestContextAccessor>();
+        services.AddScoped<IRequestContext>(sp => sp.GetRequiredService<IRequestContextAccessor>().Current);
 
         var redisCs = configuration.GetConnectionString("Redis");
         if (!string.IsNullOrWhiteSpace(redisCs))
@@ -46,8 +47,10 @@ public static class DependencyInjection
         ArgumentNullException.ThrowIfNull(services);
         services.AddHttpContextAccessor();
         services.AddScoped<IRequestContextAccessor, HttpContextRequestContextAccessor>();
+        services.AddScoped<IRequestContext>(sp => sp.GetRequiredService<IRequestContextAccessor>().Current);
         services.AddSingleton<IRoutingConfigurationRepository, InMemoryRoutingConfigurationRepository>();
         services.AddSingleton<IRoutingTelemetry, MemoryRoutingTelemetry>();
         return services;
     }
 }
+

@@ -1,0 +1,103 @@
+# =============================================================================
+# Enterprise AI Platform — Development Overrides
+# =============================================================================
+#
+# Re-publishes internal service ports for local development and debugging.
+# This file is NOT used in production — only for local docker compose up.
+#
+# Usage:
+#   docker compose -f docker-compose.yml \
+#     -f docker-compose.infrastructure.yml \
+#     -f docker-compose.services.yml \
+#     -f docker-compose.override.yml up
+#
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # Infrastructure — expose to host for local tooling
+  # ---------------------------------------------------------------------------
+  postgres:
+    ports:
+      - "5432:5432"
+
+  redis:
+    ports:
+      - "6379:6379"
+
+  otel-collector:
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+      - "8889:8889"
+
+  # ---------------------------------------------------------------------------
+  # API Services — expose to host for local debugging
+  # ---------------------------------------------------------------------------
+  identity-api:
+    ports:
+      - "5277:8080"
+
+  policy-api:
+    ports:
+      - "5014:8080"
+
+  agents-api:
+    ports:
+      - "5090:8080"
+
+  audit-api:
+    ports:
+      - "5148:8080"
+
+  costoptimization-api:
+    ports:
+      - "5040:8080"
+
+  evaluation-api:
+    ports:
+      - "50856:8080"
+
+  knowledge-api:
+    ports:
+      - "5177:8080"
+
+  localmodel-api:
+    ports:
+      - "59923:8080"
+
+  metering-api:
+    ports:
+      - "5132:8080"
+
+  modelregistry-api:
+    ports:
+      - "5235:8080"
+
+  observability-api:
+    ports:
+      - "5158:8080"
+
+  portalbff-api:
+    ports:
+      - "5276:8080"
+
+  promptintelligence-api:
+    ports:
+      - "52469:8080"
+
+  provideradapters-host:
+    ports:
+      - "5167:8080"
+
+  routing-api:
+    ports:
+      - "5261:8080"
+
+  semanticcache-api:
+    ports:
+      - "50857:8080"
+
+  vectorsearch-api:
+    ports:
+      - "5188:8080"

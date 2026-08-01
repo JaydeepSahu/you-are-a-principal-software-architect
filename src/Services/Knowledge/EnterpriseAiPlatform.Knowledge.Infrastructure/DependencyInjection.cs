@@ -20,6 +20,7 @@ public static class DependencyInjection
         services.AddSingleton<IMetadataExtractor, HeuristicMetadataExtractor>();
         services.AddHttpContextAccessor();
         services.AddScoped<IRequestContextAccessor, HttpContextRequestContextAccessor>();
+        services.AddScoped<IRequestContext>(sp => sp.GetRequiredService<IRequestContextAccessor>().Current);
 
         services.AddSingleton<IKnowledgeSourceConnector>(new InlineKnowledgeSourceConnector(KnowledgeSourceType.Document));
         services.AddSingleton<IKnowledgeSourceConnector>(new InlineKnowledgeSourceConnector(KnowledgeSourceType.GitHub));
@@ -30,3 +31,4 @@ public static class DependencyInjection
         return services;
     }
 }
+

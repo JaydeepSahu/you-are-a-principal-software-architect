@@ -13,8 +13,10 @@ public static class DependencyInjection
 
         services.AddHttpContextAccessor();
         services.AddScoped<IRequestContextAccessor, HttpContextRequestContextAccessor>();
+        services.AddScoped<IRequestContext>(sp => sp.GetRequiredService<IRequestContextAccessor>().Current);
         services.AddSingleton<IEvaluationStore, InMemoryEvaluationStore>();
 
         return services;
     }
 }
+

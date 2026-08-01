@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Enterprise AI Platform Admin Control Plane & Interactive Multi-Model Playground">
     <title>Enterprise AI Platform - Governance & Playground Portal</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=2">
 </head>
 <body>
     <header class="app-header" id="main-header">
@@ -33,22 +33,7 @@
                     <h2 class="section-title">Model Selector</h2>
                     <p class="section-desc">Select models to run prompt execution in parallel:</p>
                     <div class="model-checkboxes" id="model-checkboxes">
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="model-azure-gpt-4o" value="azure-gpt-4o" checked>
-                            <span class="badge badge-azure">Azure OpenAI GPT-4o</span>
-                        </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="model-anthropic-claude" value="anthropic-claude-3-5" checked>
-                            <span class="badge badge-anthropic">Claude 3.5 Sonnet</span>
-                        </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="model-gemini" value="gemini-1-5-pro" checked>
-                            <span class="badge badge-gemini">Gemini 1.5 Pro</span>
-                        </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="model-vllm-deepseek" value="vllm-deepseek-coder" checked>
-                            <span class="badge badge-vllm">Self-Hosted DeepSeek (GPU)</span>
-                        </label>
+                        <div class="empty-state">Loading models from registry...</div>
                     </div>
 
                     <div class="param-controls">
@@ -77,19 +62,19 @@
             <div class="metrics-summary-grid" id="metrics-summary-grid">
                 <div class="metric-card card">
                     <span class="metric-label">Total Requests (24h)</span>
-                    <span class="metric-value" id="metric-total-requests">1,450,230</span>
+                    <span class="metric-value" id="metric-total-requests">Loading...</span>
                 </div>
                 <div class="metric-card card">
                     <span class="metric-label">Tokens Consumed</span>
-                    <span class="metric-value" id="metric-total-tokens">892,104,500</span>
+                    <span class="metric-value" id="metric-total-tokens">Loading...</span>
                 </div>
                 <div class="metric-card card">
                     <span class="metric-label">Cost Saved (Local Model Routing)</span>
-                    <span class="metric-value text-success" id="metric-cost-saved">$42,500.00</span>
+                    <span class="metric-value text-success" id="metric-cost-saved">Loading...</span>
                 </div>
                 <div class="metric-card card">
                     <span class="metric-label">p95 Latency</span>
-                    <span class="metric-value" id="metric-p95-latency">185 ms</span>
+                    <span class="metric-value" id="metric-p95-latency">Loading...</span>
                 </div>
             </div>
         </section>
@@ -124,6 +109,7 @@
         <span>Status: <strong class="text-success">Healthy</strong></span>
     </footer>
 
-    <script src="app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="app.js?v=3"></script>
 </body>
 </html>

@@ -27,6 +27,8 @@ app.MapCostOptimizationEndpoints();
 app.UseEnterpriseApiDocumentation();
 app.MapEnterpriseHealthChecks();
 
+await EnterpriseAiPlatform.CostOptimization.Infrastructure.Seeding.CostOptimizationSeedData.SeedAsync(app.Services);
+
 await app.RunAsync();
 
 public partial class Program;

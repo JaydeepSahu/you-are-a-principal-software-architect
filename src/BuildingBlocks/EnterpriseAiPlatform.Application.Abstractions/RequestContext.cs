@@ -6,7 +6,7 @@ public sealed record RequestContext(
     TenantId TenantId,
     string CorrelationId,
     string? UserId,
-    string? ApplicationId);
+    string? ApplicationId) : IRequestContext;
 
 public interface IRequestContextAccessor
 {

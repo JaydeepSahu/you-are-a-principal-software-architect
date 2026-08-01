@@ -1,0 +1,59 @@
+# =============================================================================
+# Enterprise AI Platform — Monitoring Services
+# =============================================================================
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  # ---------------------------------------------------------------------------
+  # Prometheus
+  # ---------------------------------------------------------------------------
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    profiles: ["monitoring"]
+    restart: unless-stopped
+    logging: *default-logging
+    volumes:
+      - ../prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - enterprise-ai-network
+    depends_on:
+      - otel-collector
+
+  # ---------------------------------------------------------------------------
+  # Grafana
+  # ---------------------------------------------------------------------------
+  grafana:
+    image: grafana/grafana:10.2.0
+    profiles: ["monitoring"]
+    restart: unless-stopped
+    logging: *default-logging
+    volumes:
+      - ../grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+    ports:
+      - "3000:3000"
+    networks:
+      - enterprise-ai-network
+    depends_on:
+      - prometheus
+
+networks:
+  enterprise-ai-network:
+    name: enterprise-ai-network
+    driver: bridge
+
+volumes:
+  prometheus_data:
+    name: enterprise-ai-prometheus-data
+  grafana_data:
+    name: enterprise-ai-grafana-data

@@ -13,6 +13,7 @@ public static class DependencyInjection
 
         services.AddHttpContextAccessor();
         services.AddScoped<IRequestContextAccessor, HttpContextRequestContextAccessor>();
+        services.AddScoped<IRequestContext>(sp => sp.GetRequiredService<IRequestContextAccessor>().Current);
         services.AddSingleton<IBudgetRepository, InMemoryBudgetRepository>();
         services.AddSingleton<IDepartmentQuotaRepository, InMemoryDepartmentQuotaRepository>();
         services.AddSingleton<IUserQuotaRepository, InMemoryUserQuotaRepository>();
@@ -20,7 +21,9 @@ public static class DependencyInjection
         services.AddSingleton<ICostRecordRepository, InMemoryCostRecordRepository>();
         services.AddSingleton<IAlertRepository, InMemoryAlertRepository>();
         services.AddSingleton<IRoutingRuleRepository, InMemoryRoutingRuleRepository>();
+        services.AddScoped<ICostAllocationEngine, FinOps.CostAllocationEngine>();
 
         return services;
     }
 }
+

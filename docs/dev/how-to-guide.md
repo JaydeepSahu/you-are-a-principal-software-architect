@@ -22,15 +22,23 @@ Welcome to the **Enterprise AI Platform** How-To Guide. This guide covers step-b
 
 Spin up PostgreSQL 16, Redis 7, Prometheus, Grafana, OpenTelemetry Collector, AI Gateway, and Agent API:
 
-```bash
 # 1. Clone repository & navigate to root
 cd path/to/you-are-a-principal-software-architect
 
-# 2. Build and launch all container services
-docker compose up --build -d
+# 2. BRun the entire platform (Infrastructure + APIs + Workers) locally using the new modular compose profiles:
 
-# 3. Verify healthy container status
-docker compose ps
+```bash
+# Recommended: Set parallel limit to prevent Docker DNS crashes during massive concurrent builds
+export COMPOSE_PARALLEL_LIMIT=3 # Linux/macOS
+$env:COMPOSE_PARALLEL_LIMIT=3   # Windows PowerShell
+
+docker compose --profile infrastructure --profile api --profile workers up --build -d
+```
+
+Verify services are running:
+
+```bash
+docker compose --profile infrastructure --profile api --profile workers ps
 ```
 
 **Service Endpoints**:

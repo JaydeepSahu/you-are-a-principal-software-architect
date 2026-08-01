@@ -1,6 +1,7 @@
 using EnterpriseAiPlatform.ModelRegistry.Api.Endpoints;
 using EnterpriseAiPlatform.ModelRegistry.Application;
 using EnterpriseAiPlatform.ModelRegistry.Infrastructure;
+using EnterpriseAiPlatform.ModelRegistry.Infrastructure.Persistence;
 using EnterpriseAiPlatform.ServiceDefaults;
 using Microsoft.AspNetCore.HttpOverrides;
 
@@ -31,6 +32,8 @@ app.UseEnterpriseRequestPipeline();
 app.MapModelRegistryEndpoints();
 app.UseEnterpriseApiDocumentation();
 app.MapEnterpriseHealthChecks();
+
+await ModelRegistrySeedData.SeedAsync(app.Services);
 
 await app.RunAsync();
 

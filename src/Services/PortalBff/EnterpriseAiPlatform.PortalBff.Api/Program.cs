@@ -25,6 +25,7 @@ var app = builder.Build();
 
 app.UseForwardedHeaders();
 app.UseEnterpriseRequestPipeline();
+app.UseDefaultFiles(); // <-- Required to serve index.html on root
 app.UseStaticFiles();
 
 app.MapGovernancePortalEndpoints();

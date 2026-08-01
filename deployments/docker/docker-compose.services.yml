@@ -1,0 +1,514 @@
+# =============================================================================
+# Enterprise AI Platform — API & Host Services
+# =============================================================================
+#
+# All services use the shared x-api-service anchor to eliminate duplication of:
+#   restart, logging, healthcheck, networks
+#
+# Environment merging: <<: with *common-env, *postgres-env, *redis-env,
+# *rabbitmq-env as appropriate per service.
+#
+# Ports: Only the AI Gateway exposes a published port (5111). All other
+# services use 'expose' for internal Docker-network access only.
+# See docker-compose.override.yml to re-publish ports for local development.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# YAML Anchors (repeated per-file for standalone validity)
+# -----------------------------------------------------------------------------
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+x-api-healthcheck: &api-healthcheck
+  test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/health/live"]
+  interval: 15s
+  timeout: 5s
+  retries: 3
+  start_period: 10s
+
+x-common-env: &common-env
+  ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+
+x-postgres-env: &postgres-env
+  ConnectionStrings__PostgreSQL: Host=postgres;Database=${POSTGRES_DB:-enterprise_ai_db};Username=${POSTGRES_USER:-ai_platform_user};Password=${POSTGRES_PASSWORD}
+
+x-redis-env: &redis-env
+  ConnectionStrings__Redis: redis:6379
+
+x-rabbitmq-env: &rabbitmq-env
+  ConnectionStrings__RabbitMQ: amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASSWORD:-guest}@rabbitmq:5672/
+
+x-api-service: &api-service
+  restart: unless-stopped
+  logging: *default-logging
+  healthcheck: *api-healthcheck
+  networks:
+    - enterprise-ai-network
+
+# =============================================================================
+# Services
+# =============================================================================
+services:
+
+  # ---------------------------------------------------------------------------
+  # AI Gateway (public entry point — published port)
+  # ---------------------------------------------------------------------------
+  aigateway-api:
+    <<: *api-service
+    profiles: ["api"]
+    # CI/CD: Replace build block with pre-built image
+    # image: ${CONTAINER_REGISTRY}/enterprise-ai/gateway:${IMAGE_TAG:-latest}
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        SERVICE_PROJECT: src/Gateways/EnterpriseAiPlatform.AiGateway.Api/EnterpriseAiPlatform.AiGateway.Api.csproj
+        SERVICE_DLL: EnterpriseAiPlatform.AiGateway.Api.dll
+    environment:
+      <<:
+        - *common-env
+        - *postgres-env
+        - *redis-env
+        - *rabbitmq-env
+      AiGateway__Authentication__PlatformJwt__Issuer: ${PLATFORM_JWT_ISSUER:-https://identity.enterprise-ai-platform.test}
+      AiGateway__Authentication__PlatformJwt__Audience: ${PLATFORM_JWT_AUDIENCE:-enterprise-ai-platform}
+      AiGateway__Authentication__PlatformJwt__SigningKey: ${PLATFORM_JWT_SIGNING_KEY:?PLATFORM_JWT_SIGNING_KEY must be set}
+      AiGateway__RateLimiting__RedisConnectionString: redis:6379,abortConnect=false
+      AiGateway__Forwarding__BaseAddress: http://provideradapters-host:8080/internal/ai/
+    ports:
+      - "5111:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  # ---------------------------------------------------------------------------
+  # Identity API
+  # ---------------------------------------------------------------------------
+  identity-api:
+    <<: *api-service
+    profiles: ["api"]
+    # CI/CD: Replace build block with pre-built image
+    # image: ${CONTAINER_REGISTRY}/enterprise-ai/identity:${IMAGE_TAG:-latest}
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        SERVICE_PROJECT: src/Services/Identity/EnterpriseAiPlatform.Identity.Api/EnterpriseAiPlatform.Identity.Api.csproj
+        SERVICE_DLL: EnterpriseAiPlatform.Identity.Api.dll
+    environment:
+      <<:
+        - *common-env
+        - *postgres-env
+        - *redis-env
+        - *rabbitmq-env
+      ConnectionStrings__IdentityDatabase: Host=postgres;Database=${POSTGRES_DB:-enterprise_ai_db};Username=${POSTGRES_USER:-ai_platform_user};Password=${POSTGRES_PASSWORD}
+      Identity__PlatformJwt__Issuer: ${PLATFORM_JWT_ISSUER:-https://identity.enterprise-ai-platform.test}
+      Identity__PlatformJwt__Audience: ${PLATFORM_JWT_AUDIENCE:-enterprise-ai-platform}
+      Identity__PlatformJwt__SigningKey: ${PLATFORM_JWT_SIGNING_KEY:?PLATFORM_JWT_SIGNING_KEY must be set}
+    expose:
+      - "8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  # ---------------------------------------------------------------------------
+  # Policy API
+  # ---------------------------------------------------------------------------
+  policy-api:
+    <<: *api-service
+    profiles: ["api"]
+    # CI/CD: Replace build block with pre-built image
+    # image: ${CONTAINER_REGISTRY}/enterprise-ai/policy:${IMAGE_TAG:-latest}
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        SERVICE_PROJECT: src/Services/Policy/EnterpriseAiPlatform.Policy.Api/EnterpriseAiPlatform.Policy.Api.csproj
+        SERVICE_DLL: EnterpriseAiPlatform.Policy.Api.dll
+    environment:
+      <<:
+        - *common-env
+        - *postgres-env
+        - *redis-env
+    expose:
+      - "8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # ---------------------------------------------------------------------------
+  # Agents API
+  # ---------------------------------------------------------------------------
+  agents-api:
+    <<: *api-service
+    profiles: ["api"]
+    # CI/CD: Replace build block with pre-built image
+    # image: ${CONTAINER_REGISTRY}/enterprise-ai/agents:${IMAGE_TAG:-latest}
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        SERVICE_PROJECT: src/Services/Agents/EnterpriseAiPlatform.Agents.Api/EnterpriseAiPlatform.Agents.Api.csproj
+        SERVICE_DLL: EnterpriseAiPlatform.Agents.Api.dll
+    environment:
+      <<:
+        - *common-env
+        - *redis-env
+    expose:
+      - "8080"
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  # ---------------------------------------------------------------------------
+  # Audit API
+  # ---------------------------------------------------------------------------
+  audit-api:
+    <<: *api-service
+    profiles: ["api"]
+    # CI/CD: Replace build block with pre-built image
+    # image: ${CONTAINER_REGISTRY}/enterprise-ai/audit:${IMAGE_TAG:-latest}
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        SERVICE_PROJECT: src/Services/Audit/EnterpriseAiPlatform.Audit.Api/EnterpriseAiPlatform.Audit.Api.csproj
+        SERVICE_DLL: EnterpriseAiPlatform.Audit.Api.dll
+    environment:
+      <<:
+        - *common-env
+        - *postgres-env
+        - *rabbitmq-env
+    expose:
+      - "8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  # ---------------------------------------------------------------------------
+  # Cost Optimization API
+  # ---------------------------------------------------------------------------
+  costoptimization-api:
+    <<: *api-service
+    profiles: ["api"]
+    # CI/CD: Replace build block with pre-built image
+    # image: ${CONTAINER_REGISTRY}/enterprise-ai/costoptimization:${IMAGE_TAG:-latest}
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        SERVICE_PROJECT: src/Services/CostOptimization/EnterpriseAiPlatform.CostOptimization.Api/EnterpriseAiPlatform.CostOptimization.Api.csproj
+        SERVICE_DLL: EnterpriseAiPlatform.CostOptimization.Api.dll
+    environment:
+      <<:
+        - *common-env
+        - *postgres-env
+        - *redis-env
+        - *rabbitmq-env
+    expose:
+      - "8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  # ---------------------------------------------------------------------------
+  # Evaluation API
+  # ---------------------------------------------------------------------------
+  evaluation-api:
+    <<: *api-service
+    profiles: ["api"]
+    # CI/CD: Replace build block with pre-built image
+    # image: ${CONTAINER_REGISTRY}/enterprise-ai/evaluation:${IMAGE_TAG:-latest}
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        SERVICE_PROJECT: src/Services/Evaluation/EnterpriseAiPlatform.Evaluation.Api/EnterpriseAiPlatform.Evaluation.Api.csproj
+        SERVICE_DLL: EnterpriseAiPlatform.Evaluation.Api.dll
+    environment:
+      <<: *common-env
+    expose:
+      - "8080"
+
+  # ---------------------------------------------------------------------------
+  # Knowledge API
+  # ---------------------------------------------------------------------------
+  knowledge-api:
+    <<: *api-service
+    profiles: ["api"]
+    # CI/CD: Replace build block with pre-built image
+    # image: ${CONTAINER_REGISTRY}/enterprise-ai/knowledge:${IMAGE_TAG:-latest}
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        SERVICE_PROJECT: src/Services/Knowledge/EnterpriseAiPlatform.Knowledge.Api/EnterpriseAiPlatform.Knowledge.Api.csproj
+        SERVICE_DLL: EnterpriseAiPlatform.Knowledge.Api.dll
+    environment:
+      <<:
+        - *common-env
+        - *postgres-env
+    expose:
+      - "8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ---------------------------------------------------------------------------
+  # Local Model API
+  # ---------------------------------------------------------------------------
+  localmodel-api:
+    <<: *api-service
+    profiles: ["api"]
+    # CI/CD: Replace build block with pre-built image
+    # image: ${CONTAINER_REGISTRY}/enterprise-ai/localmodel:${IMAGE_TAG:-latest}
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        SERVICE_PROJECT: src/Services/LocalModel/EnterpriseAiPlatform.LocalModel.Api/EnterpriseAiPlatform.LocalModel.Api.csproj
+        SERVICE_DLL: EnterpriseAiPlatform.LocalModel.Api.dll
+    environment:
+      <<: *common-env
+    expose:
+      - "8080"
+
+  # ---------------------------------------------------------------------------
+  # Metering API
+  # ---------------------------------------------------------------------------
+  metering-api:
+    <<: *api-service
+    profiles: ["api"]
+    # CI/CD: Replace build block with pre-built image
+    # image: ${CONTAINER_REGISTRY}/enterprise-ai/metering:${IMAGE_TAG:-latest}
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        SERVICE_PROJECT: src/Services/Metering/EnterpriseAiPlatform.Metering.Api/EnterpriseAiPlatform.Metering.Api.csproj
+        SERVICE_DLL: EnterpriseAiPlatform.Metering.Api.dll
+    environment:
+      <<:
+        - *common-env
+        - *postgres-env
+        - *rabbitmq-env
+    expose:
+      - "8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  # ---------------------------------------------------------------------------
+  # Model Registry API
+  # ---------------------------------------------------------------------------
+  modelregistry-api:
+    <<: *api-service
+    profiles: ["api"]
+    # CI/CD: Replace build block with pre-built image
+    # image: ${CONTAINER_REGISTRY}/enterprise-ai/modelregistry:${IMAGE_TAG:-latest}
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        SERVICE_PROJECT: src/Services/ModelRegistry/EnterpriseAiPlatform.ModelRegistry.Api/EnterpriseAiPlatform.ModelRegistry.Api.csproj
+        SERVICE_DLL: EnterpriseAiPlatform.ModelRegistry.Api.dll
+    environment:
+      <<:
+        - *common-env
+        - *postgres-env
+    expose:
+      - "8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ---------------------------------------------------------------------------
+  # Observability API
+  # ---------------------------------------------------------------------------
+  observability-api:
+    <<: *api-service
+    profiles: ["api"]
+    # CI/CD: Replace build block with pre-built image
+    # image: ${CONTAINER_REGISTRY}/enterprise-ai/observability:${IMAGE_TAG:-latest}
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        SERVICE_PROJECT: src/Services/Observability/EnterpriseAiPlatform.Observability.Api/EnterpriseAiPlatform.Observability.Api.csproj
+        SERVICE_DLL: EnterpriseAiPlatform.Observability.Api.dll
+    environment:
+      <<:
+        - *common-env
+        - *postgres-env
+    expose:
+      - "8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ---------------------------------------------------------------------------
+  # Portal BFF API
+  # ---------------------------------------------------------------------------
+  portalbff-api:
+    <<: *api-service
+    profiles: ["api"]
+    # CI/CD: Replace build block with pre-built image
+    # image: ${CONTAINER_REGISTRY}/enterprise-ai/portalbff:${IMAGE_TAG:-latest}
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        SERVICE_PROJECT: src/Services/PortalBff/EnterpriseAiPlatform.PortalBff.Api/EnterpriseAiPlatform.PortalBff.Api.csproj
+        SERVICE_DLL: EnterpriseAiPlatform.PortalBff.Api.dll
+    environment:
+      <<: *common-env
+      Identity__PlatformJwt__Issuer: ${PLATFORM_JWT_ISSUER:-https://identity.enterprise-ai-platform.test}
+      Identity__PlatformJwt__Audience: ${PLATFORM_JWT_AUDIENCE:-enterprise-ai-platform}
+      Identity__PlatformJwt__SigningKey: ${PLATFORM_JWT_SIGNING_KEY:?PLATFORM_JWT_SIGNING_KEY must be set}
+      PortalBff__Backends__AiGateway: http://aigateway-api:8080
+      PortalBff__Backends__CostOptimization: http://costoptimization-api:8080
+      PortalBff__Backends__Metering: http://metering-api:8080
+      PortalBff__Backends__ModelRegistry: http://modelregistry-api:8080
+    ports:
+      - "5007:8080"
+    depends_on:
+      aigateway-api:
+        condition: service_healthy
+      costoptimization-api:
+        condition: service_healthy
+      metering-api:
+        condition: service_healthy
+      modelregistry-api:
+        condition: service_healthy
+
+  # ---------------------------------------------------------------------------
+  # Prompt Intelligence API
+  # ---------------------------------------------------------------------------
+  promptintelligence-api:
+    <<: *api-service
+    profiles: ["api"]
+    # CI/CD: Replace build block with pre-built image
+    # image: ${CONTAINER_REGISTRY}/enterprise-ai/promptintelligence:${IMAGE_TAG:-latest}
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        SERVICE_PROJECT: src/Services/PromptIntelligence/EnterpriseAiPlatform.PromptIntelligence.Api/EnterpriseAiPlatform.PromptIntelligence.Api.csproj
+        SERVICE_DLL: EnterpriseAiPlatform.PromptIntelligence.Api.dll
+    environment:
+      <<: *common-env
+    expose:
+      - "8080"
+
+  # ---------------------------------------------------------------------------
+  # Provider Adapters Host
+  # ---------------------------------------------------------------------------
+  provideradapters-host:
+    <<: *api-service
+    profiles: ["api"]
+    # CI/CD: Replace build block with pre-built image
+    # image: ${CONTAINER_REGISTRY}/enterprise-ai/provideradapters:${IMAGE_TAG:-latest}
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        SERVICE_PROJECT: src/Services/ProviderAdapters/EnterpriseAiPlatform.ProviderAdapters.Host/EnterpriseAiPlatform.ProviderAdapters.Host.csproj
+        SERVICE_DLL: EnterpriseAiPlatform.ProviderAdapters.Host.dll
+    environment:
+      <<: *common-env
+    expose:
+      - "8080"
+
+  # ---------------------------------------------------------------------------
+  # Routing API
+  # ---------------------------------------------------------------------------
+  routing-api:
+    <<: *api-service
+    profiles: ["api"]
+    # CI/CD: Replace build block with pre-built image
+    # image: ${CONTAINER_REGISTRY}/enterprise-ai/routing:${IMAGE_TAG:-latest}
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        SERVICE_PROJECT: src/Services/Routing/EnterpriseAiPlatform.Routing.Api/EnterpriseAiPlatform.Routing.Api.csproj
+        SERVICE_DLL: EnterpriseAiPlatform.Routing.Api.dll
+    environment:
+      <<:
+        - *common-env
+        - *redis-env
+    expose:
+      - "8080"
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  # ---------------------------------------------------------------------------
+  # Semantic Cache API
+  # ---------------------------------------------------------------------------
+  semanticcache-api:
+    <<: *api-service
+    profiles: ["api"]
+    # CI/CD: Replace build block with pre-built image
+    # image: ${CONTAINER_REGISTRY}/enterprise-ai/semanticcache:${IMAGE_TAG:-latest}
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        SERVICE_PROJECT: src/Services/SemanticCache/EnterpriseAiPlatform.SemanticCache.Api/EnterpriseAiPlatform.SemanticCache.Api.csproj
+        SERVICE_DLL: EnterpriseAiPlatform.SemanticCache.Api.dll
+    environment:
+      <<:
+        - *common-env
+        - *redis-env
+    expose:
+      - "8080"
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  # ---------------------------------------------------------------------------
+  # Vector Search API
+  # ---------------------------------------------------------------------------
+  vectorsearch-api:
+    <<: *api-service
+    profiles: ["api"]
+    # CI/CD: Replace build block with pre-built image
+    # image: ${CONTAINER_REGISTRY}/enterprise-ai/vectorsearch:${IMAGE_TAG:-latest}
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        SERVICE_PROJECT: src/Services/VectorSearch/EnterpriseAiPlatform.VectorSearch.Api/EnterpriseAiPlatform.VectorSearch.Api.csproj
+        SERVICE_DLL: EnterpriseAiPlatform.VectorSearch.Api.dll
+    environment:
+      <<: *common-env
+    expose:
+      - "8080"
+
+networks:
+  enterprise-ai-network:
+    name: enterprise-ai-network
+    driver: bridge

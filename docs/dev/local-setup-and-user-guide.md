@@ -45,14 +45,23 @@ docker --version   # Should output Docker version 24.x or higher
    cd path/to/you-are-a-principal-software-architect
    ```
 
-2. Build and launch all backend microservices and databases via Docker Compose:
+2. Set the Docker Compose parallel limit. Because this project contains 19 microservices, building them all concurrently can overwhelm Docker Desktop's internal DNS resolver on some machines.
    ```bash
-   docker compose up --build -d
+   # Windows PowerShell
+   $env:COMPOSE_PARALLEL_LIMIT=3
+   
+   # macOS / Linux Bash
+   export COMPOSE_PARALLEL_LIMIT=3
    ```
 
-3. Verify all container services are running cleanly:
+3. Build and launch all backend microservices, workers, and databases using modular Docker Compose profiles:
    ```bash
-   docker compose ps
+   docker compose --profile infrastructure --profile api --profile workers up --build -d
+   ```
+
+4. Verify all container services are running cleanly:
+   ```bash
+   docker compose --profile infrastructure --profile api --profile workers ps
    ```
 
 **Service Endpoints Table**:

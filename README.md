@@ -2,6 +2,19 @@
 
 Enterprise AI Platform is a .NET 9 Clean Architecture workspace for building governed AI products and platform services.
 
+## Quick Start
+
+To spin up the entire 19-container platform locally, use the new modular Docker Compose profiles:
+
+```bash
+# Recommended: Set parallel limit to prevent Docker DNS crashes during massive concurrent builds
+export COMPOSE_PARALLEL_LIMIT=3 # Linux/macOS
+$env:COMPOSE_PARALLEL_LIMIT=3   # Windows PowerShell
+
+# Build and start the infrastructure and all APIs
+docker compose --profile infrastructure --profile api --profile workers up -d --build
+```
+
 ## Documentation
 
 - [Documentation Portal](docs/README.md)

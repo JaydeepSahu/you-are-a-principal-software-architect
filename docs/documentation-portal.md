@@ -29,6 +29,7 @@ The documentation portal is the single source of truth for:
 - CI/CD quality gates: `cicd/`
 - Developer onboarding: `dev/`
 - Automated documentation generation: `automation/`
+- Advanced troubleshooting: `troubleshooting/`
 
 ## How to Use This Portal
 

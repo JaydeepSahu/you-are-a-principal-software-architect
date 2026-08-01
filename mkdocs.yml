@@ -108,6 +108,7 @@ nav:
       - Operational Runbooks: operations/operational-runbooks.md
   - Troubleshooting:
       - Overview: troubleshooting/index.md
+      - Advanced Troubleshooting: troubleshooting/troubleshooting-guide.md
   - ADRs:
       - Overview: adr/index.md
       - ADR Template: adr/adr-template.md

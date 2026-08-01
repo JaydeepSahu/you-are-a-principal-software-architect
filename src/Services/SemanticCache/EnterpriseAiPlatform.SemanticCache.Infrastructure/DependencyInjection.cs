@@ -20,6 +20,7 @@ public static class DependencyInjection
         services.Configure<SemanticCacheOptions>(configuration.GetSection("SemanticCache"));
         services.AddHttpContextAccessor();
         services.AddScoped<IRequestContextAccessor, HttpContextRequestContextAccessor>();
+        services.AddScoped<IRequestContext>(sp => sp.GetRequiredService<IRequestContextAccessor>().Current);
         services.AddSingleton<ISemanticCacheMetrics, SemanticCacheMetrics>();
         services.AddSingleton<IEmbeddingGenerator, HashingEmbeddingGenerator>();
 
@@ -30,11 +31,11 @@ public static class DependencyInjection
         {
             services.AddSingleton<IConnectionMultiplexer>(_ =>
                 ConnectionMultiplexer.Connect(redisCs));
-            services.AddSingleton<ISemanticCacheStore, RedisSemanticCacheStore>();
+            services.AddScoped<ISemanticCacheStore, RedisSemanticCacheStore>();
         }
         else
         {
-            services.AddSingleton<ISemanticCacheStore, InMemorySemanticCacheStore>();
+            services.AddScoped<ISemanticCacheStore, InMemorySemanticCacheStore>();
         }
 
         return services;

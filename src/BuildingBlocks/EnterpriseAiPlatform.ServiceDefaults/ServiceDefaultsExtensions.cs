@@ -475,10 +475,14 @@ public static class ServiceDefaultsExtensions
     /// </summary>
     public static string GetContentSecurityPolicy(PathString path)
     {
-        // Scalar UI, raw OpenAPI document paths, and static web assets need a relaxed policy
+        // Portal BFF UI, Scalar UI, raw OpenAPI documents, and static web assets need a relaxed policy
         if (path.StartsWithSegments("/scalar", StringComparison.OrdinalIgnoreCase)
             || path.StartsWithSegments("/openapi", StringComparison.OrdinalIgnoreCase)
-            || path.StartsWithSegments("/_content", StringComparison.OrdinalIgnoreCase))
+            || path.StartsWithSegments("/_content", StringComparison.OrdinalIgnoreCase)
+            || path.Equals("/", StringComparison.OrdinalIgnoreCase)
+            || path.Value?.EndsWith(".html", StringComparison.OrdinalIgnoreCase) == true
+            || path.Value?.EndsWith(".css", StringComparison.OrdinalIgnoreCase) == true
+            || path.Value?.EndsWith(".js", StringComparison.OrdinalIgnoreCase) == true)
         {
             return ScalarCspPolicy.Value;
         }

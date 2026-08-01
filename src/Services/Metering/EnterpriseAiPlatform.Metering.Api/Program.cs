@@ -27,6 +27,8 @@ app.MapMeteringEndpoints();
 app.UseEnterpriseApiDocumentation();
 app.MapEnterpriseHealthChecks();
 
+await EnterpriseAiPlatform.Metering.Infrastructure.Persistence.MeteringSeedData.SeedAsync(app.Services);
+
 await app.RunAsync();
 
 public partial class Program;

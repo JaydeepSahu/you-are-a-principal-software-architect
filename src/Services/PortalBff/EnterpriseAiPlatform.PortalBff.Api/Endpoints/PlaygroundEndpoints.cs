@@ -43,6 +43,35 @@ public static class PlaygroundEndpoints
             .WithOpenApi()
             .RequireAuthorization(EnterpriseAuthorizationPolicies.Developer);
 
+        endpoints.MapGet("/api/v1/portal/playground/dev-token", (
+            Microsoft.AspNetCore.Hosting.IWebHostEnvironment env,
+            EnterpriseAiPlatform.ServiceDefaults.ServiceDefaultsExtensions.EnterprisePlatformJwtOptions jwtOptions) =>
+        {
+            if (!Microsoft.Extensions.Hosting.HostEnvironmentEnvExtensions.IsDevelopment(env))
+                return Results.NotFound();
+
+            var claims = new[]
+            {
+                new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, "dev-user"),
+                new System.Security.Claims.Claim("tenant_id", "11111111-1111-1111-1111-111111111111"),
+                new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Role, "PlatformAdmin")
+            };
+
+            var key = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(jwtOptions.SigningKey));
+            var creds = new Microsoft.IdentityModel.Tokens.SigningCredentials(key, Microsoft.IdentityModel.Tokens.SecurityAlgorithms.HmacSha256);
+            var token = new System.IdentityModel.Tokens.Jwt.JwtSecurityToken(
+                issuer: jwtOptions.Issuer,
+                audience: jwtOptions.Audience,
+                claims: claims,
+                expires: DateTime.UtcNow.AddHours(24),
+                signingCredentials: creds
+            );
+
+            return Results.Ok(new { token = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler().WriteToken(token) });
+        })
+        .AllowAnonymous()
+        .ExcludeFromDescription();
+
         group.MapPost("/compare", async (
             ModelCompareRequest request,
             IHttpClientFactory httpClientFactory,

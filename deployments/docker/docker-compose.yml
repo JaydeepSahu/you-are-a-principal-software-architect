@@ -1,0 +1,84 @@
+# =============================================================================
+# Enterprise AI Platform — Base Docker Compose Configuration
+# =============================================================================
+#
+# This file defines shared YAML anchors, networks, and volumes used across
+# all modular compose files. It does NOT define services directly.
+#
+# Usage (from repo root):
+#   docker compose --profile infrastructure --profile api up
+#
+# Or with modular files (from this directory):
+#   docker compose \
+#     -f docker-compose.yml \
+#     -f docker-compose.infrastructure.yml \
+#     -f docker-compose.services.yml \
+#     -f docker-compose.monitoring.yml \
+#     -f docker-compose.workers.yml up
+#
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Common Logging
+# -----------------------------------------------------------------------------
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+# -----------------------------------------------------------------------------
+# Common Health Check (ASP.NET Core APIs)
+# -----------------------------------------------------------------------------
+x-api-healthcheck: &api-healthcheck
+  test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/health/live"]
+  interval: 15s
+  timeout: 5s
+  retries: 3
+  start_period: 10s
+
+# -----------------------------------------------------------------------------
+# Common Environment Variables
+# -----------------------------------------------------------------------------
+x-common-env: &common-env
+  ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+
+x-postgres-env: &postgres-env
+  ConnectionStrings__PostgreSQL: Host=postgres;Database=${POSTGRES_DB:-enterprise_ai_db};Username=${POSTGRES_USER:-ai_platform_user};Password=${POSTGRES_PASSWORD}
+
+x-redis-env: &redis-env
+  ConnectionStrings__Redis: redis:6379
+
+x-rabbitmq-env: &rabbitmq-env
+  ConnectionStrings__RabbitMQ: amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASSWORD:-guest}@rabbitmq:5672/
+
+# -----------------------------------------------------------------------------
+# Common API Service Configuration
+# -----------------------------------------------------------------------------
+x-api-service: &api-service
+  restart: unless-stopped
+  logging: *default-logging
+  healthcheck: *api-healthcheck
+  networks:
+    - enterprise-ai-network
+
+# ---------------------------------------------------------------------------
+# Networks & Persistent Volumes
+# ---------------------------------------------------------------------------
+networks:
+  enterprise-ai-network:
+    name: enterprise-ai-network
+    driver: bridge
+
+volumes:
+  postgres_data:
+    name: enterprise-ai-postgres-data
+  redis_data:
+    name: enterprise-ai-redis-data
+  rabbitmq_data:
+    name: enterprise-ai-rabbitmq-data
+  prometheus_data:
+    name: enterprise-ai-prometheus-data
+  grafana_data:
+    name: enterprise-ai-grafana-data

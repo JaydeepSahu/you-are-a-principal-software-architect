@@ -19,6 +19,7 @@ public static class DependencyInjection
 
         services.AddHttpContextAccessor();
         services.AddScoped<IRequestContextAccessor, HttpContextRequestContextAccessor>();
+        services.AddScoped<IRequestContext>(sp => sp.GetRequiredService<IRequestContextAccessor>().Current);
 
         string? connectionString = configuration.GetConnectionString("PostgreSQL")
                                    ?? configuration.GetConnectionString("ModelRegistryDatabase");
@@ -45,7 +46,9 @@ public static class DependencyInjection
         ArgumentNullException.ThrowIfNull(services);
         services.AddHttpContextAccessor();
         services.AddScoped<IRequestContextAccessor, HttpContextRequestContextAccessor>();
+        services.AddScoped<IRequestContext>(sp => sp.GetRequiredService<IRequestContextAccessor>().Current);
         services.AddSingleton<IModelRegistryRepository, InMemoryModelRegistryRepository>();
         return services;
     }
 }
+

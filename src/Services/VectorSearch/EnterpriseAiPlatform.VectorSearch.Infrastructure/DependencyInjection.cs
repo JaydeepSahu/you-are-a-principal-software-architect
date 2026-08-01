@@ -19,6 +19,7 @@ public static class DependencyInjection
         services.AddHttpClient();
         services.AddHttpContextAccessor();
         services.AddScoped<IRequestContextAccessor, HttpContextRequestContextAccessor>();
+        services.AddScoped<IRequestContext>(sp => sp.GetRequiredService<IRequestContextAccessor>().Current);
         services.AddSingleton<IEmbeddingGenerator, HashingEmbeddingGenerator>();
         services.AddSingleton<ISearchResultCache, MemorySearchResultCache>();
         services.AddSingleton<IVectorSearchTelemetry, VectorSearchTelemetry>();
@@ -42,3 +43,4 @@ public static class DependencyInjection
         return services;
     }
 }
+

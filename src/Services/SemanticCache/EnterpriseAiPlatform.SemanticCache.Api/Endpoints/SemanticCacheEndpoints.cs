@@ -41,7 +41,7 @@ public static class SemanticCacheEndpoints
         .WithName("GetCache")
         .WithSummary("Retrieve a cached value by key or semantic similarity");
 
-        group.MapDelete("cache", async (InvalidateCacheRequest request, ISender sender, CancellationToken ct) =>
+        group.MapDelete("cache", async ([Microsoft.AspNetCore.Mvc.FromBody] InvalidateCacheRequest request, ISender sender, CancellationToken ct) =>
         {
             var result = await sender.Send(new InvalidateCacheCommand(request), ct);
             return result.IsSuccess ? Results.Ok(result.Value) : Results.BadRequest(result.Error);

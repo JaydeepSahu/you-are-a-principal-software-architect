@@ -17,6 +17,7 @@ public static class DependencyInjection
     {
         services.AddHttpContextAccessor();
         services.AddScoped<IRequestContextAccessor, HttpContextRequestContextAccessor>();
+        services.AddScoped<IRequestContext>(sp => sp.GetRequiredService<IRequestContextAccessor>().Current);
         services.AddSingleton<IToolRegistry, ToolRegistry>();
         services.AddSingleton<IAgentMemoryStore, InMemoryAgentMemoryStore>();
         services.AddSingleton<IApprovalManager, ApprovalManager>();
@@ -27,3 +28,4 @@ public static class DependencyInjection
         return services;
     }
 }
+

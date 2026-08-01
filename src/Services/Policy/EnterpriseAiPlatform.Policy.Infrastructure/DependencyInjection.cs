@@ -49,6 +49,7 @@ public static class DependencyInjection
 
         services.AddHttpContextAccessor();
         services.AddScoped<IRequestContextAccessor, HttpContextRequestContextAccessor>();
+        services.AddScoped<IRequestContext>(sp => sp.GetRequiredService<IRequestContextAccessor>().Current);
 
         string? connectionString = configuration.GetConnectionString("PostgreSQL")
                                    ?? configuration.GetConnectionString("PolicyDatabase");
@@ -75,7 +76,9 @@ public static class DependencyInjection
         ArgumentNullException.ThrowIfNull(services);
         services.AddHttpContextAccessor();
         services.AddScoped<IRequestContextAccessor, HttpContextRequestContextAccessor>();
+        services.AddScoped<IRequestContext>(sp => sp.GetRequiredService<IRequestContextAccessor>().Current);
         services.AddSingleton<IPolicyRepository, InMemoryPolicyRepository>();
         return services;
     }
 }
+
